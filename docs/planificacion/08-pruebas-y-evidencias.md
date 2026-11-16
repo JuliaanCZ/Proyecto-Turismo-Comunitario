@@ -723,7 +723,7 @@ La aserción de la columna central es **provisional** (PC-SEG-3). El estado es e
 | T-A11Y-05 | El ingreso completo sin cámara: T-ENT-14a a 14c. | → T-ENT-14 (14d, con cámara real, es manual y está pendiente). | → §3.5.3; MP-11 |
 | T-A11Y-06 | **E y M:** `color-contrast` de axe y cálculo de la razón de contraste de los *tokens* de color; vista en escala de grises. | Texto con razón ≥ 4,5:1 y elementos de interfaz y foco ≥ 3:1; cada estado se distingue por texto o icono y no solo por color (MC-08). Si hay tema oscuro, **falta definir** (07) si también se mide. | 08; RA-02 |
 | T-A11Y-07 | **E y M:** tras enviar, tras abrir y cerrar un diálogo de confirmación y tras un cambio de ruta, leer `document.activeElement`. | El foco es **visible** (MC-03); un diálogo atrapa el foco y al cerrarse lo devuelve a quien lo abrió (MC-06); tras un envío con error, al resumen; tras un éxito, no se pierde el foco. Dónde queda el foco tras un cambio de ruta **no está especificado** en 07: **por definir**. | 08; RA-02 |
-| T-PERF-01 | **Manual.** Seguir el método de §7: `npm run perf:seed` (20 000 ofertas en 24 provincias), 50 peticiones de calentamiento, 1000 con concurrencia 10, con y sin el índice `OfferVersion(province, startsAt)`, y `EXPLAIN ANALYZE`. | Se anotan equipo, sistema, versiones y fecha; mediana, p95, mínimo, máximo y errores; el plan **usa el índice**. Criterio **propuesto**: p95 ≤ 300 ms (página) y ≤ 20 ms (consulta con índice): son objetivos por validar, no resultados. **Falta (§7):** formato del informe y análisis de la paginación profunda. | 08 §7; RE-03 |
+| T-PERF-01 | **Manual.** Seguir el método de §7: `npm run perf:seed` (20 000 ofertas en 24 provincias), 50 peticiones de calentamiento, 1000 con concurrencia 10, con y sin el índice `OfferVersion(province, startsAt)`, y `EXPLAIN ANALYZE`. | Se anotan equipo, sistema, versiones y fecha; mediana, p95, mínimo, máximo y errores; el plan **usa el índice**. Criterio **propuesto**: p95 ≤ 300 ms (página) y ≤ 20 ms (consulta con índice): son objetivos por validar, no resultados. El informe sigue el formato de §7.1 (estado inicial `PENDIENTE DE EJECUCIÓN`) e incluye la paginación profunda (§7.2). | 08 §7; RE-03 |
 | T-E2E-01 | **E:** sobre el *build* de producción (`turismo_e2e`, `fake`), con cuatro contextos: 1) `gad.sanisidro` crea y envía una oferta (T-OFE-20); 2) `operador.laguna` la aprueba; 3) `turista.ana` reserva **5** asistentes (T-RES-19); 4) paga con el `fake` (T-PAG-25); 5) ve **5** QR (T-ENT-03d); 6) el operador, con la actividad en curso (reloj acelerado del `fake`), consulta y registra **uno a uno** las cinco; 7) repite el ingreso de la primera. | La oferta pasa por todos los estados sin atajos; la reserva queda `CONFIRMED` con 5 entradas, una por asistente; cada ingreso consume **una**; las demás siguen `VALID` hasta su turno; el séptimo paso da `TICKET_ALREADY_USED` con el mismo `usedAt`; al final «5 usadas de 5 emitidas», PC-PAG-1 y PC-ENT-4; 0 infracciones de CSP (T-SEG-02c); T-A11Y-01 sobre cada pantalla visitada; trazas con datos ficticios. Es la **demostración** del flujo principal (RE-12). | 08; RE-12; reutiliza T-OFE-20, T-RES-19, T-PAG-25, T-ENT-03d, 05, 06 |
 
 #### 3.7.5 Correspondencia de las comprobaciones manuales de 07 §7.1 con `T-A11Y` (propuesta)
@@ -864,7 +864,7 @@ Se guardan evidencias **de ejecución real**, nunca el catálogo como si fuera r
 
 **Por fijar (no decidido):** caducidad de artefactos, ejecución en paralelo por esquema (P0-06), umbral de cobertura (hoy solo informativa), exigencia de revisión humana, si `npm audit` bloquea, y versión de la imagen de CI.
 
-## 7. Rendimiento del catálogo filtrado (método decidido; sin resultados)
+## 7. Rendimiento del catálogo filtrado (método decidido; formato del informe en §7.1; sin resultados)
 
 | Parámetro | Valor propuesto |
 |---|---|
@@ -879,4 +879,104 @@ Se guardan evidencias **de ejecución real**, nunca el catálogo como si fuera r
 | Comando previsto | `npm run perf:seed` y `npm run perf:catalog`. |
 | Criterio **propuesto** | p95 ≤ 300 ms en la página y consulta ≤ 20 ms con el índice. Son objetivos por validar, no resultados. |
 
-⏳ Falta: formato del informe y análisis de la paginación profunda.
+Protocolo completo (datos, *build*, variantes y repeticiones): ficha `PE-01` de 10 §5, que manda si algo difiere. **Nada de este apartado se ha ejecutado**; las tablas de §7.1 son el formato que se rellenará con la salida real.
+
+### 7.1 Formato del informe EV-06 (redactado el 2026-11-16 a partir de `PE-01`; resultados pendientes)
+
+**Archivo:** `docs/evidencias/PE-01/informe-rendimiento.md`, acompañado de la salida literal de `perf:catalog` y de los planes de `EXPLAIN` en la misma carpeta. **Estado inicial obligatorio:** `PENDIENTE DE EJECUCIÓN`. Solo pasa a `EJECUTADO` cuando todas las celdas marcadas «—» tienen la cifra copiada de la salida real; ninguna se estima, redondea a mano ni se rellena con valores de ejemplo. Si una variante no se pudo ejecutar, su fila dice `NO EJECUTADA` y el motivo.
+
+**Convenciones de cálculo (propuesta D7-2, se fijan al escribir el script):** tiempo por petición = desde el envío hasta recibir el cuerpo HTML completo, medido en el cliente con reloj monótono, en milisegundos con un decimal; **mediana y p95 por rango más cercano** sobre las 1000 muestras ordenadas (posiciones 500 y 950); las respuestas distintas de 200 cuentan como errores y **no** entran en los percentiles; una repetición con errores > 0 se informa tal cual y se repite (no se descarta en silencio). El resumen por variante es la **mediana de las tres repeticiones** de cada métrica.
+
+**1. Identificación**
+
+| Campo | Valor |
+|---|---|
+| Estado | `PENDIENTE DE EJECUCIÓN` |
+| Fecha y hora UTC de la medición | — |
+| *Commit* medido (hash completo) y rama | — |
+| Persona que ejecuta / persona que repite (revisión humana de `PE-01`) | — / — |
+
+**2. Entorno**
+
+| Campo | Valor |
+|---|---|
+| Equipo: CPU (modelo y núcleos), memoria, almacenamiento | — |
+| Sistema operativo y versión; ¿Docker Desktop? | — |
+| Versiones reales: Node, npm, PostgreSQL (servidor), Next.js, Prisma | — |
+| Variables: `NODE_ENV=production`, `APP_ENV` (propuesta `local`, D7-2), `PAYMENT_PROVIDER=fake`, `JOBS_ENABLED=false`, puerto (propuesta 3200) | — |
+| Base y comprobación de la guarda `_perf` | `turismo_perf`; — |
+| Otros procesos relevantes en marcha durante la medición | — |
+
+**3. Datos sembrados (comprobados con SQL tras `perf:seed`, no supuestos)**
+
+| Campo | Previsto | Real |
+|---|---|---|
+| Ofertas `OPEN` con versión pública `APPROVED` y `startsAt` futuro | 20 000 | — |
+| Provincias con datos / ofertas por provincia (mínimo–máximo) | 24 / ≈ 833 | — / — |
+| Ofertas de la provincia medida (propuesta `PICHINCHA`) y páginas resultantes | ≈ 833 / 84 | — / — |
+| Rango de `startsAt` | futuro, repartido | — |
+| Nombre real del índice `OfferVersion(province, startsAt)` (P2-01) | por confirmar | — |
+| Duración de `perf:seed` | — | — |
+
+**4. Parámetros de carga**
+
+| Campo | Valor |
+|---|---|
+| URL medida | `GET /ofertas?provincia=<código>` (primera página) |
+| Calentamiento descartado / muestra / concurrencia / repeticiones por variante | 50 / 1000 / 10 / 3 |
+| Comando exacto ejecutado (copiado de la consola) | — |
+
+**5. Resultados de la página (HTTP)**
+
+| Variante | Rep. | Mediana (ms) | p95 (ms) | Mín. (ms) | Máx. (ms) | Errores | Duración total (s) | Peticiones/s |
+|---|---|---|---|---|---|---|---|---|
+| Con índice | 1 | — | — | — | — | — | — | — |
+| Con índice | 2 | — | — | — | — | — | — | — |
+| Con índice | 3 | — | — | — | — | — | — | — |
+| **Con índice (resumen)** | — | — | — | — | — | — | — | — |
+| Sin índice | 1 | — | — | — | — | — | — | — |
+| Sin índice | 2 | — | — | — | — | — | — | — |
+| Sin índice | 3 | — | — | — | — | — | — | — |
+| **Sin índice (resumen)** | — | — | — | — | — | — | — | — |
+
+**6. Consulta SQL del catálogo (`EXPLAIN (ANALYZE, BUFFERS)`)**
+
+| Campo | Con índice | Sin índice |
+|---|---|---|
+| Texto de la consulta (copiado del código de `P2-05`, con parámetros) | — | — |
+| Nodo de acceso a `OfferVersion` (se espera `Index Scan` o `Bitmap Index Scan` con índice) | — | — |
+| Índice usado | — | (ninguno esperado) |
+| *Planning Time* / *Execution Time* (ms) | — / — | — / — |
+| *Buffers*: `shared hit` / `read` | — / — | — / — |
+| Archivo con el plan completo | — | — |
+
+**7. Paginación profunda (solo análisis; no se optimiza en `PE-01`)**
+
+| Consulta | Página | `OFFSET` | *Execution Time* (ms) | Filas recorridas según el plan |
+|---|---|---|---|---|
+| Sin filtro | 1 | 0 | — | — |
+| Sin filtro | 10 | 90 | — | — |
+| Sin filtro | 100 | 990 | — | — |
+| Sin filtro | 1000 | 9 990 | — | — |
+| Sin filtro | 2000 (última) | 19 990 | — | — |
+| Con filtro (`PICHINCHA`) | última (≈ 84) | ≈ 830 | — | — |
+
+Conclusión esperada en texto (sin cifras inventadas): si el coste crece con el `OFFSET` y desde qué página deja de ser aceptable; la paginación por cursor sigue siendo evolución posterior (02 §12).
+
+**8. Comparación con el criterio propuesto (no es requisito; Q-09)**
+
+| Criterio propuesto | Valor medido | ¿Cumple? |
+|---|---|---|
+| p95 de la página con índice ≤ 300 ms | — | — |
+| *Execution Time* de la consulta con índice ≤ 20 ms | — | — |
+| El plan con índice usa el índice (**criterio de cierre de `PE-01`**) | — | — |
+
+Si un criterio propuesto no se cumple, se registra el hallazgo y decide el equipo; no impide cerrar `PE-01` (10 §5).
+
+**9. Limitaciones que el informe debe declarar:** una sola máquina; cliente y servidor en el mismo equipo; caché de PostgreSQL caliente tras el calentamiento; datos sintéticos uniformes; `APP_ENV=local` con *build* de producción (no es el despliegue); método y umbrales propuestos mientras Q-09 siga abierta.
+
+**10. Reproducción y revisión:** lista exacta de comandos ejecutados, en orden (los previstos son `npm run db:up`, `npm run perf:seed`, `npm run build`, `npm run start` y `npm run perf:catalog`, **no probados**); resultado de la repetición por otra persona (orden de magnitud coincidente o diferencia observada).
+
+### 7.2 Análisis de la paginación profunda
+
+Se mide como indica la tabla 7 del informe: tiempo de ejecución de la consulta del catálogo **sin filtro** en las páginas 1, 10, 100, 1000 y 2000 y **con filtro** en la última página de la provincia medida, para mostrar el coste de `OFFSET` con desplazamiento (D-30). Es **análisis documentado, no optimización**: `PE-01` no cambia la paginación. Los parámetros `pagina` y `provincia` inválidos (D2-4) no se miden.
