@@ -1,0 +1,1 @@
+GET http://127.0.0.1:64942/salud -> 200 {"status":"ok"}

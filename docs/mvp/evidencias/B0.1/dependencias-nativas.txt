@@ -1,0 +1,62 @@
+B0.1 — Corrección de la revisión: node:sqlite en lugar de better-sqlite3
+
+Motivo: el revisor reprodujo en Windows (Node 24.22.3, npm 11.19.1) que
+better-sqlite3 intentaba compilarse con node-gyp y exigía el toolset de C++.
+Se aplicó la alternativa de DM-03: node:sqlite (DatabaseSync), integrado en Node.
+Verificación en una copia temporal del repositorio sin node_modules ni .git.
+
+> node --version
+v24.22.3
+
+> npm --version
+11.19.1
+
+> npm ci
+
+added 195 packages, and audited 196 packages in 9s
+
+53 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   argon2@0.45.2 (install: cross-env ZERO_AR_DATE=1 node-gyp-build)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+código de salida: 0
+
+> node scripts/check-sqlite-argon2.js
+SQLite (node:sqlite, :memory:): {"valor":"dato-ficticio"}
+Algoritmo: argon2id
+Hash verificado: true
+Clave distinta rechazada: true
+OK
+código de salida: 0
+
+> npm test
+
+> turismo-comunitario@0.1.0 test
+> node --test
+
+✔ TM-BASE-01: GET /salud devuelve 200 y el estado esperado (62.1791ms)
+✔ TM-BASE-02: Express y el transporte WebSocket responden en el mismo puerto (36.9536ms)
+✔ C-ENV: conserva los valores de desarrollo y valida el número opcional (1.8412ms)
+✔ C-ENV: producción exige HTTPS, cookies seguras y un secreto propio (0.5894ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1196.0484
+código de salida: 0
+
+> npm run lint
+
+> turismo-comunitario@0.1.0 lint
+> eslint .
+
+código de salida: 0
+
+better-sqlite3 en node_modules de la copia: 0 coincidencias

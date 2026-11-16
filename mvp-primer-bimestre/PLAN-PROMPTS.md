@@ -63,7 +63,7 @@ Archivos o módulos previstos:
 Pasos, en orden:
 1. Inspeccionar el repositorio y crear la rama `bloque/B0.1-base`. No modificar `docs/planificacion/referencias/PLAN.md`, `docs/planificacion/` ni `mvp-primer-bimestre/`.
 2. Inicializar `package.json` con módulos ES, `engines.node` `>=24` y `.nvmrc` con la versión LTS instalada (24.22.3 en el equipo donde se redactó este plan).
-3. Instalar ejecución: `express`, `ejs`, `socket.io`, `better-sqlite3`, `argon2`, `helmet`, `cookie`; desarrollo: `socket.io-client`, `supertest`, `eslint`. Fijar versiones exactas en el lockfile. Comprobar que `better-sqlite3` y `argon2` instalan en Windows sin compilar a mano; si alguno falla, registrar el error exacto y aplicar la alternativa de §2.6 (`node:sqlite` tras la capa de datos; `bcryptjs`) como decisión nueva.
+3. Instalar ejecución: `express`, `ejs`, `socket.io`, `argon2`, `helmet`, `cookie`; desarrollo: `socket.io-client`, `supertest`, `eslint`. Fijar versiones exactas en el lockfile. SQLite usa `node:sqlite` (DM-03), que viene con Node y no se instala. Comprobar que `argon2` instala en Windows sin compilar a mano; si falla, registrar el error exacto y aplicar la alternativa de §2.6 (`bcryptjs`) como decisión nueva.
 4. `src/config.js`: leer y validar **todas** las variables de C-ENV (§5.1) con valores por defecto de desarrollo; fallar nombrando la variable inválida sin imprimir su valor. `WHATSAPP_BOOKING_NUMBER` queda opcional, vacío en `.env.example` y validado como número internacional en dígitos cuando se configure. El arranque usa `node --env-file=.env server.js`.
 5. `src/server.js`: `createHttpServer(app)` crea `http.Server` y le adjunta `new Server(httpServer)` de Socket.IO; devuelve `{ httpServer, io }`. `server.js` lo usa con una app Express provisional (`GET /salud` → `{"status":"ok"}`, `GET /` → texto).
 6. `scripts/check-ws.js <url>`: conecta con `socket.io-client` forzando `transports: ['websocket']` e imprime el transporte, `connect` o `connect_error` (con su código) y termina con código de salida distinto de 0 si no hubo respuesta.
@@ -135,7 +135,7 @@ Archivos o módulos previstos:
 - `docs/mvp/esquema.md` (tablas, columnas, restricciones, índices con la consulta que sirven, diagrama ER)
 - `tests/unit/db-migraciones.test.js`
 Pasos, en orden:
-1. `openDb(file)` con `better-sqlite3`: `PRAGMA journal_mode = WAL` (en archivo), `foreign_keys = ON`, `busy_timeout = 5000`; `':memory:'` para pruebas. `withTransaction(db, fn)` abre `BEGIN IMMEDIATE`, confirma o revierte y devuelve el resultado de `fn`.
+1. `openDb(file)` con `DatabaseSync` de `node:sqlite` (DM-03; módulo integrado de Node, sin compilación nativa): `PRAGMA journal_mode = WAL` (en archivo), `foreign_keys = ON`, `busy_timeout = 5000`; `':memory:'` para pruebas. `withTransaction(db, fn)` abre `BEGIN IMMEDIATE`, confirma o revierte y devuelve el resultado de `fn`.
 2. Migrador: aplica `db/migrations/*.sql` en orden lexicográfico, una transacción por archivo, y registra `version`, `checksum` (SHA-256 del contenido) y `applied_at` en `schema_migrations`; reejecutar no cambia nada; si un archivo ya aplicado cambió, falla con un mensaje claro.
 3. Escribir el DDL de §2.4 respetando la numeración reservada: `001` base (`schema_migrations`), `010` cuentas (`users`, `sessions`, `password_reset_tokens`, `mail_outbox`), `020` ofertas (`offers`, `offer_photos`), `030` chat (`chat_messages`). Cambios posteriores usan números nuevos dentro del rango del módulo (011, 012…; 021…; 031…).
 4. Restricciones `CHECK` de longitudes y rangos (en SQLite `length()` cuenta caracteres Unicode), `CHECK` de las 24 provincias, claves foráneas con `ON DELETE` explícito y marcas de tiempo `INTEGER` en milisegundos UTC.
@@ -761,7 +761,7 @@ Archivos o módulos previstos:
 Pasos, en orden:
 1. `requestPasswordReset(email)`: validar formato; si existe el usuario, generar un token de 32 bytes en base64url y guardarlo como `sha256` con `INSERT … ON CONFLICT(user_id) DO UPDATE` (un solo token activo por usuario, `expires_at = ahora + 30 min`, `used_at = NULL`); escribir en `mail_outbox` un mensaje con el enlace `APP_ORIGIN/restablecer?token=<token>` (nunca construido con la cabecera `Host`). La respuesta es siempre la misma exista o no la cuenta.
 2. `GET /restablecer?token=`: muestra el formulario con el token en un campo oculto **sin consumirlo**; responde con `Referrer-Policy: no-referrer`.
-3. `resetPassword({ token, newPassword, newPasswordConfirm })`: validar con la política de B1.1; calcular el hash Argon2id **antes** de abrir la transacción (better-sqlite3 es síncrono); en una transacción `BEGIN IMMEDIATE`: `UPDATE password_reset_tokens SET used_at = ? WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?` (0 filas → `TOKEN_INVALID`, mensaje único), actualizar `users.password_hash` y llamar a `sessions.revokeAllInTx(db, userId, 'PASSWORD_RESET', now)` (de B1.2). Solo **después** de confirmar la transacción, emitir `session-revoked` con `{ userId }`. No inicia sesión; redirige a `/ingreso?aviso=clave-cambiada`.
+3. `resetPassword({ token, newPassword, newPasswordConfirm })`: validar con la política de B1.1; calcular el hash Argon2id **antes** de abrir la transacción (`DatabaseSync` de `node:sqlite` es síncrono); en una transacción `BEGIN IMMEDIATE`: `UPDATE password_reset_tokens SET used_at = ? WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?` (0 filas → `TOKEN_INVALID`, mensaje único), actualizar `users.password_hash` y llamar a `sessions.revokeAllInTx(db, userId, 'PASSWORD_RESET', now)` (de B1.2). Solo **después** de confirmar la transacción, emitir `session-revoked` con `{ userId }`. No inicia sesión; redirige a `/ingreso?aviso=clave-cambiada`.
 4. Bandeja de pruebas: `GET /dev/bandeja` solo si `DEMO_MAILBOX_ENABLED=true`, protegida con autenticación básica usando `DEMO_MAILBOX_PASSWORD`; lista destinatario, asunto y enlace de los mensajes recientes; con la bandeja desactivada responde 404. El enlace no se imprime en consola ni en registros.
 5. Vistas `recuperar`, `restablecer` y `bandeja` con validación en cliente y servidor y mensajes claros.
 6. Pruebas con reloj falso.
@@ -1401,7 +1401,7 @@ Pasos, en orden:
 4. Proxy: reenviar `Upgrade` y `Connection` para WebSocket y conservar `Host` y `Origin`.
 5. Verificar HTTPS: `curl -I https://<host>/salud` devuelve 200 con certificado válido y la cabecera `Strict-Transport-Security`.
 6. Verificar WSS: `node scripts/check-ws.js https://<host>` informa `transport=websocket` y, sin cookie, `connect_error` con `UNAUTHENTICATED` (prueba que el handshake sobre TLS llegó a la aplicación); en el navegador, DevTools → Network → WS muestra `wss://…`, estado 101 y tramas `42[…]`.
-7. Registrar la versión de Node del entorno y comprobar que `better-sqlite3` y `argon2` quedaron instalados en él (PM-04).
+7. Registrar la versión de Node del entorno y comprobar que `node:sqlite` está disponible y que `argon2` quedó instalado en él (PM-04).
 8. Comprobar la persistencia: crear una oferta, reiniciar el proceso y confirmar que sigue ahí.
 
 CONTRATOS QUE DEBES CONSERVAR O CREAR
