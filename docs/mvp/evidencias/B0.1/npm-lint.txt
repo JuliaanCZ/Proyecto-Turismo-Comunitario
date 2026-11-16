@@ -1,3 +1,6 @@
+> npm run lint
 
 > turismo-comunitario@0.1.0 lint
 > eslint .
+
+código de salida: 0

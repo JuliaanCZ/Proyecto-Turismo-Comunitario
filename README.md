@@ -25,6 +25,8 @@ En Bash, el paso equivalente para crear `.env` es `test -f .env || cp .env.examp
 
 Con el servidor en marcha, abre `http://localhost:3000/salud`. Debe responder `{"status":"ok"}`. En otra terminal, comprueba el transporte del mismo servidor con `node scripts/check-ws.js http://localhost:3000`. Ajusta ambas URLs si cambias el puerto.
 
+SQLite se usa mediante `node:sqlite`, integrado en Node, así que `npm ci` no compila nada para la base de datos. Comprueba SQLite en memoria y Argon2 con `node scripts/check-sqlite-argon2.js`.
+
 Ejecuta `npm test` para las pruebas automatizadas y `npm run lint` para revisar el JavaScript. La [evidencia de B0.1](docs/mvp/evidencias/B0.1/) guarda los resultados de la comprobación. Los siguientes bloques se toman en el orden de sus dependencias y se integran mediante PR.
 
 ## Plan general de referencia
