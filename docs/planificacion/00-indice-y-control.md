@@ -270,9 +270,9 @@ Modelo de pertenencias y roles múltiples (D-20 a D-22), máquinas de estado (D-
 | `INV-nn` | Invariante del sistema | INV-01 | 03 §2 |
 | `TX-nn` | Flujo transaccional | TX-09 | 04 |
 | `A-nn` | Amenaza | A-07 | 06 §2 |
-| `C-nn` | Control de seguridad | C-12 | 06 §3 |
+| ~~`C-nn`~~ | **No se usa** (decidido el 2026-11-14): los controles se citan por su decisión `D-nn` y su amenaza `A-nn` | — | 06 §2–§3 |
 | `T-ÁREA-nn` | Prueba. Áreas: `CTA`, `OFE`, `RES`, `PAG`, `ENT`, `CHAT`, `SEG`, `OPS`, `A11Y`, `PERF`, `E2E`, `DB` | T-RES-09 | 08 §3 |
-| `EV-nn` | Evidencia de entrega | EV-05 | 08 §9 |
+| `EV-nn` | Evidencia de entrega | EV-05 | 08 §5 |
 | `RB-nn` | *Runbook* operativo | RB-04 | 09 §8 |
 | `Pf-nn` | Paquete de implementación de la fase *f* (`P0`…`P6`, `PE`) | P4-03 | 10 |
 
@@ -332,7 +332,7 @@ Todo supuesto puede revertirse sin rediseñar; se indica qué cambiaría.
 | S-11 | El equipo trabaja en Windows 11 con Docker Desktop. El equipo donde se redactó esto tiene Node 24.22.3, npm 11.19.1, Docker 28.5.1 y Git 2.45.1. | Usar los comandos Bash equivalentes de 09. | 09 |
 | S-12 | Un comprador puede tener varias reservas confirmadas de la misma oferta. | Añadir una restricción de unicidad. | P3-01 |
 | S-13 | El operador ve conteos de su actividad y el nombre de un asistente solo al consultar su entrada. | Ampliar o reducir la consulta de ingreso. | P5-02 |
-| S-14 | Todos los datos son ficticios; no se tratan datos personales reales. Las obligaciones legales concretas **no se verificaron**. | Revisar retención, consentimiento y avisos con asesoría. | 06 §9 |
+| S-14 | Todos los datos son ficticios; no se tratan datos personales reales. Las obligaciones legales concretas **no se verificaron**. | Revisar retención, consentimiento y avisos con asesoría. | 06 §4 |
 | S-15 | Todas las horas se muestran como hora de Ecuador continental, también para Galápagos. | Añadir zona horaria por oferta. | 03 §7 |
 | S-16 | El entorno de demostración puede abrir el ingreso antes del inicio con `CHECKIN_EARLY_MINUTES`. | Mantener 0 y demostrar el ingreso con la actividad sembrada en curso. | P5-02, 12 |
 | S-17 | La guía no impone herramienta ni umbral para la medición de rendimiento. | Adaptar el método de 08 §7. | PE-01 |
@@ -347,7 +347,7 @@ Ninguna bloquea el inicio de la implementación (P0-01). Se indica qué queda de
 | ID | Pregunta | Bloquea | Mientras tanto |
 |---|---|---|---|
 | Q-01 | ¿Pueden aportar la guía de Aplicaciones Web Avanzadas? | Afirmar cumplimiento académico (PE-04, documento 12). No bloquea código. | Requisitos tratados como «afirmados por el plan». |
-| Q-02 | ¿Pueden aportar la propuesta de Software Seguro con sus objetivos Common Criteria? | La columna «objetivo CC» de la matriz de seguridad (06 §11, PE-03). | Matriz con controles e identificador de objetivo `PENDIENTE`. |
+| Q-02 | ¿Pueden aportar la propuesta de Software Seguro con sus objetivos Common Criteria? | La columna «objetivo CC» de la matriz de seguridad (06 §5, PE-03; RS-26). | Matriz con controles e identificador de objetivo `PENDIENTE`. |
 | Q-03 | ¿Fecha de entrega, integrantes y reparto de trabajo? | Calendario, responsables y reparto del guion (12). | Paquetes sin fechas ni responsables. |
 | Q-04 | ¿Qué alojamiento y presupuesto hay (plan gratuito, de pago o servidor de la universidad)? | PE-02 (despliegue). | Desarrollo local completo; propuesta D-59. |
 | Q-05 | ¿Una atracción pertenece a un único GAD? | Nada (S-01). | Se asume que sí. |
@@ -387,15 +387,15 @@ Formato: decisión · alternativas consideradas · razón. El detalle y las prue
 
 | ID | Decisión | Alternativas descartadas | Razón | Doc. |
 |---|---|---|---|---|
-| D-15 | Sesión opaca de 256 bits; SHA-256 en base; cookie `__Host-tc_session` en despliegue y `tc_session` en local; 8 h absolutas, sin renovación deslizante ni tiempo de inactividad. | JWT sin estado; expiración por inactividad. | Lo fija el plan; la revocación inmediata exige estado en servidor. | 06 §4 |
-| D-16 | Argon2id (19 MiB, 2 pasadas, 1 hilo) con el paquete `argon2`, tras el puerto `PasswordHasher`. | `crypto.argon2` nativo de Node ≥ 24.7 (devuelve bytes crudos; queda como alternativa); bcrypt. | Parámetros mínimos de OWASP; formato PHC y verificación ya resueltos. | 06 §4 |
-| D-17 | Defensa CSRF: comprobación propia de `Origin` (obligatorio y exacto) en toda mutación + `SameSite=Lax` + solo `POST`. Sin token sincronizado. | Token CSRF por formulario. | Next.js deja pasar peticiones sin `Origin`; la comprobación propia lo cierra con menos estado. | 06 §6 |
-| D-18 | Límites persistidos en `LoginThrottle` (ventana fija y bloqueo temporal) por cuenta y por IP; claves con HMAC; IP derivada con `TRUST_PROXY_HOPS`. | Límite en memoria; servicio externo. | Sobrevive a reinicios; el plan nombra la entidad. | 06 §5 |
-| D-19 | Recuperación: token de 256 bits en la *query string* del enlace, hash en base, consumo por `UPDATE` condicional, 30 min, un token activo por usuario, `Referrer-Policy: no-referrer` y correo de aviso tras el cambio. | Token en el fragmento (`#`); código numérico. | Funciona sin JavaScript; mitigaciones suficientes para un token de un solo uso. | 04 TX-13, 06 §4 |
+| D-15 | Sesión opaca de 256 bits; SHA-256 en base; cookie `__Host-tc_session` en despliegue y `tc_session` en local; 8 h absolutas, sin renovación deslizante ni tiempo de inactividad. | JWT sin estado; expiración por inactividad. | Lo fija el plan; la revocación inmediata exige estado en servidor. | 06 §3.1 |
+| D-16 | Argon2id (19 MiB, 2 pasadas, 1 hilo) con el paquete `argon2`, tras el puerto `PasswordHasher`. | `crypto.argon2` nativo de Node ≥ 24.7 (devuelve bytes crudos; queda como alternativa); bcrypt. | Parámetros mínimos de OWASP; formato PHC y verificación ya resueltos. | 06 §3.1 |
+| D-17 | Defensa CSRF: comprobación propia de `Origin` (obligatorio y exacto) en toda mutación + `SameSite=Lax` + solo `POST`. Sin token sincronizado. | Token CSRF por formulario. | Next.js deja pasar peticiones sin `Origin`; la comprobación propia lo cierra con menos estado. | 06 §3.3 |
+| D-18 | Límites persistidos en `LoginThrottle` (ventana fija y bloqueo temporal) por cuenta y por IP; claves con HMAC; IP derivada con `TRUST_PROXY_HOPS`. | Límite en memoria; servicio externo. | Sobrevive a reinicios; el plan nombra la entidad. | 06 §3.2 |
+| D-19 | Recuperación: token de 256 bits en la *query string* del enlace, hash en base, consumo por `UPDATE` condicional, 30 min, un token activo por usuario, `Referrer-Policy: no-referrer` y correo de aviso tras el cambio. | Token en el fragmento (`#`); código numérico. | Funciona sin JavaScript; mitigaciones suficientes para un token de un solo uso. | 04 TX-13, 06 §3.1–§3.2 |
 | D-20 | `RoleAssignment(userId, role, gadId?, attractionId?)`; un usuario acumula asignaciones; no existe «rol activo». | Un rol por usuario; tablas separadas por rol. | Lo nombra el plan; la autorización se decide por acción y recurso. | 01 §7, 03 |
 | D-21 | `Attraction.gadId` obligatorio y `Offer(gadId, attractionId)` con clave foránea compuesta. | Atracción independiente del GAD. | Supuesto S-01; refuerza el aislamiento horizontal. | 03 |
 | D-22 | Autor único por versión: solo el autor edita y envía; ningún autor decide la revisión de su versión (servicio + `CHECK`). | Conjunto de contribuyentes; prohibir por rol. | La prohibición debe ser por identidad aunque la persona tenga varios roles. | 01 §7, 04 TX-03 |
-| D-23 | El registro revela si un correo ya existe; ingreso y recuperación no. | Registro con verificación de correo. | Fuera del alcance del plan; riesgo residual documentado. | 06 §5 |
+| D-23 | El registro revela si un correo ya existe; ingreso y recuperación no. | Registro con verificación de correo. | Fuera del alcance del plan; riesgo residual documentado. | 06 §3.2 |
 
 ### 8.3 Ofertas y catálogo
 
@@ -444,8 +444,8 @@ Formato: decisión · alternativas consideradas · razón. El detalle y las prue
 | D-40 | Coordinación recuperable: intención persistida antes de cada llamada externa, claves de idempotencia estables y conciliación con `getOrder`. Sin transacción distribuida. | Mantener la transacción abierta durante la llamada. | Lo exige el encargo; la base nunca espera a la red. | 04 TX-07–11 |
 | D-41 | Función única `settlePayment` para captura, webhook, conciliador y administrador. | Lógicas separadas. | Lo fija el plan; elimina divergencias. | 04 TX-09 |
 | D-42 | Retención vigente ⇒ se confirma aunque la oferta se haya suspendido o archivado después. Pago tardío ⇒ exige `OPEN`, actividad futura y cupo. | Bloquear también los pagos en curso. | H-10. | 04 TX-09 |
-| D-43 | El webhook nunca captura ni es fuente de verdad: verifica firma por *postback* y consulta `getOrder`. | Confiar en el cuerpo del webhook; verificación local con CRC32. | El contenido falsificado no puede alterar estados. | 05 §6.5 |
-| D-44 | Dinero capturado sin entradas ⇒ `REVIEW_REQUIRED` permanente hasta resolución manual fuera del sistema. | Estados de reembolso. | Fuera del MVP (H-11). | 05 §6.7, RB-09 |
+| D-43 | El webhook nunca captura ni es fuente de verdad: verifica firma por *postback* y consulta `getOrder`. | Confiar en el cuerpo del webhook; verificación local con CRC32. | El contenido falsificado no puede alterar estados. | 04 TX-10, 05 §6.1–§6.2 |
+| D-44 | Dinero capturado sin entradas ⇒ `REVIEW_REQUIRED` permanente hasta resolución manual fuera del sistema. | Estados de reembolso. | Fuera del MVP (H-11). | 05 §6.5, RB-09 |
 | D-45 | Adaptador `fake` determinista con pantalla de aprobación simulada; prohibido con `APP_ENV=production`. | Simular PayPal con *mocks* de red. | El plan lo exige; permite demostrar sin credenciales. | 05 §6.3 |
 | D-65 | No se inicia una captura si quedan menos de 30 s de retención. | Sin margen. | Reduce los casos de dinero capturado sin cupo (refinamiento). | 04 TX-08 |
 
@@ -456,7 +456,7 @@ Formato: decisión · alternativas consideradas · razón. El detalle y las prue
 | D-46 | Token QR de 32 bytes aleatorios, texto `TC1.<base64url>`; SHA-256 para buscar; copia AES-256-GCM con AAD = id de la entrada y llavero versionado. | JWT firmado; token derivado. | Lo fija el plan; permite rotar claves. | 05 §7 |
 | D-47 | Estados de entrada `VALID`/`USED`; consumo por `UPDATE` condicional de una fila. | Bloqueo pesimista. | Lo fija el plan. | 04 TX-12 |
 | D-48 | Ingreso en dos pasos (consultar, registrar) mediante Server Actions con el token en el cuerpo; ventana `[inicio − CHECKIN_EARLY_MINUTES, fin]`. | Consumir al escanear. | Lo fija el plan; H-08. | 05 §7 |
-| D-49 | Lector: `BarcodeDetector` nativo con respaldo `jsqr`; alternativa manual siempre visible. | Biblioteca con WebAssembly. | Compatible con CSP estricta. | 07 §9 |
+| D-49 | Lector: `BarcodeDetector` nativo con respaldo `jsqr`; alternativa manual siempre visible. | Biblioteca con WebAssembly. | Compatible con CSP estricta. | 07 §4.6 |
 | D-50 | QR servido como PNG por un Route Handler autenticado con `no-store`. | QR generado en el cliente; token en la URL. | El token nunca viaja en una URL. | 05 §7 |
 
 ### 8.7 Tiempo real
@@ -474,12 +474,12 @@ Formato: decisión · alternativas consideradas · razón. El detalle y las prue
 | ID | Decisión | Alternativas descartadas | Razón | Doc. |
 |---|---|---|---|---|
 | D-56 | Auditoría de solo inserción; se escribe en la transacción del cambio cuando hay éxito. | Solo registros de aplicación. | Evidencia consistente con el dato. | 03, 06 |
-| D-57 | Dos roles de base: migrador (DDL) y aplicación (DML mínimo; sin `UPDATE`/`DELETE` sobre `AuditEvent`). | Un único rol propietario. | Privilegio mínimo. | 06 §8 |
+| D-57 | Dos roles de base: migrador (DDL) y aplicación (DML mínimo; sin `UPDATE`/`DELETE` sobre `AuditEvent`). | Un único rol propietario. | Privilegio mínimo. | 03 §8.5, 06 §3.6 |
 | D-58 | Disparadores de defensa en profundidad: versión aprobada inmutable; términos de reserva y `CONFIRMED` terminal; `USED` terminal. | Solo validación en servicio. | Protegen los invariantes ante errores de código. | 03 §8 |
 | D-59 | Alojamiento propuesto: servicio web administrado con WebSocket + PostgreSQL 18 administrado. | Vercel (sin servidor propio ni WebSocket); VPS (alternativa). | Menor operación para estudiantes. **Pendiente Q-04.** | 09 §6 |
 | D-60 | Pruebas: Vitest (unidad, integración con PostgreSQL real, concurrencia con barreras de bloqueo) y Playwright (extremo a extremo sobre el *build* de producción con el adaptador `fake`). | *Mocks* de base; esperas arbitrarias. | Lo fija el plan; simultaneidad reproducible. | 08 |
 | D-61 | Rendimiento medido con un script propio que calcula mediana y p95 exactos. | Herramienta externa. | Reproducible y sin dependencias. | 08 §7 |
-| D-62 | Minimización: purga de sesiones y tokens; anulación de `birthDate` tras la actividad (propuesta). | Conservar indefinidamente. | Minimización de datos de asistentes. | 06 §9 |
+| D-62 | Minimización: purga de sesiones y tokens; anulación de `birthDate` tras la actividad (propuesta). | Conservar indefinidamente. | Minimización de datos de asistentes. | 06 §4.1 (J4: propuesta `P3-04`) |
 | D-63 | La ruta `/` es una portada que conduce al catálogo y al panel. | Redirigir `/` a `/ofertas`. | Pedido en el encargo; sin funciones nuevas. | 07 §2 |
 | D-64 | Interfaz con Tailwind CSS 4 y componentes propios accesibles. | Biblioteca de componentes. | Menos dependencias; control de accesibilidad. | 07 |
 

@@ -47,7 +47,7 @@ El vencimiento se prueba con reloj falso, nunca esperando 15 minutos. Los casos 
 
 ---
 
-## 3. Catálogo de pruebas (identificadores definitivos; desarrollado: §3.1 a §3.7; ⏳ el resto: preparación, pasos, aserciones y evidencia)
+## 3. Catálogo de pruebas (identificadores definitivos; §3.1 a §3.7 desarrollados con preparación, acción y resultado esperado; ninguna ejecutada)
 
 ### 3.1 Cuentas — `T-CTA`
 

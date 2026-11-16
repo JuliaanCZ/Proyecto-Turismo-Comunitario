@@ -394,7 +394,7 @@ Al recibir `SIGTERM` o `SIGINT`:
 4. `httpServer.close()`: deja de aceptar conexiones y espera las peticiones en curso.
 5. Límite total de 20 s (por debajo de los 30 s que da el alojamiento evaluado); después, `prisma.$disconnect()` y `process.exit(0)`.
 
-Una operación interrumpida no deja estados inválidos: cada transacción se confirma o se revierte, y los pasos externos son recuperables (04 §6).
+Una operación interrumpida no deja estados inválidos: cada transacción se confirma o se revierte, y los pasos externos son recuperables (04 §4).
 
 ### 7.5 Limitaciones del servidor propio
 
@@ -512,7 +512,7 @@ type ActionResult<T> =
 - `pino` en JSON, una línea por evento, a la salida estándar. Campos fijos: `time`, `level`, `msg`, `requestId`, `module`.
 - **Redacción obligatoria** por lista de rutas: `password`, `passwordHash`, `token`, `tokenHash`, `cookie`, `authorization`, `set-cookie`, `clientSecret`, `access_token`, `qr`, `code`, `birthDate`, `email` (se registra un hash corto en su lugar).
 - Regla de código: nunca registrar objetos de petición completos, cuerpos de formularios ni respuestas de PayPal sin pasar por un selector de campos permitidos.
-- Los registros de aplicación sirven para diagnóstico; la **auditoría** (`AuditEvent`) es el registro de negocio y seguridad y vive en la base (06 §10).
+- Los registros de aplicación sirven para diagnóstico; la **auditoría** (`AuditEvent`) es el registro de negocio y seguridad y vive en la base (03 §3.4 y 06 §4.6).
 
 ---
 

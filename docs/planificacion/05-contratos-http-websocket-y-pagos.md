@@ -27,7 +27,7 @@
 | `/ofertas/[offerId]/reservar` | `TOURIST` | Formulario de reserva grupal. Sin sesión redirige a `/ingreso?next=…`. | P3-02 |
 | `/registro`, `/ingreso`, `/recuperar`, `/restablecer?token=…` | Público | Formularios de cuenta. | P1-02, P1-03, P1-05 |
 | `/panel` | Autenticado | Inicio con accesos según asignaciones. | P1-02 |
-| `/panel/ofertas`, `/panel/ofertas/nueva`, `/panel/ofertas/[offerId]`, `/panel/ofertas/[offerId]/editar` | `GAD` | CRUD, versiones, agregados. | P2-02, P3-03 |
+| `/panel/ofertas`, `/panel/ofertas/nueva`, `/panel/ofertas/[offerId]`, `/panel/ofertas/[offerId]/editar` | `GAD` | CRUD, versiones, agregados. Listado `?provincia=<código>&pagina=<n>`, 10 por página con orden estable (RF-08; PLAN F2 lo exige también aquí, no solo en el catálogo). **Por fijar en P2-02 (D2-3):** campo de orden y versión de la que se toma la provincia. | P2-02, P3-03 |
 | `/panel/revisiones`, `/panel/revisiones/[versionId]` | `OPERATOR` | Versiones en revisión de sus atracciones; aprobar o devolver. | P2-03 |
 | `/panel/actividades` | `OPERATOR` | Ofertas de sus atracciones; suspender o reanudar; conteos. | P2-04, P3-03 |
 | `/panel/reservas`, `/panel/reservas/[reservationId]` | `TOURIST` | Reservas propias, estado, vencimiento, pago y entradas. | P3-02, P5-01 |
