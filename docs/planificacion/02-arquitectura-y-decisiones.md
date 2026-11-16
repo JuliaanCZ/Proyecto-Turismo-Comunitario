@@ -80,7 +80,7 @@ turismo-comunitario/
 ├─ docker-compose.yml             # PostgreSQL 18 + Mailpit (solo desarrollo y pruebas)
 ├─ Dockerfile / .dockerignore     # Imagen de producción (PE-02)
 ├─ .env.example / .gitignore / .nvmrc / .editorconfig
-├─ README.md / ESTADO-IMPLEMENTACION.md / PLAN.md / PROMPT-CLAUDE-PLANIFICACION.md
+├─ README.md / ESTADO-IMPLEMENTACION.md
 ├─ prisma/
 │  ├─ schema.prisma
 │  ├─ migrations/                 # Incluye SQL manual: CHECK, disparadores, índices especiales
@@ -134,6 +134,7 @@ turismo-comunitario/
 │  ├─ unit/ · integration/ · concurrency/ · contract/paypal/ · e2e/ · perf/
 └─ docs/
    ├─ planificacion/              # Estos trece documentos
+   │  └─ referencias/             # Plan original, prompts y notas de investigación
    ├─ evidencias/                 # Resultados reales generados al implementar
    └─ diagramas/
 ```

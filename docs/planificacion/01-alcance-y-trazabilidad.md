@@ -1,7 +1,7 @@
 # 01 — Alcance y trazabilidad
 
 > Identificadores y convenciones: [00 §4](00-indice-y-control.md). Estados y entidades: [03](03-datos-estados-e-invariantes.md). Pruebas: [08](08-pruebas-y-evidencias.md). Paquetes: [10](10-fases-y-paquetes-implementables.md).
-> **Aviso:** la guía académica y la propuesta de seguridad citadas por `PLAN.md` no están disponibles (H-01). Ningún requisito de este documento se presenta como comprobado en ellas.
+> **Aviso:** la guía académica y la propuesta de seguridad citadas por `docs/planificacion/referencias/PLAN.md` no están disponibles (H-01). Ningún requisito de este documento se presenta como comprobado en ellas.
 
 ---
 

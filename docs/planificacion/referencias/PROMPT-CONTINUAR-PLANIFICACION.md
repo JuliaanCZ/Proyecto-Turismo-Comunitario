@@ -19,8 +19,8 @@ Tu tarea en este turno es completar únicamente:
 docs/planificacion/03-datos-estados-e-invariantes.md
 
 Primero lee:
-- PLAN.md, fuente del alcance.
-- PROMPT-CLAUDE-PLANIFICACION.md, para conocer el detalle exigido al documento 03.
+- docs/planificacion/referencias/PLAN.md, fuente del alcance.
+- docs/planificacion/referencias/PROMPT-CLAUDE-PLANIFICACION.md, para conocer el detalle exigido al documento 03.
 - docs/planificacion/00-indice-y-control.md, especialmente decisiones, preguntas,
   invariantes referenciados y punto de avance.
 - El documento 03 completo.
@@ -84,8 +84,8 @@ Reemplaza NOMBRE-DEL-DOCUMENTO por el archivo exacto de la tabla inferior.
 Continúa la planificación existente. En este turno completa únicamente
 docs/planificacion/NOMBRE-DEL-DOCUMENTO.
 
-Lee el archivo completo, su especificación en PROMPT-CLAUDE-PLANIFICACION.md,
-el alcance de PLAN.md y las decisiones y el punto de avance del índice 00.
+Lee el archivo completo, su especificación en docs/planificacion/referencias/PROMPT-CLAUDE-PLANIFICACION.md,
+el alcance de docs/planificacion/referencias/PLAN.md y las decisiones y el punto de avance del índice 00.
 Consulta solo los apartados necesarios de sus documentos dependientes.
 
 Desarrolla todos sus pendientes con el nivel de detalle exigido. Conserva IDs,
@@ -133,7 +133,7 @@ Solo cuando se hayan completado los documentos anteriores:
 
 ```text
 Revisa de forma independiente la planificación en docs/planificacion/ contra
-PLAN.md y el encargo original. No implementes nada.
+docs/planificacion/referencias/PLAN.md y el encargo original. No implementes nada.
 
 Verifica trazabilidad requisito → paquete → prueba → prompt; coincidencia de IDs,
 estados y contratos; permisos por recurso; concurrencia de cupos y pagos;

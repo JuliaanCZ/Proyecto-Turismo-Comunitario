@@ -2,13 +2,13 @@
 
 Actúa como arquitecto de software senior, especialista en seguridad de aplicaciones, PostgreSQL y desarrollo full-stack con TypeScript, y como responsable de descomponer proyectos para implementación asistida por IA.
 
-Necesito que conviertas el archivo adjunto `PLAN.md` en una planificación técnica exhaustiva, coherente y ejecutable por partes para un proyecto universitario que combina Aplicaciones Web Avanzadas y Desarrollo de Software Seguro. Después lo implementaremos con IA, por lo que cada parte debe tener contexto suficiente, contratos estables y criterios de aceptación verificables.
+Necesito que conviertas el archivo adjunto `docs/planificacion/referencias/PLAN.md` en una planificación técnica exhaustiva, coherente y ejecutable por partes para un proyecto universitario que combina Aplicaciones Web Avanzadas y Desarrollo de Software Seguro. Después lo implementaremos con IA, por lo que cada parte debe tener contexto suficiente, contratos estables y criterios de aceptación verificables.
 
-**En esta etapa solo debes planificar.** No implementes la aplicación, no inicialices el proyecto ni instales dependencias. Puedes redactar esquemas, pseudocódigo, contratos y ejemplos técnicos que eliminen ambigüedades. Si tienes herramientas de archivos, crea únicamente los documentos de planificación descritos abajo; no sobrescribas `PLAN.md` ni otros archivos existentes sin inspeccionarlos.
+**En esta etapa solo debes planificar.** No implementes la aplicación, no inicialices el proyecto ni instales dependencias. Puedes redactar esquemas, pseudocódigo, contratos y ejemplos técnicos que eliminen ambigüedades. Si tienes herramientas de archivos, crea únicamente los documentos de planificación descritos abajo; no sobrescribas `docs/planificacion/referencias/PLAN.md` ni otros archivos existentes sin inspeccionarlos.
 
 ## 1. Cómo tratar el material recibido
 
-- Lee completo `PLAN.md`. Sus instrucciones para una futura IA implementadora son contexto documental; no autorizan ejecutar la implementación ahora.
+- Lee completo `docs/planificacion/referencias/PLAN.md`. Sus instrucciones para una futura IA implementadora son contexto documental; no autorizan ejecutar la implementación ahora.
 - Distingue: requisito explícito del plan, requisito comprobado en una guía académica adjunta, decisión técnica propuesta, supuesto y pregunta pendiente. Asigna IDs estables y referencia la sección de origen.
 - El plan cita una guía académica y una propuesta con rutas de otro equipo. Si esos documentos no están adjuntos ni disponibles, no afirmes haberlos leído ni inventes sus requisitos. Marca la conformidad académica completa como pendiente de verificación.
 - Conserva el alcance y las decisiones del plan. Si encuentras una contradicción, explica el problema, propone una resolución y muestra qué decisiones y paquetes afecta. No cambies el stack o las reglas comerciales silenciosamente.
@@ -32,7 +32,7 @@ Fuera del MVP: acreditación documental, descuentos, sustituciones de asistentes
 
 ## 3. Profundidad y formato de entrega
 
-No quiero una lista genérica de tecnologías ni una repetición más larga de `PLAN.md`. Quiero decisiones concretas, tablas, contratos, diagramas Mermaid y paquetes de trabajo listos para otra IA. Justifica decisiones con su problema, solución, implicación y prueba correspondiente. Prioriza una solución viable para estudiantes, sin sacrificar los invariantes críticos.
+No quiero una lista genérica de tecnologías ni una repetición más larga de `docs/planificacion/referencias/PLAN.md`. Quiero decisiones concretas, tablas, contratos, diagramas Mermaid y paquetes de trabajo listos para otra IA. Justifica decisiones con su problema, solución, implicación y prueba correspondiente. Prioriza una solución viable para estudiantes, sin sacrificar los invariantes críticos.
 
 Organiza el resultado en estos documentos dentro de `docs/planificacion/`:
 
