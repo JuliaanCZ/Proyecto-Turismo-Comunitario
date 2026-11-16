@@ -13,6 +13,8 @@
 5. Confirma con **tu propia cuenta** de Git, abre el PR con el informe del prompt y pide la revisión al revisor indicado. Quien revisa ejecuta `npm test` y el criterio de cierre antes de aprobar (`PLAN-MVP.md` §6.2).
 6. Si un prerrequisito falta o un contrato es incompatible, el prompt pide **detenerse y señalarlo** antes de improvisar. Nunca se parchea un bloque ajeno.
 
+Si tu bloque crea o modifica una pantalla, indica también a la IA que aplique `docs/mvp/diseno-visual.md` y reutilice la plantilla y el CSS compartidos de `B0.4`. Coordina sus cambios con el Integrante 4 (`PLAN-MVP.md` §6.1).
+
 Los bloques de integración (B0.4, B1.2, B1.3, B1.7, B1.10, B2.1 a B2.4, B3.3 y B3.5) incluyen una sección de **comprobaciones de integración** específica.
 
 ---
@@ -287,6 +289,7 @@ Archivos o módulos previstos:
 - `src/web/{accounts,offers,chat,panel}.routes.js` (routers vacíos montados)
 - `src/modules/{accounts,offers,chat}/index.js` (fábricas que lanzan `NOT_IMPLEMENTED`, con las firmas de §5.1), `src/realtime/gateway.js` (esqueleto)
 - `public/css/app.css`, `public/js/form-validate.js` (lee `data-schema`, valida al enviar y al salir del campo, escribe los errores en `[data-error-for]`)
+- `docs/mvp/diseno-visual.md` (guía breve propuesta al iniciar el bloque, PLAN-MVP §2.3)
 - `tests/integration/web-base.test.js`, regla `no-restricted-imports` en `eslint.config.js`
 Pasos, en orden:
 1. `createContainer(config, overrides)`: crea `db`, `clock`, `sessionEvents` (un `EventEmitter`) y los servicios; `overrides` permite inyectar servicios falsos en pruebas.
@@ -295,6 +298,8 @@ Pasos, en orden:
 4. `attachPrincipal(resolveSession)` lee la cookie `tc_session` (o `__Host-tc_session`) y fija `req.principal` (o `null`); `requireAuth`: páginas → 302 a `/ingreso?next=<ruta segura>`; `/api/*` → 401 JSON `UNAUTHENTICATED`; respuestas de `/panel` y `/api` con `Cache-Control: no-store`.
 5. `safeNext(raw)`: acepta solo rutas internas que empiezan por `/panel`, sin `//`, `\` ni caracteres de control, y confirma con `new URL(raw, APP_ORIGIN)` que el origen no cambia; si no, devuelve `/panel`.
 6. Plantilla: `layout.ejs` con `<title>` por página, enlace «Saltar al contenido», `<main>`, parcial de cabecera y parcial de campo con su mensaje de error; todo dato se imprime con `<%= %>`.
+   - Antes de escribir el CSS, propone una dirección visual para una PYME ecuatoriana que coordina experiencias de turismo comunitario. Transmite cercanía y confianza, con navegación clara para quienes gestionan ofertas y usan el chat. Usa una paleta contenida, tipografía legible y una jerarquía que destaque el nombre, el lugar y la fecha de las ofertas. Evita gradientes decorativos, tarjetas innecesarias y textos promocionales genéricos.
+   - Resume la propuesta en `docs/mvp/diseno-visual.md` para la revisión del PR y aplícala a la plantilla EJS y a `app.css`. Define colores, tipografía y espaciado, y estilos comunes de botones, formularios y mensajes. Comprueba contraste, foco visible y lectura en móvil en una vista de ejemplo. Las pantallas completas se construyen en sus bloques respectivos.
 7. Manejador de errores: `AppError` → página o JSON según la ruta; cualquier otro error → `INTERNAL_ERROR` sin trazas hacia el cliente.
 8. Esqueleto: `index.js` de cada módulo exporta `create<Modulo>Service(deps)` que lanza `NOT_IMPLEMENTED`; routers vacíos montados en `createApp`; reglas ESLint: `src/modules/**` no importa `express`, `socket.io`, `ejs`, `src/web` ni `src/realtime`; un módulo importa a otro solo por su `index.js`.
 9. Pruebas con servicios falsos inyectados.
@@ -1236,7 +1241,7 @@ Pasos, en orden:
 1. Menú único en todas las pantallas autenticadas: Inicio (`/panel`), Mis ofertas (`/panel/ofertas`), Chat (`/panel/chat`), contenedor `#chat-badge` para la insignia de B1.10, nombre del usuario y botón «Salir» (formulario `POST` con CSRF); en las públicas: Ingresar y Crear cuenta.
 2. `GET /` portada con enlaces; con sesión, «Ir a mi panel».
 3. `GET /panel` exige sesión y muestra el resumen con el número de ofertas propias (`offers.listOffers(principal, { pagina: 1 }).total`) y accesos al chat y a la creación de ofertas.
-4. Estilos responsivos y accesibles: contraste suficiente, foco visible, enlace «Saltar al contenido», un `<h1>` y un `<title>` propios por pantalla.
+4. Aplica `docs/mvp/diseno-visual.md` y el CSS compartido de B0.4 a portada, panel y menú. Comprueba contraste, foco visible, enlace «Saltar al contenido», adaptación a móvil y un `<h1>` y un `<title>` propios por pantalla.
 5. Páginas 404 y 403 con enlace de regreso.
 6. Pruebas con sesión simulada y servicios falsos.
 
@@ -1577,6 +1582,7 @@ Evidencia que debes guardar: Salida de las pruebas y registro de la comprobació
 Comprobaciones de integración (convergen varios integrantes):
 - Converge B1.5 (ofertas), B1.8 (presencia), B1.9 (panel), B1.10 (aviso) y B2.1 (sesión): ejecutar el recorrido contra `main` con todo integrado y anotar qué bloque falla ante cada error.
 - Repetir TM-OFE-09 con ingreso real y TM-CHAT-01 a 03 con cuentas reales.
+- Revisar en escritorio y móvil que el menú, los formularios, las ofertas y el chat usen la misma base visual. Comprobar navegación con teclado, foco visible, mensajes legibles y ausencia de desplazamiento horizontal en la página. Registrar el resultado y devolver a cada responsable los ajustes de su vista.
 
 CRITERIO DE CIERRE (idéntico al de PLAN-MVP.md §4, B2.2)
 El recorrido automatizado pasa; con la base sembrada, dos navegadores completan manualmente el recorrido de la demo sin errores; el menú lleva a todas las pantallas; el seed es idempotente y no contiene credenciales reales.

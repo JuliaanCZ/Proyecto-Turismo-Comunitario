@@ -211,6 +211,8 @@ Las reglas se comprueban con ESLint (`no-restricted-imports`, B0.4). La separaci
 
 ### 2.3 Pantallas y rutas
 
+**Guía visual compartida.** Al empezar `B0.4`, el Integrante 4 pide una propuesta visual breve para una PYME ecuatoriana de turismo comunitario y la comparte en el PR del bloque para revisión. La propuesta prioriza cercanía y confianza, y permite localizar de un vistazo el nombre, el lugar y la fecha de cada oferta. El Integrante 4 registra la dirección en `docs/mvp/diseno-visual.md` y la aplica al CSS y a la plantilla EJS. La guía cubre paleta con contraste, tipografía, espaciado, botones, formularios, tarjetas donde aporten y estados de error y vacío, con reglas breves para móvil y escritorio. Las pantallas de cuentas, ofertas y chat reutilizan esa base. `B1.9` la aplica a la portada, el panel y el menú. `B2.2` revisa el conjunto con las pantallas integradas.
+
 | Ruta | Pantalla | Acceso | Módulo | Bloque |
 |---|---|---|---|---|
 | `/salud` | Estado (`{"status":"ok"}`) | Público | — | B0.1 |
@@ -645,6 +647,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 - `src/web/{accounts,offers,chat,panel}.routes.js` (routers vacíos montados)
 - `src/modules/{accounts,offers,chat}/index.js` (fábricas que lanzan `NOT_IMPLEMENTED`, con las firmas de §5.1), `src/realtime/gateway.js` (esqueleto)
 - `public/css/app.css`, `public/js/form-validate.js` (lee `data-schema`, valida al enviar y al salir del campo, escribe los errores en `[data-error-for]`)
+- `docs/mvp/diseno-visual.md` (guía breve propuesta al iniciar el bloque, §2.3)
 - `tests/integration/web-base.test.js`, regla `no-restricted-imports` en `eslint.config.js`
 
 **Entradas, salidas y reglas compartidas.**
@@ -659,6 +662,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 4. `attachPrincipal(resolveSession)` lee la cookie `tc_session` (o `__Host-tc_session`) y fija `req.principal` (o `null`); `requireAuth`: páginas → 302 a `/ingreso?next=<ruta segura>`; `/api/*` → 401 JSON `UNAUTHENTICATED`; respuestas de `/panel` y `/api` con `Cache-Control: no-store`.
 5. `safeNext(raw)`: acepta solo rutas internas que empiezan por `/panel`, sin `//`, `\` ni caracteres de control, y confirma con `new URL(raw, APP_ORIGIN)` que el origen no cambia; si no, devuelve `/panel`.
 6. Plantilla: `layout.ejs` con `<title>` por página, enlace «Saltar al contenido», `<main>`, parcial de cabecera y parcial de campo con su mensaje de error; todo dato se imprime con `<%= %>`.
+   - Define en `app.css` las variables de color, tipografía y espaciado de la guía, y los estilos compartidos para botones, formularios, tarjetas y mensajes. Comprueba en una vista de ejemplo que el foco sea visible y que el contenido se adapte a una pantalla estrecha.
 7. Manejador de errores: `AppError` → página o JSON según la ruta; cualquier otro error → `INTERNAL_ERROR` sin trazas hacia el cliente.
 8. Esqueleto: `index.js` de cada módulo exporta `create<Modulo>Service(deps)` que lanza `NOT_IMPLEMENTED`; routers vacíos montados en `createApp`; reglas ESLint: `src/modules/**` no importa `express`, `socket.io`, `ejs`, `src/web` ni `src/realtime`; un módulo importa a otro solo por su `index.js`.
 9. Pruebas con servicios falsos inyectados.
@@ -1246,7 +1250,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 1. Menú único en todas las pantallas autenticadas: Inicio (`/panel`), Mis ofertas (`/panel/ofertas`), Chat (`/panel/chat`), contenedor `#chat-badge` para la insignia de B1.10, nombre del usuario y botón «Salir» (formulario `POST` con CSRF); en las públicas: Ingresar y Crear cuenta.
 2. `GET /` portada con enlaces; con sesión, «Ir a mi panel».
 3. `GET /panel` exige sesión y muestra el resumen con el número de ofertas propias (`offers.listOffers(principal, { pagina: 1 }).total`) y accesos al chat y a la creación de ofertas.
-4. Estilos responsivos y accesibles: contraste suficiente, foco visible, enlace «Saltar al contenido», un `<h1>` y un `<title>` propios por pantalla.
+4. Aplica la guía de §2.3 y los estilos compartidos de B0.4 en portada, panel y menú. Comprueba contraste, foco visible, enlace «Saltar al contenido», adaptación a móvil y un `<h1>` y un `<title>` propios por pantalla.
 5. Páginas 404 y 403 con enlace de regreso.
 6. Pruebas con sesión simulada y servicios falsos.
 
@@ -1451,6 +1455,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 **Comprobaciones de integración.**
 - Converge B1.5 (ofertas), B1.8 (presencia), B1.9 (panel), B1.10 (aviso) y B2.1 (sesión): ejecutar el recorrido contra `main` con todo integrado y anotar qué bloque falla ante cada error.
 - Repetir TM-OFE-09 con ingreso real y TM-CHAT-01 a 03 con cuentas reales.
+- Revisar en escritorio y móvil que el menú, los formularios, las ofertas y el chat usen la misma base visual. Recorrer las pantallas con teclado, comprobar foco visible, mensajes legibles y ausencia de desplazamiento horizontal en la página. Registrar el resultado junto a la comprobación manual y asignar los ajustes de cada vista a su responsable.
 
 **Criterio de aceptación.** El recorrido automatizado pasa; con la base sembrada, dos navegadores completan manualmente el recorrido de la demo sin errores; el menú lleva a todas las pantallas; el seed es idempotente y no contiene credenciales reales.
 
@@ -1914,7 +1919,7 @@ Puede empezar sin esperar a nadie: B0.1. Revisa: B0.3, B1.2, B1.5, B1.8, B1.11, 
 | `src/config.js`, `.env.example` | Integrante 4 (B0.1); luego cada bloque añade su variable acordándola | Una variable nueva exige actualizar ambos |
 | `db/migrations/*` y `src/shared/migrate.js` | Integrante 4 el ejecutor; cada módulo su rango | Número de archivo dentro del rango del módulo; nunca se edita una migración integrada |
 | `src/shared/validation`, `errors.js`, `clock.js`, `time.js` | Integrante 1 | Cambio de contrato → PR con la etiqueta `contrato` y los dos afectados como revisores |
-| `src/web/views/layout.ejs`, `partials/header.ejs`, `public/css/app.css`, `public/js/form-validate.js` | Integrante 4 | Los demás solo añaden su vista o parcial |
+| `src/web/views/layout.ejs`, `partials/header.ejs`, `public/css/app.css`, `public/js/form-validate.js`, `docs/mvp/diseno-visual.md` | Integrante 4 | Los demás aplican la guía de §2.3 en sus vistas y coordinan con el Integrante 4 los cambios compartidos |
 | `src/realtime/gateway.js`, `session-guard.js` | Integrante 3 | Los hooks de C-EVT no cambian de firma sin avisar al Integrante 4 |
 | `tests/helpers/*` | Integrante 3 | Se amplían sin romper las firmas existentes |
 | `eslint.config.js`, `README.md` | Integrante 4 hasta F2; B3.3 (Integrante 1) al final | — |
