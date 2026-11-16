@@ -108,7 +108,7 @@ No se implementa ninguna de estas funciones. Cuando una situación las necesitar
 | RF-09 | Revisión: `DRAFT` → `IN_REVIEW` → `APPROVED` o `CHANGES_REQUESTED` con motivo. | PLAN F2 | O | offers | P2-03 | El operador asignado decide; devolver exige motivo. | T-OFE-05, 06, 09 |
 | RF-10 | Versiones aprobadas inmutables; editar abre otra versión y conserva la publicación anterior hasta aprobar. | PLAN F2 | O | offers | P2-03 | La versión pública no cambia hasta que se aprueba la nueva. | T-OFE-11, 12, 13, 18 |
 | RF-11 | Eliminar un borrador inédito; archivar una oferta publicada conservando su historial. | PLAN F2 | O | offers | P2-02, P2-04 | Eliminar es físico solo si nunca se publicó; archivar conserva versiones y reservas. | T-OFE-14, 16 |
-| RF-12 | El operador suspende ventas; el administrador archiva por moderación con motivo. | PLAN F2 | O | offers | P2-04 | Suspender o archivar impide nuevas retenciones y mantiene las entradas emitidas. | T-OFE-15, 16, T-RES-13 |
+| RF-12 | El operador suspende ventas; el administrador archiva por moderación con motivo. | PLAN F2 | O | offers | P2-04 | Suspender o archivar impide nuevas retenciones y mantiene las entradas emitidas. | T-OFE-15, 16, T-RES-13, T-ENT-03 (03f), T-ENT-06 (06a, 06b) |
 | RF-13 | Catálogo público `/ofertas` y detalle `/ofertas/[id]`. | PLAN F2 | O | offers | P2-05 | Muestra las condiciones de la versión aprobada vigente. | T-OFE-17, 20 |
 | RF-14 | Validación de campos en cliente y servidor con errores por campo. | PLAN F2 | O | offers | P2-02 | Cada regla incumplida devuelve el error junto a su campo. | T-OFE-01, 24 |
 | RF-15 | Reserva grupal de 1 a 10 asistentes nominales. | PLAN §1, F3 | O | reservations | P3-01, P3-02 | Se crea una reserva `HELD` con sus asistentes en una transacción. | T-RES-01, 02, 19 |
@@ -121,7 +121,7 @@ No se implementa ninguna de estas funciones. Cuando una situación las necesitar
 | RF-22 | El GAD consulta únicamente datos agregados de sus ofertas. | PLAN F3 | O | reservations | P3-03 | Solo conteos; ningún nombre ni fecha de nacimiento. | T-RES-14 |
 | RF-23 | Fecha y atracción fijas desde la primera reserva; capacidad nunca inferior a lo comprometido. | PLAN F3 | O | offers | P3-03 | Aprobar una versión que lo incumpla se rechaza. | T-OFE-21, 22, 23, T-RES-17 |
 | RF-24 | Pago con PayPal Sandbox Orders v2 tras un adaptador `createOrder` / `captureOrder` / `getOrder`. | PLAN F4 | O | payments | P4-01, P4-04, P4-06 | Una compra se completa en Sandbox con el total persistido. | T-PAG-01, 21, 24 |
-| RF-25 | Adaptador determinista para pruebas automatizadas. | PLAN F4 | O | payments | P4-01 | Reproduce todos los fallos de la matriz de 08 §6. | T-PAG-01 a 23 |
+| RF-25 | Adaptador determinista para pruebas automatizadas. | PLAN F4 | O | payments | P4-01 | Reproduce todos los fallos de la matriz de 08 §4. | T-PAG-01 a 23 |
 | RF-26 | La pantalla de retorno muestra el estado local; la captura la pide el servidor. | PLAN F4 | O | payments | P4-04 | Volver del navegador no cambia el estado por sí mismo. | T-PAG-04, 05, 18 |
 | RF-27 | Webhook en `/api/pagos/paypal/webhook` verificado e idempotente. | PLAN F4 | O | payments | P4-05 | Firma inválida no produce cambios; repetición no duplica efectos. | T-PAG-07, 08, 22, 26 |
 | RF-28 | Captura y webhook usan la misma función de confirmación. | PLAN F4 | O | payments | P4-03 | Una sola confirmación aunque lleguen a la vez. | T-PAG-05, 06 |
@@ -377,4 +377,4 @@ Reglas:
 | Conteos (confirmados, retenidos, ingresos) | GAD, operador, administrador | En el detalle privado de la oferta. | Datos nominales. |
 | Token QR | Comprador | Imagen o código bajo demanda. | URL, registros, auditoría, otros roles. |
 
-La fecha de nacimiento no se guarda si la versión contratada no exige edad mínima (RS-25) y se propone anularla tras la actividad (D-62, 06 §9).
+La fecha de nacimiento no se guarda si la versión contratada no exige edad mínima (RS-25) y se propone anularla tras la actividad (D-62, 06 §4.1; propuesta sin paquete: `P3-04`, ver 10 §5).

@@ -2411,7 +2411,7 @@ más `AuditEvent` `ticket.check_in` `SUCCESS` en la misma transacción (`offerId
 | 4 | `UPDATE "Session" SET "revokedAt" = $now, "revokeReason" = 'PASSWORD_RESET' WHERE "userId" = $u AND "revokedAt" IS NULL` | — |
 | 5 | `AuditEvent` `password.reset` (`sessionsRevoked`) | — |
 
-Tras el `COMMIT`: cerrar sockets (`disconnectSessions(userId)`) y enviar el correo de aviso (fuera de transacción; si falla se registra, no revierte). **No inicia sesión.** Errores: `TOKEN_INVALID`, `VALIDATION_ERROR` (contraseña), `RATE_LIMITED` (06), `BUSY_TRY_AGAIN`. Dos consumos simultáneos: se serializan en el bloqueo de `User`; el segundo ve `usedAt` y recibe `TOKEN_INVALID`; **un** cambio de contraseña (INV-13, T-CTA-13).
+Tras el `COMMIT`: cerrar sockets (`disconnectUser(userId, 'password-reset')`, puente de 02 §7.2) y enviar el correo de aviso (fuera de transacción; si falla se registra, no revierte). **No inicia sesión.** Errores: `TOKEN_INVALID`, `VALIDATION_ERROR` (contraseña), `RATE_LIMITED` (06), `BUSY_TRY_AGAIN`. Dos consumos simultáneos: se serializan en el bloqueo de `User`; el segundo ve `usedAt` y recibe `TOKEN_INVALID`; **un** cambio de contraseña (INV-13, T-CTA-13).
 
 *Carrera con un ingreso en curso:* insertar una `Session` toma `FOR KEY SHARE` sobre `User` (clave foránea), que choca con nuestro `FOR UPDATE`; el servicio de ingreso, dentro de la transacción que crea la sesión, comprueba que `passwordChangedAt` no cambió desde que verificó la contraseña. Así no sobrevive una sesión creada con la clave antigua. *La solicitud de recuperación* (crear el token con `INSERT … ON CONFLICT ("userId") DO UPDATE`, 03 §3.1) sigue el mismo orden y no se desarrolla aquí.
 
