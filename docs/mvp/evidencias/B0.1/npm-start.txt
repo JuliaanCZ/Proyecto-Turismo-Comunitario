@@ -1,0 +1,5 @@
+
+> turismo-comunitario@0.1.0 start
+> node --env-file=.env server.js
+
+Servidor de turismo comunitario en el puerto 64942.

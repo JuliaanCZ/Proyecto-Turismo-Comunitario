@@ -1,0 +1,16 @@
+
+> turismo-comunitario@0.1.0 test
+> node --test
+
+✔ TM-BASE-01: GET /salud devuelve 200 y el estado esperado (346.7117ms)
+✔ TM-BASE-02: Express y el transporte WebSocket responden en el mismo puerto (228.9571ms)
+✔ C-ENV: conserva los valores de desarrollo y valida el número opcional (6.095ms)
+✔ C-ENV: producción exige HTTPS, cookies seguras y un secreto propio (1.5136ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8303.3664

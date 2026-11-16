@@ -9,7 +9,23 @@ Proyecto académico para una PYME que coordina experiencias de turismo comunitar
 - [Reparto y secuencia en Excel](mvp-primer-bimestre/Reparto-y-secuencia-MVP.xlsx). Vista por integrante y orden de arranque.
 - [Encargo de planificación](mvp-primer-bimestre/PROMPT-MVP.md). Instrucciones usadas para preparar el plan y los prompts.
 
-El Integrante 4 inicia el bloque B0.1 desde la raíz del repositorio. Ese bloque prepara el servidor mínimo y completa aquí las instrucciones de ejecución. Los siguientes bloques se toman en el orden de sus dependencias y se integran mediante PR.
+## Ejecutar la base del monolito
+
+Usa la versión de Node.js indicada en `.nvmrc` (rama 24 LTS) y npm. Desde la raíz del repositorio:
+
+```powershell
+npm ci
+if (-not (Test-Path -LiteralPath '.env')) {
+    Copy-Item -LiteralPath '.env.example' -Destination '.env'
+}
+npm start
+```
+
+En Bash, el paso equivalente para crear `.env` es `test -f .env || cp .env.example .env`. El ejemplo contiene valores ficticios para desarrollo. Configura secretos propios y HTTPS antes del despliegue. Si aún no tienes un número comercial autorizado para la demo, deja `WHATSAPP_BOOKING_NUMBER` vacío.
+
+Con el servidor en marcha, abre `http://localhost:3000/salud`. Debe responder `{"status":"ok"}`. En otra terminal, comprueba el transporte del mismo servidor con `node scripts/check-ws.js http://localhost:3000`. Ajusta ambas URLs si cambias el puerto.
+
+Ejecuta `npm test` para las pruebas automatizadas y `npm run lint` para revisar el JavaScript. La [evidencia de B0.1](docs/mvp/evidencias/B0.1/) guarda los resultados de la comprobación. Los siguientes bloques se toman en el orden de sus dependencias y se integran mediante PR.
 
 ## Plan general de referencia
 
