@@ -64,7 +64,7 @@ Pasos, en orden:
 1. Inspeccionar el repositorio y crear la rama `bloque/B0.1-base`. No modificar `docs/planificacion/referencias/PLAN.md`, `docs/planificacion/` ni `mvp-primer-bimestre/`.
 2. Inicializar `package.json` con módulos ES, `engines.node` `>=24` y `.nvmrc` con la versión LTS instalada (24.22.3 en el equipo donde se redactó este plan).
 3. Instalar ejecución: `express`, `ejs`, `socket.io`, `better-sqlite3`, `argon2`, `helmet`, `cookie`; desarrollo: `socket.io-client`, `supertest`, `eslint`. Fijar versiones exactas en el lockfile. Comprobar que `better-sqlite3` y `argon2` instalan en Windows sin compilar a mano; si alguno falla, registrar el error exacto y aplicar la alternativa de §2.6 (`node:sqlite` tras la capa de datos; `bcryptjs`) como decisión nueva.
-4. `src/config.js`: leer y validar **todas** las variables de C-ENV (§5.1) con valores por defecto de desarrollo; fallar nombrando la variable inválida sin imprimir su valor. El arranque usa `node --env-file=.env server.js`.
+4. `src/config.js`: leer y validar **todas** las variables de C-ENV (§5.1) con valores por defecto de desarrollo; fallar nombrando la variable inválida sin imprimir su valor. `WHATSAPP_BOOKING_NUMBER` queda opcional, vacío en `.env.example` y validado como número internacional en dígitos cuando se configure. El arranque usa `node --env-file=.env server.js`.
 5. `src/server.js`: `createHttpServer(app)` crea `http.Server` y le adjunta `new Server(httpServer)` de Socket.IO; devuelve `{ httpServer, io }`. `server.js` lo usa con una app Express provisional (`GET /salud` → `{"status":"ok"}`, `GET /` → texto).
 6. `scripts/check-ws.js <url>`: conecta con `socket.io-client` forzando `transports: ['websocket']` e imprime el transporte, `connect` o `connect_error` (con su código) y termina con código de salida distinto de 0 si no hubo respuesta.
 7. `.env.example` con todas las claves de C-ENV y valores ficticios; `.gitignore` con `node_modules/`, `.env`, `data/`, `*.sqlite*`.
@@ -137,9 +137,9 @@ Archivos o módulos previstos:
 Pasos, en orden:
 1. `openDb(file)` con `better-sqlite3`: `PRAGMA journal_mode = WAL` (en archivo), `foreign_keys = ON`, `busy_timeout = 5000`; `':memory:'` para pruebas. `withTransaction(db, fn)` abre `BEGIN IMMEDIATE`, confirma o revierte y devuelve el resultado de `fn`.
 2. Migrador: aplica `db/migrations/*.sql` en orden lexicográfico, una transacción por archivo, y registra `version`, `checksum` (SHA-256 del contenido) y `applied_at` en `schema_migrations`; reejecutar no cambia nada; si un archivo ya aplicado cambió, falla con un mensaje claro.
-3. Escribir el DDL de §2.4 respetando la numeración reservada: `001` base (`schema_migrations`), `010` cuentas (`users`, `sessions`, `password_reset_tokens`, `mail_outbox`), `020` ofertas (`offers`), `030` chat (`chat_messages`). Cambios posteriores usan números nuevos dentro del rango del módulo (011, 012…; 021…; 031…).
+3. Escribir el DDL de §2.4 respetando la numeración reservada: `001` base (`schema_migrations`), `010` cuentas (`users`, `sessions`, `password_reset_tokens`, `mail_outbox`), `020` ofertas (`offers`, `offer_photos`), `030` chat (`chat_messages`). Cambios posteriores usan números nuevos dentro del rango del módulo (011, 012…; 021…; 031…).
 4. Restricciones `CHECK` de longitudes y rangos (en SQLite `length()` cuenta caracteres Unicode), `CHECK` de las 24 provincias, claves foráneas con `ON DELETE` explícito y marcas de tiempo `INTEGER` en milisegundos UTC.
-5. Índices: `idx_offers_owner_province_starts (owner_id, province, starts_at, id)`, `idx_offers_owner_starts (owner_id, starts_at, id)`, `idx_chat_room_id (room, id)`, `idx_sessions_user (user_id)` y los únicos de §2.4.
+5. Índices: `idx_offers_owner_province_starts (owner_id, province, starts_at, id)`, `idx_offers_owner_starts (owner_id, starts_at, id)`, `idx_offers_public_starts (is_published, starts_at, id)`, `idx_chat_room_id (room, id)`, `idx_sessions_user (user_id)` y los únicos de §2.4.
 6. `scripts/migrate.js` toma `DATABASE_FILE` de `config`, crea la carpeta `data/` si falta y añade `db:migrate` a `package.json`.
 7. Redactar `docs/mvp/esquema.md`: una tabla por entidad con módulo propietario, columnas, restricciones, índices y consulta a la que sirve cada índice, más un diagrama ER (Mermaid).
 8. Pruebas sobre `:memory:` y ejecución real de `npm run db:migrate` sobre un archivo nuevo.
@@ -159,11 +159,12 @@ Pruebas que debes escribir y hacer pasar:
 - TM-DB-03 — claves foráneas activas: insertar una oferta con `owner_id` inexistente falla.
 - TM-DB-04 — `UNIQUE (author_id, client_message_id)` y `UNIQUE (email)` rechazan duplicados.
 - TM-DB-05 — los `CHECK` rechazan capacidad 0, título de 4 caracteres, texto de chat vacío y provincia desconocida.
+- TM-DB-05a — una sola foto por oferta, límites de formato, longitud y tamaño en `offer_photos`, y borrado en cascada al eliminar la oferta.
 Comando previsto (no verificado hasta que lo ejecutes): `node --test tests/unit/db-migraciones.test.js` · `npm run db:migrate` sobre un archivo nuevo.
 Evidencia que debes guardar: Salida de `db:migrate` y de la prueba; `docs/mvp/esquema.md` con el diagrama ER (prevista).
 
 CRITERIO DE CIERRE (idéntico al de PLAN-MVP.md §4, B0.2)
-`npm run db:migrate` sobre un archivo nuevo crea las seis tablas del MVP más `schema_migrations`, con sus índices; una segunda ejecución no cambia nada; las pruebas de restricciones pasan; `docs/mvp/esquema.md` indica el módulo propietario de cada tabla y la consulta que justifica cada índice.
+`npm run db:migrate` sobre un archivo nuevo crea las siete tablas del MVP más `schema_migrations`, con sus índices; una segunda ejecución no cambia nada; las pruebas de restricciones pasan; `docs/mvp/esquema.md` indica el módulo propietario de cada tabla y la consulta que justifica cada índice.
 
 REGLAS COMUNES
 - Antes de modificar nada, inspecciona el repositorio (git status, estructura de carpetas, package.json, migraciones, pruebas existentes) y lee los documentos indicados. No supongas que algo existe: compruébalo.
@@ -514,7 +515,7 @@ Pasos, en orden:
 1. Releer la fila 2 de la rúbrica («completos, priorizados y consistentes con lo implementado»).
 2. Redactar HU-01 Registro, HU-02 Ingreso, HU-03 Recuperar clave, HU-04 Salir, HU-05 Panel principal, HU-06 Crear oferta, HU-07 Listar con filtro por provincia y paginación, HU-08 Ver detalle por ID, HU-09 Editar, HU-10 Eliminar con confirmación, HU-11 Enviar y recibir mensajes, HU-12 Ver historial, HU-13 Ver usuarios conectados, HU-14 Aviso de nuevo mensaje en el panel y HU-15 Conexión WebSocket autenticada.
 3. Para cada una: «Como… quiero… para…», criterios de aceptación observables, prioridad, bloque previsto (§4) y prueba prevista (`TM-…`). Todas son obligatorias según el Word; la prioridad (Alta o Media) ordena el trabajo y el tiempo de demo por el peso de su ítem de la rúbrica: Alta para CRUD (3,0 puntos) y chat (2,5), Media para el resto; justificarla en una línea.
-4. Añadir «Fuera del MVP» con lo aplazado: reservas, pagos, entradas QR, control de ingreso, revisión de ofertas y roles, y el motivo.
+4. Distinguir el catálogo con foto y el contacto por WhatsApp de lo aplazado: registro interno de reservas, pagos, entradas QR, control de ingreso, revisión de ofertas y roles.
 5. Dejar una columna «Estado» para completarla en B3.2.
 
 CONTRATOS QUE DEBES CONSERVAR O CREAR
@@ -553,7 +554,7 @@ INFORME FINAL (breve; pégalo en la descripción del PR)
 
 ## Fase F1 — Módulos en paralelo
 
-Cierre de fase: Cada módulo cumple el criterio de aceptación de sus bloques y está integrado en `main`: se puede registrar, ingresar, salir, recuperar la clave y proteger `/panel`; el CRUD de ofertas propias funciona con filtro, paginación y confirmación; dos sockets autenticados intercambian mensajes persistentes, ven la presencia y reciben el aviso adicional; el despliegue con HTTPS y WSS está verificado o declarado pendiente (PM-03); `npm test` y `npm run lint` pasan con todo integrado.
+Cierre de fase: Cada módulo cumple el criterio de aceptación de sus bloques y está integrado en `main`: se puede registrar, ingresar, salir, recuperar la clave y proteger `/panel`; el CRUD privado funciona con filtro, paginación y confirmación, y el catálogo público muestra ofertas publicadas con foto y contacto por WhatsApp cuando se configura; dos sockets autenticados intercambian mensajes persistentes, ven la presencia y reciben el aviso adicional; el despliegue con HTTPS y WSS está verificado o declarado pendiente (PM-03); `npm test` y `npm run lint` pasan con todo integrado.
 
 | Bloque | Título | Responsable | Revisor | Prerrequisitos | Orden de ejecución / paralelo |
 |---|---|---|---|---|---|
@@ -832,21 +833,21 @@ PRERREQUISITOS (deben estar integrados en main antes de empezar)
 Comprueba con git log, la estructura de carpetas y la ejecución de las pruebas que existen y funcionan. Si falta alguno, detente: indica qué falta y no improvises un contrato incompatible.
 
 IMPLEMENTA
-Resultado esperado: El servicio `offers` está completo y probado sin HTTP: crear, listar (filtro por provincia, 10 por página, orden estable), consultar por ID, actualizar y eliminar ofertas propias; cualquier acceso a una oferta ajena responde `NOT_FOUND`.
+Resultado esperado: El servicio `offers` gestiona el CRUD privado, la foto y la publicación por el propietario, y expone solo ofertas publicadas, futuras y con foto para el catálogo. Todo se comprueba sin HTTP.
 Archivos o módulos previstos:
 - `src/modules/offers/index.js`, `domain/schemas.js`, `domain/provinces.js`, `domain/pagination.js`, `service/offers.service.js`, `data/offers.repo.js`
 - `tests/unit/ofertas-validacion.test.js`, `tests/integration/ofertas-servicio.test.js`
 Pasos, en orden:
 1. `provinces.js`: las 24 provincias con código y etiqueta (lista en `docs/planificacion/03` §3.0), `PROVINCES` y `provinceLabel(code)`.
 2. `schemas.js` (C-VAL): `title` 5–120, `description` 20–2000, `province` (enum), `locationText` 5–200, `startsAt` (`YYYY-MM-DDTHH:mm`, hora de Ecuador), `capacity` entero 1–1000. La fecha debe ser futura al crear y al cambiarla; la comprueba el servicio con el reloj inyectado.
-3. `offers.repo.js`: sentencias preparadas `insert`, `selectByIdAndOwner`, `listByOwner(ownerId, province|null, limit, offset)`, `countByOwner(ownerId, province|null)`, `updateByIdAndOwner` y `deleteByIdAndOwner`; todas con parámetros, sin concatenar texto.
+3. `offers.repo.js`: conserva las sentencias preparadas para gestión privada y añade consultas parametrizadas para foto y catálogo según C-OFE. No leas bytes de fotos al listar.
 4. Servicio: `createOffer(principal, input)`, `listOffers(principal, { provincia, pagina })` → `{ items, page, pageSize: 10, total, totalPages, provincia }`, `getOffer(principal, id)`, `updateOffer(principal, id, input)` y `deleteOffer(principal, id, { confirm })`; `deleteOffer` exige `confirm === true` (si no, `VALIDATION_ERROR`).
 5. Reglas del listado: orden `starts_at ASC, id ASC`; `pagina` inválida o menor que 1 → 1; mayor que la última → la última; `provincia` desconocida se ignora; solo ofertas del propietario.
-6. Propiedad: toda consulta lleva `owner_id`; un `id` ajeno o inexistente produce el mismo `NOT_FOUND`.
+6. Privado: cada operación restringe por `owner_id`; un ID ajeno o inexistente produce el mismo `NOT_FOUND`. Aplica C-OFE para publicar, reemplazar la foto y leer el catálogo. Las consultas públicas usan una proyección explícita sin dueño ni BLOB, con filtro de publicada, futura y con foto; los bytes se leen solo para servir una foto concreta. Usa una transacción para comprobar propiedad y actualizar foto o publicación.
 7. Pruebas con el arnés de B0.5 y sesión simulada.
 
 CONTRATOS QUE DEBES CONSERVAR O CREAR
-- API de `offers` (C-MOD, §5.1): las cinco operaciones y su DTO `{ id, title, description, province, provinceLabel, locationText, startsAt, startsAtLocal, capacity, createdAt, updatedAt }`.
+- API de `offers` (C-MOD, §5.1): el CRUD y el DTO privado `{ id, title, description, province, provinceLabel, locationText, startsAt, startsAtLocal, capacity, isPublished, hasPhoto, createdAt, updatedAt }`, más las operaciones de foto y catálogo del contrato C-OFE.
 - De otro módulo solo usa `principal.userId`; no consulta `users`.
 - Códigos: `VALIDATION_ERROR`, `NOT_FOUND`.
 
@@ -863,6 +864,7 @@ Pruebas que debes escribir y hacer pasar:
 - TM-OFE-06 — eliminar sin `confirm` → `VALIDATION_ERROR`; con `confirm: true` borra.
 - TM-OFE-07 — `provincia = "' OR 1=1 --"` se ignora; un título con comillas se guarda literal.
 - TM-OFE-08 — `EXPLAIN QUERY PLAN` del listado filtrado usa `idx_offers_owner_province_starts`.
+- TM-OFE-08a — una oferta nace privada, publicar sin foto falla, con foto válida aparece en el catálogo, y despublicar o llegar a la fecha de inicio la oculta. El reemplazo por el dueño conserva una sola foto, un tercero no puede reemplazarla y eliminar la oferta elimina su foto.
 Comando previsto (no verificado hasta que lo ejecutes): `node --test tests/unit/ofertas-validacion.test.js tests/integration/ofertas-servicio.test.js`
 Evidencia que debes guardar: Salida de las pruebas y del plan de consulta (prevista).
 Comprobaciones de integración (convergen varios integrantes):
@@ -870,7 +872,7 @@ Comprobaciones de integración (convergen varios integrantes):
 - Con B0.3: los mensajes de `validate` llegan al servicio sin reescribirse.
 
 CRITERIO DE CIERRE (idéntico al de PLAN-MVP.md §4, B1.4)
-Las ocho pruebas pasan; ningún acceso a una oferta ajena tiene éxito ni revela si existe; el listado filtrado usa el índice previsto; la capa de datos usa solo sentencias preparadas.
+Las pruebas pasan. La gestión de ofertas ajenas falla, el catálogo cumple C-OFE, el listado privado filtrado usa el índice previsto y la capa de datos usa sentencias preparadas.
 
 REGLAS COMUNES
 - Antes de modificar nada, inspecciona el repositorio (git status, estructura de carpetas, package.json, migraciones, pruebas existentes) y lee los documentos indicados. No supongas que algo existe: compruébalo.
@@ -911,10 +913,10 @@ PRERREQUISITOS (deben estar integrados en main antes de empezar)
 Comprueba con git log, la estructura de carpetas y la ejecución de las pruebas que existen y funcionan. Si falta alguno, detente: indica qué falta y no improvises un contrato incompatible.
 
 IMPLEMENTA
-Resultado esperado: El usuario autenticado gestiona sus ofertas desde `/panel/ofertas`: listado paginado con filtro por provincia, alta y edición con validación en navegador y servidor, detalle por ID y eliminación con página de confirmación.
+Resultado esperado: El usuario autenticado gestiona sus ofertas en `/panel/ofertas`, con filtro y paginación, alta, detalle, edición y eliminación con confirmación. Puede subir o reemplazar la foto y publicar la oferta. Un visitante ve las ofertas publicadas en `/ofertas`, abre el detalle con foto y puede iniciar una consulta por WhatsApp.
 Archivos o módulos previstos:
 - `src/web/offers.routes.js`
-- `src/web/views/offers/{lista,detalle,formulario,eliminar}.ejs`
+- `src/web/views/offers/{lista,detalle,formulario,eliminar}.ejs` y vistas públicas de lista y detalle; módulo de validación de imágenes en la capa HTTP y `public/js/oferta-foto.js`.
 - `tests/integration/ofertas-http.test.js`
 Pasos, en orden:
 1. Rutas protegidas con `requireAuth`: `GET /panel/ofertas?provincia=&pagina=`, `GET /panel/ofertas/nueva`, `POST /panel/ofertas`, `GET /panel/ofertas/:id`, `GET /panel/ofertas/:id/editar`, `POST /panel/ofertas/:id/editar`, `GET /panel/ofertas/:id/eliminar` (confirmación) y `POST /panel/ofertas/:id/eliminar`. Un `:id` no entero responde 404.
@@ -923,25 +925,29 @@ Pasos, en orden:
 4. Detalle con todos los atributos y acciones Editar, Eliminar y Volver al listado.
 5. Eliminar: página que repite el título y pide confirmar; `POST` sin `confirm` → 422; con `confirm=on` y CSRF la ruta llama al servicio con `confirm: true` → 302 al listado con `?aviso=eliminada`.
 6. Avisos solo por `?aviso=creada|actualizada|eliminada` (lista blanca). Todo texto del usuario con `<%= %>`.
-7. Pruebas con sesión simulada (B0.5) y captura de pantallas.
+7. Integra la subida de C-OFE con `FormData` y `x-csrf-token` desde JavaScript externo. Usa solo las dependencias de multipart y validación de imagen necesarias, con límites aplicados antes de persistir. Decodifica con límite de 12 megapíxeles y vuelve a codificar sin metadatos. Valida también el formato y el tamaño final antes de guardar. Si la carga falla, conserva la foto anterior. El formulario debe mostrar errores accesibles y texto alternativo descriptivo.
+8. Añade control de publicación, indicador de borrador y vistas públicas con foto y botón «Consultar reserva por WhatsApp» en el detalle. Documenta que se abre una conversación y que la PYME confirma el cupo por ese canal. Cuando falte `WHATSAPP_BOOKING_NUMBER`, muestra el estado previsto en C-ENV.
+9. Pruebas con sesión simulada (B0.5), archivos de prueba y capturas de ambas vistas.
 
 CONTRATOS QUE DEBES CONSERVAR O CREAR
 - Usa únicamente la API de `offers` y `res.locals.csrfToken`; no cambia el servicio ni el esquema.
 - Layout y cabecera son de B0.4/B1.9: este bloque no los modifica.
-- Rutas y parámetros (`provincia`, `pagina`) tal como figuran en §2.3.
+- Rutas y parámetros (`provincia`, `pagina`) como en §2.3. Usa el contrato C-OFE para visibilidad pública, fotos y WhatsApp.
 
 NO HAGAS (fuera de este bloque)
-Cambios en el servicio de ofertas, catálogo público de ofertas ajenas y cualquier función de reservas.
+Cambios al esquema o al servicio de B1.4, galerías, reservas internas, cupos en tiempo real, automatización de WhatsApp y pagos.
 
 COMPRUEBA
 Pruebas que debes escribir y hacer pasar:
 - TM-OFE-09 — ciclo completo por HTTP: alta → listado → detalle por ID → edición → eliminación con confirmación.
 - TM-OFE-10 — un `POST` inválido devuelve 422 con el mensaje junto al campo y conserva los valores.
-- TM-OFE-11 — sin sesión, todas las rutas de ofertas redirigen a `/ingreso`.
+- TM-OFE-11 — sin sesión, las rutas privadas de ofertas exigen autenticación. El catálogo y el detalle publicados son públicos.
 - TM-OFE-12 — la oferta de otro usuario devuelve 404 en detalle, edición y eliminación.
 - TM-OFE-13 — un título `<script>alert(1)</script>` aparece escapado en lista y detalle.
 - TM-OFE-14 — con 25 ofertas y filtro, se muestran 10 por página y los enlaces de paginación conservan la provincia.
 - TM-OFE-15 — `POST` de eliminación sin `confirm` no borra.
+- TM-OFE-16 — subida válida, reemplazo, MIME falso o archivo dañado, exceso de tamaño y rechazo sin sesión, sin CSRF o con propietario ajeno. Comprueba que una subida rechazada conserva cualquier foto previa.
+- TM-OFE-17 — visitante ve solo ofertas publicadas, futuras y con foto. Comprueba que borrador o vencida devuelve 404 también para la foto y que el enlace de WhatsApp contiene solo el número configurado y el mensaje codificado. Sin número válido configurado no se genera enlace.
 Comando previsto (no verificado hasta que lo ejecutes): `node --test tests/integration/ofertas-http.test.js`
 Evidencia que debes guardar: Salida de las pruebas y capturas de lista, formulario con errores, detalle y confirmación (prevista).
 Comprobaciones de integración (convergen varios integrantes):
@@ -950,7 +956,7 @@ Comprobaciones de integración (convergen varios integrantes):
 - En F2 (B2.2) se repite el ciclo con ingreso real en lugar de sesión simulada.
 
 CRITERIO DE CIERRE (idéntico al de PLAN-MVP.md §4, B1.5)
-Las siete pruebas pasan; desde el navegador se completa alta, edición, detalle por ID y eliminación con confirmación; el listado pagina de 10 en 10 y filtra por provincia; la oferta de otro usuario devuelve 404 y el texto del usuario se muestra escapado.
+Las pruebas pasan. El CRUD privado conserva filtro, paginación, propiedad y salida escapada. El dueño puede cargar y reemplazar la foto, y el visitante ve la oferta publicada con el enlace de WhatsApp según C-OFE.
 
 REGLAS COMUNES
 - Antes de modificar nada, inspecciona el repositorio (git status, estructura de carpetas, package.json, migraciones, pruebas existentes) y lee los documentos indicados. No supongas que algo existe: compruébalo.
@@ -1238,7 +1244,7 @@ Archivos o módulos previstos:
 - `src/web/views/partials/header.ejs` (menú final) y `public/css/app.css`
 - `tests/integration/panel-navegacion.test.js`
 Pasos, en orden:
-1. Menú único en todas las pantallas autenticadas: Inicio (`/panel`), Mis ofertas (`/panel/ofertas`), Chat (`/panel/chat`), contenedor `#chat-badge` para la insignia de B1.10, nombre del usuario y botón «Salir» (formulario `POST` con CSRF); en las públicas: Ingresar y Crear cuenta.
+1. Menú único en todas las pantallas autenticadas: Inicio (`/panel`), Mis ofertas (`/panel/ofertas`), Chat (`/panel/chat`), contenedor `#chat-badge` para la insignia de B1.10, nombre del usuario y botón «Salir» (formulario `POST` con CSRF); en las públicas: Ofertas, Ingresar y Crear cuenta. El enlace Ofertas se comprueba cuando se integra B1.5.
 2. `GET /` portada con enlaces; con sesión, «Ir a mi panel».
 3. `GET /panel` exige sesión y muestra el resumen con el número de ofertas propias (`offers.listOffers(principal, { pagina: 1 }).total`) y accesos al chat y a la creación de ofertas.
 4. Aplica `docs/mvp/diseno-visual.md` y el CSS compartido de B0.4 a portada, panel y menú. Comprueba contraste, foco visible, enlace «Saltar al contenido», adaptación a móvil y un `<h1>` y un `<title>` propios por pantalla.
@@ -1250,7 +1256,7 @@ CONTRATOS QUE DEBES CONSERVAR O CREAR
 - No modifica servicios; usa `offers.listOffers` solo para el resumen.
 
 NO HAGAS (fuera de este bloque)
-Contenido de ofertas y chat, insignia en tiempo real (B1.10) y cualquier función de reservas o catálogo público.
+Contenido de ofertas y chat, insignia en tiempo real (B1.10) y la implementación del catálogo y del enlace de WhatsApp (B1.5).
 
 COMPRUEBA
 Pruebas que debes escribir y hacer pasar:
@@ -1383,13 +1389,13 @@ PRERREQUISITOS (deben estar integrados en main antes de empezar)
 Comprueba con git log, la estructura de carpetas y la ejecución de las pruebas que existen y funcionan. Si falta alguno, detente: indica qué falta y no improvises un contrato incompatible.
 
 IMPLEMENTA
-Resultado esperado: La aplicación corre fuera del equipo de desarrollo detrás de HTTPS, con SQLite en almacenamiento persistente, y un cliente Socket.IO se conecta por `wss://` al mismo origen; los pasos y la evidencia quedan documentados.
+Resultado esperado: La aplicación corre fuera del equipo de desarrollo detrás de HTTPS, con SQLite, incluidas las fotos, en almacenamiento persistente, y un cliente Socket.IO se conecta por `wss://` al mismo origen; los pasos y la evidencia quedan documentados.
 Archivos o módulos previstos:
 - `docs/mvp/despliegue.md`
 - configuración del proxy o de la plataforma elegida (por ejemplo `deploy/Caddyfile`), si aplica
 - ajustes acotados a `scripts/check-ws.js` y a `server.js` (cierre ordenado ante `SIGTERM`), acordados con el Integrante 4
 Pasos, en orden:
-1. Registrar la decisión de alojamiento (PM-03) con los requisitos mínimos: un proceso Node persistente, WebSocket, HTTPS gestionado, disco persistente para el archivo SQLite, variables secretas. Si al iniciar no hay proveedor, usar la variante local (proxy inverso con certificado local, por ejemplo Caddy con `tls internal` o mkcert) y dejar el despliegue público como pendiente.
+1. Registrar la decisión de alojamiento (PM-03) con los requisitos mínimos: un proceso Node persistente, WebSocket, HTTPS gestionado, disco persistente para SQLite y sus fotos, y variables de entorno. Usar un volumen donde se conserve el archivo y sus auxiliares de SQLite. Si al iniciar no hay proveedor, usar la variante local (proxy inverso con certificado local, por ejemplo Caddy con `tls internal` o mkcert) y dejar el despliegue público como pendiente.
 2. Variables de producción: `APP_ENV=production`, `APP_ORIGIN=https://<dominio>`, `COOKIE_SECURE=true` (cookie `__Host-tc_session`), `TRUST_PROXY=1`, `DATABASE_FILE` dentro del volumen persistente y secretos distintos de los de desarrollo; `DEMO_MAILBOX_ENABLED` solo durante la demo y con su propia clave.
 3. Arranque: `npm ci --omit=dev && npm run db:migrate && npm start`, un solo proceso; `server.js` cierra HTTP, Socket.IO y la base al recibir `SIGTERM`.
 4. Proxy: reenviar `Upgrade` y `Connection` para WebSocket y conservar `Host` y `Origin`.
@@ -1557,19 +1563,19 @@ Archivos o módulos previstos:
 - `tests/integration/recorrido-completo.test.js`
 - `docs/mvp/demo.md` (datos de demostración y comprobaciones previas; el guion es de B3.4), `docs/mvp/evidencias/B2.2/`
 Pasos, en orden:
-1. `seed-demo.js`: cuentas `ana@demo.test` y `luis@demo.test` con la contraseña de `SEED_DEMO_PASSWORD` (no versionada), 12 ofertas ficticias de Ana repartidas en 4 provincias (suficientes para paginar y filtrar), 3 de Luis y 5 mensajes de chat iniciales; ejecutarlo dos veces no duplica datos.
-2. Prueba de recorrido sin intervención: registro → ingreso → crear oferta → listar, filtrar y paginar → detalle por ID → editar → eliminar con confirmación → recuperar la clave con la bandeja → chat entre dos usuarios (dos sockets) → historial tras recargar → presencia → aviso adicional en el panel → cierre de sesión.
+1. `seed-demo.js`: cuentas `ana@demo.test` y `luis@demo.test` con la contraseña de `SEED_DEMO_PASSWORD` (no versionada), 12 ofertas ficticias de Ana repartidas en 4 provincias, 3 de Luis y 5 mensajes de chat iniciales. Usa imágenes propias o autorizadas, con sus créditos, para al menos dos ofertas futuras. Cargar y publicar por el servicio según C-OFE. Ejecutarlo dos veces no duplica datos.
+2. Prueba de recorrido sin intervención: registro → ingreso → crear oferta → listar, filtrar y paginar → detalle por ID → editar → cargar foto y publicar → verificar catálogo y enlace como visitante → eliminar con confirmación → recuperar la clave con la bandeja → chat entre dos usuarios → historial, presencia y aviso → cierre de sesión. En automatización verifica el enlace sin abrir servicios externos.
 3. Incluir en la prueba: recorrido de todos los enlaces del menú (todos responden 200 y repiten el menú) y que un mensaje rechazado o repetido no genera aviso.
-4. Lista de comprobación manual con dos navegadores (perfil normal y ventana privada) en `docs/mvp/demo.md`.
+4. Lista de comprobación manual con dos navegadores en `docs/mvp/demo.md`: incluye subida de una foto, publicación, consulta del catálogo como visitante y apertura del mensaje preparado de WhatsApp con el número autorizado de la demo. Verifica que los borradores y sus fotos permanezcan privados. El recorrido no necesita enviar un mensaje.
 5. Medir y anotar cuánto tarda el recorrido manual para dimensionar el guion de B3.4.
 6. Corregir solo incompatibilidades de contrato devolviéndolas a su responsable; este bloque no parcha módulos ajenos.
 
 CONTRATOS QUE DEBES CONSERVAR O CREAR
 - Contratos de §5.1 sin cambios; el seed solo usa las API públicas de `accounts`, `offers` y `chat`.
-- Datos ficticios y dominio reservado `@demo.test`; ninguna contraseña real en el repositorio.
+- Datos ficticios y dominio reservado `@demo.test`; ninguna contraseña real en el repositorio. Al menos dos ofertas futuras con fotos propias o autorizadas, publicadas mediante el servicio, más una privada para demostrar el límite. En pruebas usa un número ficticio y verifica el enlace sin enviar mensajes; para una demo en vivo, acuerda el número comercial o de demostración.
 
 NO HAGAS (fuera de este bloque)
-Guion y presentación (B3.4) y cualquier dato de reservas, pagos o entradas.
+Guion y presentación (B3.4) y cualquier registro interno de reservas, pagos o entradas.
 
 COMPRUEBA
 Pruebas que debes escribir y hacer pasar:
@@ -1585,7 +1591,7 @@ Comprobaciones de integración (convergen varios integrantes):
 - Revisar en escritorio y móvil que el menú, los formularios, las ofertas y el chat usen la misma base visual. Comprobar navegación con teclado, foco visible, mensajes legibles y ausencia de desplazamiento horizontal en la página. Registrar el resultado y devolver a cada responsable los ajustes de su vista.
 
 CRITERIO DE CIERRE (idéntico al de PLAN-MVP.md §4, B2.2)
-El recorrido automatizado pasa; con la base sembrada, dos navegadores completan manualmente el recorrido de la demo sin errores; el menú lleva a todas las pantallas; el seed es idempotente y no contiene credenciales reales.
+El recorrido automatizado pasa; con la base sembrada, dos navegadores completan la demo, incluido el catálogo público con foto y la apertura del enlace de WhatsApp. El menú lleva a todas las pantallas. El seed es idempotente y no contiene credenciales reales.
 
 REGLAS COMUNES
 - Antes de modificar nada, inspecciona el repositorio (git status, estructura de carpetas, package.json, migraciones, pruebas existentes) y lee los documentos indicados. No supongas que algo existe: compruébalo.
@@ -2027,7 +2033,7 @@ CONTRATOS QUE DEBES CONSERVAR O CREAR
 - Los resultados mostrados proceden de las evidencias reales de B1.11, B2.1 a B2.4 y B3.2; ninguno se inventa.
 
 NO HAGAS (fuera de este bloque)
-Ensayo general y etiqueta (B3.5) y diapositivas de pagos, reservas o QR.
+Ensayo general y etiqueta (B3.5) y diapositivas de pagos, gestión interna de reservas o QR.
 
 COMPRUEBA
 Pruebas que debes escribir y hacer pasar:

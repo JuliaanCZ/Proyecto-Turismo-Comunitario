@@ -1,6 +1,6 @@
 # Turismo comunitario
 
-Proyecto académico para una PYME que coordina experiencias de turismo comunitario. La entrega del primer bimestre es un monolito con cuentas, gestión de ofertas turísticas y chat en tiempo real. El MVP se planificó con Node.js, Express, EJS, JavaScript, Socket.IO y SQLite.
+Proyecto académico para una PYME que coordina experiencias de turismo comunitario. La entrega del primer bimestre es un monolito con cuentas, gestión de ofertas turísticas con foto, catálogo con contacto por WhatsApp y chat en tiempo real. El MVP se planificó con Node.js, Express, EJS, JavaScript, Socket.IO y SQLite.
 
 ## Primer bimestre
 
