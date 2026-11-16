@@ -1,1 +1,49 @@
-better-sqlite3 y argon2: OK
+B0.1 — Verificación en un clon limpio de Windows
+
+> node --version
+v24.22.3
+
+> npm --version
+11.19.1
+
+> npm config get ignore-scripts
+false
+
+> npm ci
+added 196 packages, and audited 197 packages in 20s
+found 0 vulnerabilities
+
+npm avisó que los scripts de instalación de argon2@0.45.2 y
+better-sqlite3@13.2.0 no estaban cubiertos por allowScripts.
+
+> $LASTEXITCODE
+0
+
+> @'
+import Database from "better-sqlite3";
+
+const db = new Database(":memory:");
+try {
+  const result = db.prepare("SELECT 1 AS ok").get();
+  console.log("SQLite:", JSON.stringify(result));
+} finally {
+  db.close();
+}
+'@ | node --input-type=module -
+
+SQLite: {"ok":1}
+
+> @'
+import argon2 from "argon2";
+
+const password = "Clave-ficticia-B01";
+const hash = await argon2.hash(password);
+const verified = await argon2.verify(hash, password);
+
+console.log("Algoritmo:", hash.split("$")[1]);
+console.log("Hash verificado:", verified);
+if (!verified) process.exitCode = 1;
+'@ | node --input-type=module -
+
+Algoritmo: argon2id
+Hash verificado: true
