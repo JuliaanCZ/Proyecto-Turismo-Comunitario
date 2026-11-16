@@ -35,11 +35,26 @@
 | `/panel/ingresos`, `/panel/ingresos/[offerId]` | `OPERATOR` | Selección de actividad; consultar entrada y registrar ingreso. **D-79:** la lista incluye las ofertas `OPEN` de sus atracciones y también las `SUSPENDED` o `ARCHIVED` que **tengan entradas emitidas** (al menos una `Ticket`); una oferta sin entradas emitidas no aparece. `/panel/ingresos/[offerId]` responde 404 si la oferta no es de una atracción del operador. Se conservan las demás condiciones de ingreso: rol, atracción gestionada, ventana horaria, reserva `CONFIRMED` y entrada `VALID`. | P5-02, P5-03 |
 | `/panel/chat` | Autenticado | Sala `general`. | P6-02 |
 | `/panel/admin/ofertas` | `ADMIN` | Moderación: archivar con motivo. | P2-04 |
-| `/panel/admin/revision-pagos`, `…/[reservationId]` | `ADMIN` | Casos `REVIEW_REQUIRED`; «Consultar pasarela». | P4-07 |
+| `/panel/admin/revision-pagos`, `…/[reservationId]` | `ADMIN` | **A.** Casos `REVIEW_REQUIRED`, con los de conciliación **agotada** marcados (`lastErrorCode = RECONCILE_EXHAUSTED`, 04 TX-11.2); «Consultar pasarela». **B.** Resumen de avisos de reembolso posterior a la confirmación, **solo lectura** (nota tras la tabla). | P4-07 |
 | `/panel/admin/auditoria` | `ADMIN` | Lectura de auditoría (opcional). | PE-05 |
 | `/pasarela-simulada/[orderId]` | Solo con `PAYMENT_PROVIDER=fake` | Aprobación o cancelación simulada. | P4-04 |
 
-El parámetro `next` solo admite rutas internas (empieza por `/` y no por `//`).
+**Resumen de avisos de reembolso (sección B de `/panel/admin/revision-pagos`; alineado el 2026-11-14 con 04 TX-09 L-17, TX-10 y TX-11).** Es la lectura de los eventos de auditoría que el sistema ya escribe, sin estado nuevo.
+- **Acceso:** solo `ADMIN`; cualquier otro rol recibe 404. Se obtiene en el componente de servidor de la página: **no hay Server Action ni Route Handler nuevo** y ningún `GET` modifica estado.
+- **Consulta fija:** `AuditEvent` con `action = 'payment.reconcile'`, `result = 'CONFLICT'` y `reasonCode = 'REFUND_AFTER_CONFIRMATION'`, orden `occurredAt` descendente, paginada (tamaño por fijar en P4-07). El cliente **no** aporta filtros. Usa el índice `(action, occurredAt)` de 03.
+- **Campos mostrados:** fecha, origen (`metadata.origin`: webhook o consulta del administrador), `metadata.paymentId` y la reserva asociada (resuelta en el servidor). **No** se muestran `actorUserId`, `ipHash`, nombres ni fechas de nacimiento (01 §8.5).
+- **Solo lectura:** el aviso no tiene estado «atendido» y persiste en la lista; el detalle de esa reserva (`CONFIRMED`) no ofrece «Consultar pasarela», que exige `REVIEW_REQUIRED` (04 TX-11.1).
+- **Auditoría de la lectura:** no se audita (**propuesto**, para no generar ruido).
+- **Relación con PE-05:** este resumen **no** depende de `/panel/admin/auditoria` ni la sustituye; esa página sigue siendo la **única consulta general** de auditoría y sigue siendo opcional.
+
+**Regla del parámetro `next`** (corregida el 2026-11-14; sustituye a «empieza por `/` y no por `//`», que dejaba pasar `/\evil.test`, que los navegadores interpretan como `//evil.test`). `next` solo se acepta si es una **ruta interna permitida para la sesión actual**. Una única función `safeNext(raw, principal)` la aplica **al ingresar** (con el principal ya autenticado) y al construir `/ingreso?next=…` (con la ruta que pidió el visitante). Se acepta únicamente si cumple **todo** lo siguiente:
+1. Es una cadena no vacía de hasta 2048 caracteres (límite **propuesto**).
+2. No contiene caracteres de control (U+0000–U+001F, U+007F) ni `\`, ni en el valor recibido ni tras decodificarlo una vez.
+3. Empieza por `/` y su segundo carácter no es `/` ni `\`.
+4. **Comprobación definitiva e independiente de 1 a 3:** al resolverla con `new URL(raw, APP_ORIGIN)`, el `origin` resultante es exactamente `APP_ORIGIN`. Si el analizador de URL la lleva a otro origen se descarta aunque parezca interna. El destino que se usa es el `pathname` y el `search` **resultantes**, no el texto original; el fragmento se descarta.
+5. Su `pathname` coincide con una página de la tabla anterior **a la que el principal actual puede acceder por rol** (columna «Acceso», con la unión de sus asignaciones, D-20). Solo se evalúa el rol, no la existencia del recurso. No son destinos válidos `/ingreso`, `/registro`, `/recuperar`, `/restablecer`, `/pasarela-simulada/*` ni `/api/*` (evitan bucles y efectos), aunque sean internas.
+
+Si no se cumple cualquiera, o si falta, el destino es la **ruta por defecto ya definida: `/panel`**, sin mensaje de error ni indicar el motivo, y sin auditoría. Pruebas: T-CTA-16 (casos 16a a 16d) y T-SEG-10. *Alineación pendiente:* 06 §3.4 y A-10 dicen «solo rutas internas» y deben recoger «permitidas para la sesión»; 07 §4.1 (`/ingreso`) igual.
 
 ---
 
@@ -101,7 +116,7 @@ type OfferRef   = { offerId: Uuid; status: OfferStatus; publicVersionId: Uuid | 
 | Acción | Entrada | Salida (`data`) | Errores adicionales |
 |---|---|---|---|
 | `registerAction` | `{ displayName: 2–80, email: formato válido, minúsculas, ≤ 254, password: 10–128 (06 §3.1), passwordConfirm: igual a password }`. | `{ userId }` y redirección a `/ingreso` (no inicia sesión). | `EMAIL_TAKEN` (409; el registro **sí** revela el correo existente, riesgo aceptado, 06 §3.2), `RATE_LIMITED` (10 por hora y por IP; `details.retryAfterSeconds`). `fieldErrors.password` por política (corta, igual al correo, común). |
-| `loginAction` | `{ email, password, next?: string }`; `next` solo ruta interna (§2); si no lo es, se ignora y se usa `/panel`. | Redirección a `next` o `/panel`; cookie nueva (TX-14). | `INVALID_CREDENTIALS` (401, mensaje único exista o no la cuenta), `RATE_LIMITED` (cuenta o IP). |
+| `loginAction` | `{ email, password, next?: string }`; `next` se valida con la regla de §2 (ruta interna permitida para el principal); si no la cumple, se ignora y se usa `/panel`. | Redirección a `next` o `/panel`; cookie nueva (TX-14). | `INVALID_CREDENTIALS` (401, mensaje único exista o no la cuenta), `RATE_LIMITED` (cuenta o IP). |
 | `logoutAction` | `{}` | `{}` y redirección a `/`; cookie borrada. Idempotente: una segunda salida da el mismo resultado. | — |
 | `requestPasswordResetAction` | `{ email }` | **Siempre** `{ accepted: true }` y el mismo texto, exista o no la cuenta o esté limitada; tiempo uniforme (06 §3.2). | Solo `RATE_LIMITED` por IP (10 por hora). El límite por cuenta no se ve desde fuera. |
 | `resetPasswordAction` | `{ token: string, newPassword: 10–128, newPasswordConfirm }`; el token viene de un campo oculto del formulario, **nunca** se lee de la URL en el servidor. | `{}` y redirección a `/ingreso` (no inicia sesión; TX-13). | `TOKEN_INVALID` (400, mensaje único: inexistente, usado o vencido), `RATE_LIMITED`. |

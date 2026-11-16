@@ -328,7 +328,8 @@ Reglas:
 |---|---|---|---|---|
 | Conectar por WebSocket | ✖ | ✔ | ✔ | Cookie válida y `Origin` exacto en el *handshake*. |
 | Leer historial y enviar mensajes en `general` | ✖ | ✔ | ✔ | Sesión revalidada en cada evento; límite de frecuencia. |
-| Leer auditoría (opcional, PE-05) | ✖ | ✖ | ✔ | Solo lectura. |
+| Leer auditoría (opcional, PE-05) | ✖ | ✖ | ✔ | Solo lectura. Es la **única consulta general** de auditoría. |
+| Ver avisos de reembolso posterior a la confirmación | ✖ | ✖ | ✔ | Solo lectura, en `/panel/admin/revision-pagos` (05 §2). Consulta fija de los eventos `payment.reconcile` con `REFUND_AFTER_CONFIRMATION` (04 TX-09 L-17, TX-10, TX-11); sin datos nominales; **no depende de PE-05** ni concede lectura general de auditoría. |
 
 ### 8.5 Prohibiciones explícitas
 
