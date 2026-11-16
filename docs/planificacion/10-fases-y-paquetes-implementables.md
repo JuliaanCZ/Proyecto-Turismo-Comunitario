@@ -18,8 +18,10 @@
 
 Todos los paquetes salvo PE-05 son necesarios para cumplir el plan. Si hay que mostrar pronto el recorrido principal, este orden lo consigue antes y deja para después lo que no lo bloquea:
 
-`P0-01, 03, 04, 02, 05, 06` → `P1-01, 02, 03` → `P2-01, 02, 03, 05` → `P3-01, 02` → `P4-01, 02, 03, 04` → `P5-01, 02` → recorrido principal demostrable con el adaptador `fake`.
-Después: `P1-04, 05, 06` · `P2-04` · `P3-03` · `P4-05, 06, 07` · `P5-03` · `P6-01, 02, 03` · `PE-01…04`.
+`P0-01, 03, 04, 02, 05, 06` → `P1-01, 02, 03` → `P2-01, 02, 03, 04, 05` → `P3-01, 02, 03` → `P4-01, 02, 03, 04` → `P5-01, 02` → recorrido principal demostrable con el adaptador `fake`.
+Después: `P1-04, 05, 06` · `P4-05, 06, 07` · `P5-03` · `P6-01, 02, 03` · `PE-01…04`.
+
+> **Corrección de la revisión cruzada (2026-11-16):** la ruta corta anterior dejaba `P2-04` y `P3-03` para después, pero `P4-03` depende de `P3-03` (y este de `P2-04`) y `P5-02` depende de `P2-04` (§4): con aquel orden no podían cerrarse `P4-03`, `P4-04` ni `P5-02`. El atajo solo puede aplazar paquetes de los que no depende el recorrido principal.
 
 ## 3. Dependencia especial entre las fases 4 y 5 (definitivo)
 
@@ -85,7 +87,7 @@ Esfuerzo relativo: **S** pequeño · **M** medio · **L** grande. Todos son obli
 |---|---|---|---|---|---|
 | P3-01 | Modelo de reservas, inventario y servicio de retención | P2-03 | RF-15 a 20, RS-10, 11, 25, 29 | T-RES-01 a 09, 12, 13, 15, 16; T-SEG-07 (`Reservation`, `Attendee`) | L |
 | P3-02 | Formulario de reserva grupal y vistas del comprador | P3-01, P2-05 | RF-15, 19, 21, RA-08 | T-RES-14, 19 | L |
-| P3-03 | Vencimiento, reglas de inventario al publicar y agregados | P3-01, P2-04 | RF-18, 22, 23, RO-07 | T-RES-10, 11, 17, 18, T-OFE-21, 22, 23 | M |
+| P3-03 | Vencimiento, reglas de inventario al publicar y agregados | P3-01, P2-04 | RF-18, 22, 23, RO-07 | T-RES-10, 11, 17, 18, T-OFE-21, 22, 23, T-OPS-06 (06a: J1) | M |
 
 > **Corrección del 2026-11-16 a la fase 4:** **P4-02** depende también de **P4-01**: su migración M9 redefine `fn_check_reservation` con el bloque de pagos (03 §8.4) y M9 sigue a M8 (03 §9.1). Sin ciclos (P4-01 depende de P3-01). Con ello P4-03 (P4-01, P4-02, P3-03) puede confirmar el pago y emitir una entrada por asistente en una sola transacción. **También** (2026-11-16, D4-9): **P4-05** depende de **P4-04** (reutiliza `claimCaptureAttempt` y `driveCapture`) y **P4-07** de **P4-05** (`checkGateway`, los casos agotados y los avisos de reembolso); sin ciclos.
 
@@ -97,7 +99,7 @@ Esfuerzo relativo: **S** pequeño · **M** medio · **L** grande. Todos son obli
 | P4-02 | Modelo de entradas, llavero y servicio de emisión | P3-01, P4-01 | RF-30, RS-15 | T-ENT-01, 02, 12, 15; T-SEG-07 (`Ticket`) | M |
 | P4-03 | Liquidación: confirmación atómica y casos en revisión | P4-01, P4-02, P3-03 | RF-28, 29, 30, RS-14 | T-PAG-05, 06, 09 a 17 | L |
 | P4-04 | Inicio de pago, retorno y captura | P4-03, P3-02 | RF-24, 26, RS-13 | T-PAG-03, 04, 18, 23, 25; y, del servicio de inicio y captura (04 TX-07, TX-08), T-PAG-01, 02 (subcasos), 06 (c a e), 12 (a a h) | L |
-| P4-05 | Webhook y conciliación automática | P4-03, P4-04 | RF-27, RS-12, RO-11 | T-PAG-07 (d), 08, 17 (a, c, d, e), 19, 20 (a–j), 22, 26 (a–d), 06 (g) | M |
+| P4-05 | Webhook y conciliación automática | P4-03, P4-04 | RF-27, RS-12, RO-11 | T-PAG-07 (d), 08, 17 (a, c, d, e), 19, 20 (a–j), 22, 26 (a–d), 06 (g), T-OPS-06 (06a: J2) | M |
 | P4-06 | Adaptador PayPal Sandbox | P4-04, P4-05 | RF-24, RS-12, RE-11 | T-PAG-21, 24 (manual, pendiente de Q-08) | L |
 | P4-07 | Casos en revisión del administrador | P4-03, P4-05 | RF-29 | T-PAG-19 | M |
 
@@ -117,7 +119,9 @@ Esfuerzo relativo: **S** pequeño · **M** medio · **L** grande. Todos son obli
 
 | ID | Título | Depende de | Requisitos | Pruebas | Esf. |
 |---|---|---|---|---|---|
-| P6-01 | *Gateway* Socket.IO autenticado y cierre por sesión | P1-02, P1-05, P0-02 | RS-18 | T-CHAT-01, 02, 11, 12 | M |
+| P6-01 | *Gateway* Socket.IO autenticado y cierre por sesión | P1-02, P1-05, P0-02 | RS-18 | T-CHAT-01, 02, 11, 12, T-OPS-06 (06a: J3) | M |
+
+> **Corrección de la revisión cruzada (2026-11-16):** `T-OPS-06` (RO-11: los trabajos corren al arrancar) no estaba asignada a ningún paquete. Se reparte su subcaso 06a por trabajo: J1 en `P3-03`, J2 en `P4-05` (su ficha ya lo decía) y J3 en `P6-01`. La parte de J4 (06a en lo de J4 y 06b a 06d) solo existe si se adopta `P3-04`.
 | P6-02 | Chat con historial | P6-01 | RF-34, RS-19, RS-27 | T-CHAT-03 a 07, 13, 14, 16; T-SEG-07 (`ChatMessage`) | L |
 | P6-03 | Presencia, notificación adicional y reconexión | P6-02 | RF-35, 36, 37, RA-07 | T-CHAT-08, 09, 10, 15, T-A11Y-04 | M |
 
@@ -133,25 +137,38 @@ Esfuerzo relativo: **S** pequeño · **M** medio · **L** grande. Todos son obli
 
 ```mermaid
 flowchart LR
-  P0[P0-01…06] --> P1a[P1-01 → P1-02]
-  P1a --> P1b[P1-03 → P1-04 → P1-05]
-  P1a --> P1c[P1-06]
-  P1a --> P2[P2-01 → P2-02 → P2-03]
-  P2 --> P2b[P2-04 · P2-05]
-  P2 --> P3[P3-01]
-  P3 --> P3b[P3-02 · P3-03]
-  P3 --> P4a[P4-01 · P4-02]
-  P4a --> P4b[P4-03]
-  P3b --> P4b
-  P4b --> P4c[P4-04 · P4-05 · P4-07]
-  P4c --> P4d[P4-06]
-  P4b --> P5[P5-01 · P5-02 → P5-03]
-  P1a --> P6[P6-01 → P6-02 → P6-03]
+  P0[P0-01 → P0-03 · P0-04 → P0-02 → P0-05 → P0-06] --> P11[P1-01 → P1-02]
+  P11 --> P1b[P1-03 → P1-04 → P1-05]
+  P11 --> P16[P1-06]
+  P11 --> P21[P2-01]
+  P21 --> P22[P2-02 → P2-03]
+  P1b --> P22
+  P22 --> P2b[P2-04 · P2-05]
+  P22 --> P31[P3-01]
+  P31 --> P3b[P3-02 · P3-03]
+  P2b --> P3b
+  P31 --> P4a[P4-01 → P4-02]
+  P4a --> P43[P4-03]
+  P3b --> P43
+  P43 --> P4c[P4-04 → P4-05 → P4-06 · P4-07]
+  P3b --> P4c
+  P43 --> P5[P5-01 · P5-02 → P5-03]
+  P2b --> P5
+  P1b --> P6[P6-01 → P6-02 → P6-03]
   P2b --> PE1[PE-01]
-  P4d --> PE[PE-02 → PE-03 → PE-04]
-  P5 --> PE
-  P6 --> PE
+  P4c --> PE2[PE-02]
+  P6 --> PE2
+  P4c --> PE3[PE-03]
+  P5 --> PE3
+  P6 --> PE3
+  P16 --> PE3
+  PE1 --> PE4[PE-04]
+  PE2 --> PE4
+  PE3 --> PE4
+  P11 -.-> PE5[PE-05 opcional]
 ```
+
+*Diagrama corregido en la revisión cruzada del 2026-11-16:* el anterior encadenaba `PE-02 → PE-03` (no es dependencia) y omitía `P1-03 → P2-02`, `P1-05 → P6-01`, `P2-04 → P3-03/P5-02` y `PE-01 → PE-04`. Las flechas entre grupos resumen; **manda la columna «Depende de» de las tablas**.
 
 ## 5. Fichas de paquete
 
@@ -278,7 +295,7 @@ Estado al 2026-11-16: **D0-1, D0-2, D0-7 y D0-9 resueltas** (reflejadas en §4 y
 | D0-7 | **Resuelta** | T-SEG-07 y T-DB-02 empiezan en P0-06 y se amplían por paquete (§4, nota de correcciones) | P0-03 (ya no los asume), P0-06 |
 | D0-8 | Comprobación (09 §8.14) | Si `tc_migrator` tiene `CREATEDB` o puede `DROP`/`CREATE DATABASE`; que `00-roles.sql` produzca los privilegios de 03 §8.5; `createdb` con el rol administrador | P0-03; P0-05 (`db:reset`) |
 | D0-9 | **Resuelta** | `shared/security`: el HMAC nace en P1-01 (auditoría) y el token y la comparación en tiempo constante en P1-02 | P0-04 (no los crea), P1-01, P1-02 |
-| D0-10 | Alineación | `DB_LOCK_TIMEOUT_MS` aún no figura en 02 §9 y §11; rango 100 a 30 000 propuesto | P0-04: **al escribir `env.ts`** |
+| D0-10 | **Resuelta (2026-11-16)** | `DB_LOCK_TIMEOUT_MS` ya figura en 02 §9 y §11 (defecto 5000, 09 §3); **sigue como propuesta** el rango 100 a 30 000 | P0-04: **al escribir `env.ts`** |
 | D0-11 | **Registrada; por verificar** | El remoto `origin` es `https://github.com/JuliaanCZ/Proyecto-Turismo-Comunitario.git`: figura en la configuración local (`git remote -v`) y el equipo declara que existe; **no se ha verificado** el acceso. Por verificar: visibilidad (EV-09 pide repositorio público), colaboradores y permisos, autoría real de los *commits* (RO-10; Q-03; plan de 12 §6 pendiente), si Actions está habilitado, protección de `main` y secretos o variables de CI | P0-01 (autoría) y P0-05 (CI) |
 | D0-12 | Decisión | Paralelismo por esquema en las pruebas (08 §6.2 lo remite a P0-06); el arnés arranca en serie | P0-05 y P0-06 |
 | D0-13 | Decisión | Si la semilla se niega en `APP_ENV=production` (06 A-47) | P0-06: **al escribir la semilla** |
@@ -590,7 +607,7 @@ Ninguna de las cuatro cambia el comportamiento de los servicios: son alineacione
 5. **Archivos previstos:** `src/jobs/expire-holds.ts` y su alta en `src/jobs/scheduler.ts`; `modules/offers/application/get-offer-aggregates.ts`; ampliación de `/panel/ofertas/[offerId]` y `/panel/actividades`.
 6. **Tareas:** (a) J1 (TX-06): `UPDATE … SET status = 'EXPIRED'` por lotes de 500 con `FOR UPDATE SKIP LOCKED`, sin bloquear `Offer`, `expiresAt <= now`, idempotente, un `AuditEvent` `reservation.expire_batch` por lote solo si afectó filas, cada 60 s y al arrancar, y desactivado con `JOBS_ENABLED=false`; (b) agregados sin datos personales: capacidad, confirmadas, retenidas y disponibles por oferta (RF-22); (c) los **conteos de cupos** en `/panel/actividades`; (d) verificar que las comprobaciones de aprobación y envío ya leen el inventario real (T-OFE-21 y 22) y completar los casos que quedaran fuera; (e) la lista de asistentes de su atracción para el operador, con los campos que permita 01 §8.4. **Seguridad:** el GAD nunca ve nombres, fechas de nacimiento ni correos (RS-07, A-16); J1 no necesita autorización de usuario.
 7. **Contratos:** introduce el trabajo J1 y los agregados. Conserva la disponibilidad de P3-01.
-8. **Aceptación y pruebas:** **T-RES-10, 11, 17, 18** y **T-OFE-21, 22, 23**. *Se comprueba al cerrar:* T-RES-11 (11a a 11g); T-RES-18 (reserva frente a suspensión y archivo, con `P2-04`); lo que no se hubiera ejecutado ya de T-RES-10, T-RES-17 y T-OFE-21, 22 y 23 (habilitadas desde `P3-01`); y **T-RES-14b**. *Depende de verificación posterior:* los **conteos de entradas** de `/panel/actividades` y del detalle (S-13) exigen `Ticket` (`P4-02`) (D3-7); T-OPS-06 (los trabajos corren al arrancar) y la purga J4 (`P3-04`, propuesta); el calendario de J2 (P4-05).
+8. **Aceptación y pruebas:** **T-RES-10, 11, 17, 18** y **T-OFE-21, 22, 23**. *Se comprueba al cerrar:* T-RES-11 (11a a 11g); T-RES-18 (reserva frente a suspensión y archivo, con `P2-04`); lo que no se hubiera ejecutado ya de T-RES-10, T-RES-17 y T-OFE-21, 22 y 23 (habilitadas desde `P3-01`); **T-RES-14b**; y **T-OPS-06a en lo de J1** (corre al arrancar con `JOBS_ENABLED=true` y una segunda ejecución no cambia nada; revisión cruzada 2026-11-16). *Depende de verificación posterior:* los **conteos de entradas** de `/panel/actividades` y del detalle (S-13) exigen `Ticket` (`P4-02`) (D3-7); T-OPS-06a en lo de J2 (`P4-05`) y J3 (`P6-01`); la purga J4 (`P3-04`, propuesta sin adoptar: 06a en lo de J4 y 06b a 06d); el calendario de J2 (P4-05).
 9. **Comandos previstos:** `npm run test:integration`, `npm run test:concurrency`, `npm run test:e2e`. **Verificados:** ninguno. **Evidencia:** informes de J1 con el recuento de lotes y de las pruebas de ambos órdenes.
 10. **Errores y riesgos:** J1 solo normaliza el estado: los cupos se liberan igual con J1 detenido (RO-07; T-RES-10); una fila bloqueada por una liquidación se salta y se recoge después; `SKIP LOCKED` con Prisma 7 y el adaptador `pg` **por confirmar**. **Recuperación:** solo código; RB-04 si no se limpian.
 11. **Datos y servicios:** reservas sembradas con el migrador, reloj falso y `JOBS_ENABLED=false`.
@@ -888,7 +905,7 @@ Sin ciclos: `P6-01` (`P1-02`, `P1-05`, `P0-02`), `P6-02` (`P6-01`) y `P6-03` (`P
 5. **Archivos previstos:** `src/realtime/{gateway.ts, handshake.ts, session-sweep.ts}`; la implementación real de `RealtimePort` registrada desde `server.ts`; `src/jobs/ws-session-sweep.ts` (J3); `tests/helpers/ws.ts` (`conectar`, `esperarEvento`, `puente.desactivar`, `ejecutarBarridoSockets`, `revocarEnBase`).
 6. **Tareas:** (a) *handshake*: exige `Origin = APP_ORIGIN` y la cookie de una sesión vigente (`revokedAt IS NULL AND expiresAt > now`); si no, `connect_error` con `ORIGIN_MISMATCH` o `UNAUTHENTICATED`; cada socket entra en `user:<userId>` y `session:<sessionId>`; mensaje máximo de 16 KB; (b) **cada evento entrante revalida la sesión** antes de procesarse: si ya no vale, `session:expired` (`expired` o `revoked`), `UNAUTHENTICATED` en la confirmación y desconexión; (c) **tres vías de cierre**: inmediata tras el `COMMIT` de salida o de restablecimiento (`disconnectSession` y el cierre de todos los sockets del usuario), un temporizador por socket hasta `expiresAt` y el barrido J3 cada 30 s; (d) el puente es una **optimización**, no la garantía: sin él, la revalidación por evento y el barrido bastan; (e) auditoría `realtime.handshake` `DENIED` (`UNAUTHENTICATED`, `ORIGIN_MISMATCH`) sin cookie ni token; (f) retirar el *handshake* provisional de `P0-02` (D0-3): `T-OPS-01` pasa a conectar **con una cookie de sesión**; (g) intervalos de latido y barrido **reducibles por configuración de prueba** (propuesta). **Seguridad:** `SameSite` no protege el WebSocket por sí solo: `Origin` y cookie se comprueban siempre.
 7. **Contratos:** introduce el *handshake* y `session:expired` (05 §5) y la implementación real de `RealtimePort`. Conserva el contrato del puente de `P0-02`: `P1-02` y `P1-05` ya lo invocan.
-8. **Aceptación y pruebas:** **T-CHAT-01, 02, 11 y 12**. *Se comprueba al cerrar:* conexión rechazada sin cookie, con formato inválido, con sesión revocada, vencida o inexistente, y con `Origin` ajeno (01a y 02a; 01b: el socket cae al llamar a `disconnectSession` de **su** sesión; 01c: tras el rechazo no se procesa ningún envío); salida de S1 (dos sockets) sin afectar a S2 y de forma idempotente (11a); **restablecer la contraseña cierra todos los sockets** (11b, con `P1-05`); **sin puente**, el envío da `UNAUTHENTICATED` y el barrido cierra el resto (11c); revocar en base sin puente (11d); vencimiento por temporizador, por barrido y por evento (12a a 12d). *Depende de verificación posterior:* los efectos de un envío rechazado sobre `ChatMessage` (`PC-CHAT-1`) **desde `P6-02`**, que crea la tabla; hasta entonces los envíos de 01c, 11c y 12c se comprueban solo contra la ausencia de procesamiento. **Aserciones que dependen de decisiones abiertas:** precedencia entre `ORIGIN_MISMATCH` y `UNAUTHENTICATED` con ambos fallos (**02a**, D6-5); si el cierre por el puente emite `session:expired` (**11a y 11b**, D6-6); el nombre de la función de cierre de todos los sockets de un usuario ya está fijado (`disconnectUser`, D6-9 resuelta); el volumen de la auditoría del *handshake* (**01a y 02a**, D6-10).
+8. **Aceptación y pruebas:** **T-CHAT-01, 02, 11 y 12** y **T-OPS-06a en lo de J3** (el barrido corre al arrancar; revisión cruzada 2026-11-16). *Se comprueba al cerrar:* conexión rechazada sin cookie, con formato inválido, con sesión revocada, vencida o inexistente, y con `Origin` ajeno (01a y 02a; 01b: el socket cae al llamar a `disconnectSession` de **su** sesión; 01c: tras el rechazo no se procesa ningún envío); salida de S1 (dos sockets) sin afectar a S2 y de forma idempotente (11a); **restablecer la contraseña cierra todos los sockets** (11b, con `P1-05`); **sin puente**, el envío da `UNAUTHENTICATED` y el barrido cierra el resto (11c); revocar en base sin puente (11d); vencimiento por temporizador, por barrido y por evento (12a a 12d). *Depende de verificación posterior:* los efectos de un envío rechazado sobre `ChatMessage` (`PC-CHAT-1`) **desde `P6-02`**, que crea la tabla; hasta entonces los envíos de 01c, 11c y 12c se comprueban solo contra la ausencia de procesamiento. **Aserciones que dependen de decisiones abiertas:** precedencia entre `ORIGIN_MISMATCH` y `UNAUTHENTICATED` con ambos fallos (**02a**, D6-5); si el cierre por el puente emite `session:expired` (**11a y 11b**, D6-6); el nombre de la función de cierre de todos los sockets de un usuario ya está fijado (`disconnectUser`, D6-9 resuelta); el volumen de la auditoría del *handshake* (**01a y 02a**, D6-10).
 9. **Comandos previstos:** `npm run test:integration` (servidor real y `socket.io-client` sobre `turismo_test`), `npm run test:e2e`, `npm run build`. **Verificados:** ninguno. **Evidencia:** informes con los códigos de `connect_error` por caso y la prueba de cierre sin puente.
 10. **Errores y riesgos:** convivencia con el *hot reload* de Next.js (D0-4, **sin garantía documentada**); un socket conectado antes de revocar la sesión puede recibir contenido hasta 30 s: **limitación conocida**, la garantía es de cierre y de rechazo de envío (T-CHAT-12); un solo proceso (02 §13). **Recuperación:** solo código; revertir.
 11. **Datos y servicios:** `turista.ana`, `turista.beto` y cuentas con varias sesiones; cookies reales de `loginAction`; reloj y temporizadores falsos; `JOBS_ENABLED=false` y J3 a mano.
@@ -999,7 +1016,7 @@ Convenciones de §5.0 y de las fases anteriores: comandos **previstos**, **Verif
 5. **Archivos previstos:** `docs/evidencias/PE-03/` (informes y listas ejecutadas); la matriz de seguridad con los resultados reales (EV-05).
 6. **Tareas:** (a) `npm audit` y revisión de dependencias (T-SEG-09); (b) análisis automático de accesibilidad y **ejecución de las listas manuales** `MC` y `MP` con lector de pantalla, teclado y contraste (T-A11Y-01 a 07); (c) verificar contra la fuente oficial los criterios de WCAG 2.2 que se citaron de memoria; (d) completar la matriz de seguridad con el resultado de cada `T-SEG` y cerrar las filas «Falta» de 06 §2 (A-08, A-16, A-34, A-35, A-45); (e) revisión de privacidad de 06 §4 (conservación y anulación); (f) decidir **A-25** (umbral de firmas inválidas del webhook). **Seguridad:** ninguna afirmación de certificación ni de equivalencia con OWASP.
 7. **Contratos:** introduce los informes y la matriz EV-05; no cambia código salvo correcciones.
-8. **Criterio de cierre y pruebas:** **T-SEG-09 (manual)** y **T-A11Y-01 a 07** (con la parte manual ejecutada). **Cierra cuando** cada fila de la matriz tiene su resultado real o su pendiente explícito, `npm audit` no deja hallazgos altos o críticos sin justificar, el análisis automático no tiene infracciones graves o críticas y las listas manuales están ejecutadas. **Pendientes externos, registrados y no afirmados:** **guías académicas (Q-02): RS-26, la correspondencia con los objetivos Common Criteria de la propuesta, no puede completarse**; la matriz conserva la columna «objetivo de la propuesta» como `PENDIENTE` y **no se declara certificación** (06 §5); **Q-01** impide afirmar conformidad con la guía; **alojamiento:** las comprobaciones sobre HTTPS real (T-SEG-12b) son de PE-02; **Sandbox (Q-08):** la verificación real del webhook por *postback* sigue en T-PAG-24, fuera de este paquete. **Dependencia condicionada:** la revisión de privacidad de RS-25 y A-41 solo puede cerrarse si existe la purga (la propuesta **`P3-04`**, sin adoptar); si no se adopta, se declara **pendiente** (D7-6).
+8. **Criterio de cierre y pruebas:** **T-SEG-09 (manual)** y **T-A11Y-01 a 07** (con la parte manual ejecutada). **Cierra cuando** cada fila de la matriz tiene su resultado real o su pendiente explícito, `npm audit` no deja hallazgos altos o críticos sin justificar, el análisis automático no tiene infracciones graves o críticas y las listas manuales están ejecutadas. **Pendientes externos, registrados y no afirmados:** **guías académicas (Q-02): RS-26, la correspondencia con los objetivos Common Criteria de la propuesta, no puede completarse**; la matriz conserva la columna «objetivo de la propuesta» como `PENDIENTE` y **no se declara certificación** (06 §5); **Q-01** impide afirmar conformidad con la guía; **alojamiento:** las comprobaciones sobre HTTPS real (T-SEG-12b) son de PE-02; **Sandbox (Q-08):** la verificación real del webhook por *postback* sigue en T-PAG-24, fuera de este paquete. **Privacidad (corregido en la revisión cruzada del 2026-11-16):** RS-25 se cierra con su criterio de 01 («`birthDate` es nulo salvo que la versión exija edad»: `P3-01`, T-RES-06 y 14); la **anulación** de `birthDate` tras la actividad (A-41, D-62) depende de **`P3-04`**, sin adoptar: si no se adopta, A-41 figura en EV-05 como **riesgo residual declarado** y no impide cerrar (D7-6).
 9. **Comandos previstos:** `npm audit --omit=dev`, `npm run test:a11y`, `npm run test:e2e`, y las listas manuales. **Verificados:** ninguno. **Evidencia:** informes en `docs/evidencias/PE-03/`; las pruebas manuales **no se dan por hechas** sin registro.
 10. **Errores y riesgos:** hallazgos de accesibilidad que obligan a tocar pantallas de fases anteriores; WCAG 2.2 como **objetivo propuesto** (RA-02). **Recuperación:** correcciones por paquete.
 11. **Datos y servicios:** lector de pantalla y navegadores del equipo; sin servicios externos.
@@ -1044,7 +1061,7 @@ Convenciones de §5.0 y de las fases anteriores: comandos **previstos**, **Verif
 |---|---|
 | **Fichas** | Las 38 tienen ficha de 13 puntos: `P0-01` a `P0-06` (6), `P1-01` a `P1-06` (6), `P2-01` a `P2-05` (5), `P3-01` a `P3-03` (3), `P4-01` a `P4-07` (7), `P5-01` a `P5-03` (3), `P6-01` a `P6-03` (3) y `PE-01` a `PE-05` (5). **`P3-04` sigue siendo una propuesta fuera del catálogo** |
 | **Dependencias y ciclos** | Se analizó el grafo de §4: sin identificadores inexistentes y **sin ciclos**; un orden topológico válido es `P0-01, P0-03, P0-04, P0-02, P0-05, P0-06`, las fases 1 a 6 en orden de identificador y `PE-01` a `PE-05`. Siete dependencias se corrigieron: `P0-02` (`P0-03`, `P0-04`), `P2-02` (`P1-03`), `P4-02` (`P4-01`), `P4-05` (`P4-04`), `P4-07` (`P4-05`), `P5-02` (`P4-03`) y `P6-01` (`P1-05`) |
-| **Incompatibilidades con criterios de cierre** | (1) `PE-02` exige restaurar una copia (T-OPS-05) con la reaplicación de borrados, cuya utilidad no está en ningún paquete: se acepta la **lista vacía** mientras la anonimización siga fuera del MVP (D7-3). (2) `PE-02` en modo producción exige PayPal (02 §9): un despliegue público sin credenciales no arranca (D7-1). (3) `PE-03` no puede cerrar la revisión de privacidad sin la purga (`P3-04`, sin adoptar) (D7-6). (4) `P4-06` cierra sin `T-PAG-24` y `T-PAG-24` exige el despliegue de `PE-02`: **sin ciclo**, porque `T-PAG-24` se ejecuta después de ambos cierres. (5) `PE-04` depende de `PE-02` y este de Q-04: el cierre de `PE-04` admite la contingencia local de 12 §7 y declara el despliegue pendiente. (6) `T-E2E-01` depende de D4-3 (reloj acelerado) |
+| **Incompatibilidades con criterios de cierre** | (1) `PE-02` exige restaurar una copia (T-OPS-05) con la reaplicación de borrados, cuya utilidad no está en ningún paquete: se acepta la **lista vacía** mientras la anonimización siga fuera del MVP (D7-3). (2) `PE-02` en modo producción exige PayPal (02 §9): un despliegue público sin credenciales no arranca (D7-1). (3) ~~`PE-03` no puede cerrar la revisión de privacidad sin la purga~~ — corregido el 2026-11-16: RS-25 se cumple con `P3-01`; sin `P3-04`, la anulación de A-41 se declara riesgo residual (D7-6). (4) `P4-06` cierra sin `T-PAG-24` y `T-PAG-24` exige el despliegue de `PE-02`: **sin ciclo**, porque `T-PAG-24` se ejecuta después de ambos cierres. (5) `PE-04` depende de `PE-02` y este de Q-04: el cierre de `PE-04` admite la contingencia local de 12 §7 y declara el despliegue pendiente. (6) `T-E2E-01` depende de D4-3 (reloj acelerado) |
 | **PE-05 opcional** | **La entrega no depende de él:** ninguna fila de §4 lo cita como dependencia, `PE-04` depende de `PE-01`, `PE-02` y `PE-03`, y RF-38, los avisos de reembolso y el guion de 12 se cubren sin él |
 | **Pendientes externos** | Alojamiento (Q-04): `PE-02` y, por contingencia, `PE-04`. Guías (Q-01, Q-02, Q-03, Q-07, Q-09, Q-11): `PE-01` (umbral), `PE-03` (RS-26) y `PE-04`. Sandbox (Q-08): `P4-06` y `T-PAG-24`, con EV-07 |
 | **Decisiones D6-1 a D6-12** | **Siguen abiertas**; ninguna bloquea la fase PE |
@@ -1058,7 +1075,7 @@ Convenciones de §5.0 y de las fases anteriores: comandos **previstos**, **Verif
 | D7-3 | Pendiente | T-OPS-05 con la lista de borrados vacía mientras la anonimización esté fuera del MVP; la utilidad de 06 §4.5 y la guardia de `Attendee` no existen | PE-02 |
 | D7-4 | **Externo (Q-04)** | Proveedor, presupuesto y dominio; sin ellos `PE-02` no cierra | PE-02, PE-04 |
 | D7-5 | **Externo (guías y equipo)** | Q-01 (conformidad y formato de entrega), Q-02 (Common Criteria), Q-03 (integrantes, fechas y reparto), Q-07, Q-09 y Q-11 (publicación del repositorio) | PE-01, PE-03, PE-04 |
-| D7-6 | Pendiente | Adoptar `P3-04` (purga J4) para poder cerrar la revisión de privacidad (RS-25, A-41) | PE-03; antes de PE-02 y PE-04 |
+| D7-6 | **Pendiente (decisión del equipo)** | Adoptar o no `P3-04` (purga J4). **No impide cerrar `PE-03`** (corregido el 2026-11-16): RS-25 se cumple con su criterio en `P3-01`; la anulación tras la actividad (D-62) es propuesta y, sin `P3-04`, A-41 se declara riesgo residual en EV-05 | PE-03 (declaración de A-41); si se adopta, antes de PE-02 y PE-04 |
 | D7-7 | Pendiente | A-25: umbral del límite por origen para firmas de webhook inválidas | PE-03 |
 | D7-8 | Comprobación | Criterios de WCAG 2.2 citados de memoria, a verificar en la fuente oficial | PE-03 |
 | D7-9 | Decisión | Si se implementa `PE-05` y si la lectura se audita (`audit.read`) | PE-05 |

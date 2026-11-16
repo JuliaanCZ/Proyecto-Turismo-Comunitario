@@ -439,7 +439,7 @@ sequenceDiagram
 ## 9. Configuración, secretos y validación del entorno
 
 - `shared/config/env.ts` valida `process.env` con Zod **al importar** y detiene el arranque con un mensaje que nombra la variable inválida, sin imprimir su valor.
-- Reglas cruzadas: `APP_ENV=production` exige `PAYMENT_PROVIDER=paypal`, `APP_ORIGIN` con `https://`, llavero de entradas presente y parámetros de Argon2 no inferiores al mínimo. `PAYPAL_API_BASE` solo admite el anfitrión de Sandbox en el MVP.
+- Reglas cruzadas: `APP_ENV=production` exige `PAYMENT_PROVIDER=paypal`, `APP_ORIGIN` con `https://`, llavero de entradas presente y parámetros de Argon2 no inferiores al mínimo. `PAYPAL_API_BASE` solo admite el anfitrión de Sandbox en el MVP. `DB_LOCK_TIMEOUT_MS` es un entero en milisegundos (defecto 5000; rango 100–30 000 **propuesto**, 09 §3).
 - **Ninguna variable `NEXT_PUBLIC_*`**: el cliente no necesita configuración (mismo origen para HTTP y WebSocket). Los módulos con secretos importan `server-only`.
 - Los secretos solo están en variables de entorno del proceso. `.env` no se versiona; `.env.example` contiene valores ficticios (09 §3).
 - Prisma 7 no carga `.env`: `prisma.config.ts` importa `dotenv/config`; la aplicación carga `.env` solo en desarrollo.
@@ -521,7 +521,7 @@ type ActionResult<T> =
 | Aspecto | Estrategia |
 |---|---|
 | **Sesiones** | Fila `Session` por inicio de sesión; cookie con token opaco; validación en base por petición; revocación por `revokedAt` (D-15). |
-| **Base de datos** | Un cliente Prisma con adaptador `pg`; transacciones interactivas en `READ COMMITTED` con `lock_timeout` de 5 s; ayudante `withTx()` en `shared/db/tx.ts`. Tamaño de la agrupación configurable (`DB_POOL_MAX`, 10 por defecto; las pruebas de concurrencia lo elevan). |
+| **Base de datos** | Un cliente Prisma con adaptador `pg`; transacciones interactivas en `READ COMMITTED` con `lock_timeout` = `DB_LOCK_TIMEOUT_MS` (5000 por defecto, 09 §3; las pruebas de `BUSY_TRY_AGAIN` lo reducen por llamada con `opts.lockTimeoutMs`, 04 §5); ayudante `withTx()` en `shared/db/tx.ts`. Tamaño de la agrupación configurable (`DB_POOL_MAX`, 10 por defecto; las pruebas de concurrencia lo elevan). |
 | **Correo** | `nodemailer` contra SMTP de pruebas. Se envía **después** de confirmar la transacción que crea el token. Si el envío falla se registra y la respuesta al usuario es la misma; puede pedir otro enlace. |
 | **Reloj** | `Clock` inyectable (D-10), monótono no decreciente dentro del proceso. Cada transacción toma `now` **una vez, inmediatamente después de adquirir el último bloqueo del que depende la decisión** (no al empezar: una espera de bloqueo dejaría la hora obsoleta) y lo usa en todas sus comparaciones (D-69, [04 §1](04-reglas-transacciones-y-concurrencia.md)). |
 
@@ -532,7 +532,7 @@ type ActionResult<T> =
 | J1 | `expire-holds` | 60 s y al arrancar | Marca `EXPIRED` las reservas `HELD` con `expiresAt ≤ ahora`; audita. | Los cupos se liberan igual (se calculan por fecha); solo la pantalla muestra «vencida» por cálculo. |
 | J2 | `reconcile-payments` | 60 s y al arrancar | Consulta `getOrder` de pagos `ORDER_CREATED` con `nextCheckAt ≤ ahora` y llama a `settlePayment`; **calendario de 13 comprobaciones en ≈ 76 h** (2, 4, 9, 19, 39, 69 min, 2 h 09, 4 h 09, 8 h 09, 16 h 09, 28 h 09, 52 h 09, 76 h 09 desde el reclamo; [04 TX-11.2](04-reglas-transacciones-y-concurrencia.md), propuesta). Puede **reanudar con la misma clave** un intento de captura desconocido mientras la retención esté vigente con margen; **nunca inicia** uno ni cierra incertidumbres por plazo. Agotado el calendario el caso pasa a revisión del administrador. | Los casos con captura iniciada siguen en el calendario aunque no llegue ningún webhook; sin J2 quedan en revisión hasta que llegue el webhook o el administrador pulse «Consultar pasarela». |
 | J3 | `ws-session-sweep` | 30 s | Desconecta sockets cuya sesión ya no es válida. | Cada evento entrante revalida la sesión igualmente. |
-| J4 | `purge` | 6 h y al arrancar | Borra sesiones y tokens caducados y filas de límite antiguas; anula `birthDate` tras la actividad (D-62). | Solo crece el almacenamiento. |
+| J4 | `purge` — **propuesta sin paquete** (`P3-04`, 10 §5; no se implementa hasta que el equipo la adopte, D7-6) | 6 h y al arrancar | Borra sesiones y tokens caducados y filas de límite antiguas; anula `birthDate` tras la actividad (D-62). | Solo crece el almacenamiento. |
 
 Todos son idempotentes, toleran ejecutarse a la vez que las peticiones y se desactivan con `JOBS_ENABLED=false` (pruebas).
 
@@ -549,7 +549,7 @@ Todos son idempotentes, toleran ejecutarse a la vez que las peticiones y se desa
 
 ### 11.3 Recuperación tras reinicio
 
-Al arrancar: validar entorno → comprobar conexión a la base → ejecutar J1, J2 y J4 una vez → aceptar tráfico. Los clientes del chat reconectan y piden los mensajes posteriores a su último id. No hay estado en memoria que restaurar.
+Al arrancar: validar entorno → comprobar conexión a la base → ejecutar J1 y J2 una vez (y J4 solo si se adopta `P3-04`) → aceptar tráfico. Los clientes del chat reconectan y piden los mensajes posteriores a su último id. No hay estado en memoria que restaurar.
 
 ---
 

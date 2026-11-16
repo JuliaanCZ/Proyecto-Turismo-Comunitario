@@ -397,7 +397,7 @@ Eliminar es borrar **todas** las ubicaciones (la local, la segunda y su suma). E
    3. Si la utilidad **difiere** (por reservas `HELD`, `REVIEW_REQUIRED` o pagos no terminales que sí existían en la fecha de la copia y ya no en el original), el acceso **sigue cerrado** y se eleva al equipo: hace falta un modo de restauración que no aplique el diferimiento, porque la solicitud ya cumplió las condiciones en su día. **Por decidir.**
    4. **Auditoría:** si la restauración vuelve a escribir `account.anonymize`, 06 §4.6 solo prevé `origin = SELF`; añadir `RESTORE` o no escribirlo **está por decidir**.
    5. **Dependencia:** la utilidad y la guardia de `Attendee` que exige 06 §4.5 (03) **no existen**; hasta entonces este paso no es ejecutable y se registra como pendiente.
-8. **Habilitar trabajos sin abrir el acceso:** arrancar la aplicación con `JOBS_ENABLED=true`, solo en `127.0.0.1`; el trabajo J4 anula de nuevo `birthDate` de las actividades terminadas hace más de 30 días (las restauradas lo recuperaron). Esperar su primera ejecución (T-OPS-06).
+8. **Habilitar trabajos sin abrir el acceso:** arrancar la aplicación con `JOBS_ENABLED=true`, solo en `127.0.0.1`; si se adoptó `P3-04`, el trabajo J4 anula de nuevo `birthDate` de las actividades terminadas hace más de 30 días (las restauradas lo recuperaron). Esperar su primera ejecución (T-OPS-06).
 9. **Comprobar con la aplicación:** `/api/salud` responde 200; una cuenta sembrada inicia sesión; **descargar una entrada existente** (comprueba que el llavero `TICKET_KEYRING` descifra la copia; sin la clave de la copia el QR no puede mostrarse, RB-10); y, para cada cuenta de la lista del paso 7: correo `anon-<id>@anon.invalid`, ningún `Session`, nombres de asistentes `Asistente anonimizado`, texto de chat `[mensaje eliminado]`, `birthDate` nulo en actividades vencidas, e iniciar sesión con el correo original **falla**. Mailpit no recibió correos y no hubo llamadas a PayPal.
 10. **Cobros posteriores a la copia** (comprobación incorporada el 2026-11-16). La base restaurada **no conoce** lo ocurrido después de la copia; un cobro en PayPal puede no tener reserva local. **Nunca se inventa una reserva ni se emite una entrada a partir de una coincidencia dudosa.**
     1. **Identificar con evidencia de PayPal** (el panel de actividad de Sandbox o una exportación; no la base): toda captura con fecha posterior a la marca UTC de la copia (con 24 h de margen, inocuo). Por cada una anotar: id de captura, id de orden, `custom_id` (= id de reserva, 05 §6), `invoice_id` (= id de pago), importe, moneda, estado y hora UTC. La evidencia (capturas de pantalla o exportación) se **conserva** fuera del repositorio, con el acceso restringido de §5.4: contiene datos de la persona pagadora.
@@ -587,7 +587,7 @@ Doce fichas para operar la demostración. **Ninguna se ha ejecutado**: los coman
 
 - **Señal:** reservas `HELD` con `expiresAt` pasado que siguen sin pasar a `EXPIRED`; no hay `job.run` reciente. **No es un fallo de inventario:** la disponibilidad filtra por `expiresAt > ahora` (02 §11.2) y el cupo ya está libre.
 - **Diagnóstico:** `JOBS_ENABLED` en `false` por error (valor de pruebas); servicio suspendido (RB-12); excepción de J1 en los registros; bloqueos (`BUSY_TRY_AGAIN`).
-- **Acción:** poner `JOBS_ENABLED=true` y reiniciar: al arrancar corren J1, J2 y J4 una vez (02 §11.3). No cambiar estados a mano.
+- **Acción:** poner `JOBS_ENABLED=true` y reiniciar: al arrancar corren J1 y J2 una vez, y J4 si se adoptó `P3-04` (02 §11.3). No cambiar estados a mano.
 - **Recuperación:** las reservas vencidas pasan a `EXPIRED` y queda una fila `job.run` con su recuento; el comprometido de cada oferta es menor o igual que su capacidad.
 - **Escalar:** persiste con los trabajos activos y el mismo error → defecto de TX-06; se registra y se corrige en un paquete.
 
@@ -605,7 +605,7 @@ Sigue TX-10 y TX-11. El webhook **acelera**; la fuente de verdad es `getOrder` y
 
 - **Señal:** despliegue, caída del proceso o reinicio del alojamiento; peticiones cortadas; el chat se desconecta.
 - **Diagnóstico:** causa (despliegue, memoria, comprobación de salud, suspensión). Una transacción interrumpida **se revierte entera** (04). `SIGTERM` pone `/api/salud` en 503 y cierra de forma ordenada (02 §11); el plazo de gracia exacto sigue por fijar (08 §3.7.3; 30 s ampliables en el alojamiento evaluado).
-- **Acción:** ninguna manual. Al arrancar valida el entorno, comprueba la base, ejecuta J1, J2 y J4 una vez y acepta tráfico (02 §11.3). No hay estado en memoria que restaurar.
+- **Acción:** ninguna manual. Al arrancar valida el entorno, comprueba la base, ejecuta J1 y J2 una vez (J4 si se adoptó `P3-04`) y acepta tráfico (02 §11.3). No hay estado en memoria que restaurar.
 - **Recuperación:** `/api/salud` 200; J2 retoma los pagos con captura iniciada (`nextCheckAt` y `checkAttempts` están en la base, T-PAG-20c); el chat reconecta y pide lo posterior a su último id sin pérdida ni duplicado (T-CHAT-08).
 - **Escalar:** reinicios en bucle (→ RB-08 si siguieron a un despliegue); pagos `ORDER_CREATED` con intento abierto que no avanzan tras 15 min (→ RB-09).
 
@@ -657,7 +657,7 @@ El procedimiento completo y la **regla de cierre** están en §5.5; esta ficha s
 
 - **Señal:** la primera petición tarda cerca de un minuto; los sockets del chat se caen; los trabajos estuvieron detenidos mientras dormía (§6.3).
 - **Diagnóstico:** `GET /api/salud` hasta 200; confirmar que la base gratuita **no caducó** (30 días).
-- **Acción:** **despertar el servicio con antelación** (propuesta: 15 minutos antes) repitiendo `GET /api/salud`. Al arrancar corren J1, J2 y J4 (02 §11.3): las retenciones vencidas se liberan y los pagos pendientes se concilian. Tener a mano el plan de contingencia de 12 §7.
+- **Acción:** **despertar el servicio con antelación** (propuesta: 15 minutos antes) repitiendo `GET /api/salud`. Al arrancar corren J1 y J2, y J4 si se adoptó `P3-04` (02 §11.3): las retenciones vencidas se liberan y los pagos pendientes se concilian. Tener a mano el plan de contingencia de 12 §7.
 - **Recuperación:** iniciar sesión con la cuenta de demostración, ver ofertas, conectar el chat por WSS y comprobar que no hay casos nuevos en revisión de pagos.
 - **Escalar:** no responde en 3 minutos (propuesta) → RB-08 o RB-01; si la demostración corre riesgo, pasar a la contingencia de 12.
 
