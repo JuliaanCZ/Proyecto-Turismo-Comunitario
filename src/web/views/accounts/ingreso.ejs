@@ -1,0 +1,46 @@
+<%#
+  Inicio de sesión (B1.2). Con sesión previa: incluye _csrf para que el reingreso no falle en CSRF.
+  La contraseña nunca se reimprime tras un error.
+%>
+<div class="pila">
+  <div>
+    <h1>Ingresar</h1>
+    <p>Accede a tu panel para gestionar ofertas y conversar con la comunidad.</p>
+  </div>
+
+  <% if (notice) { %>
+  <p class="mensaje mensaje--exito" role="status"><strong>Listo:</strong> <%= notice %></p>
+  <% } %>
+
+  <% if (formError) { %>
+  <p class="mensaje mensaje--error" role="alert"><strong>Error:</strong> <%= formError %></p>
+  <% } %>
+
+  <form class="formulario" method="post" action="/ingreso" data-schema="<%= JSON.stringify(schema) %>" autocomplete="on">
+    <% if (locals.principal) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% } %>
+    <% if (next) { %><input type="hidden" name="next" value="<%= next %>"><% } %>
+    <%- include('../partials/form-field', {
+      name: 'email',
+      label: 'Correo',
+      type: 'email',
+      required: true,
+      autocomplete: 'email',
+      value: values.email,
+      errors: errors.email,
+    }) %>
+    <%- include('../partials/form-field', {
+      name: 'password',
+      label: 'Contraseña',
+      type: 'password',
+      required: true,
+      autocomplete: 'current-password',
+      value: '',
+      errors: errors.password,
+    }) %>
+    <div class="acciones">
+      <button class="btn" type="submit">Ingresar</button>
+      <a class="btn btn--secundario" href="/registro">Crear cuenta</a>
+      <a class="btn btn--secundario" href="/recuperar">Olvidé mi contraseña</a>
+    </div>
+  </form>
+</div>

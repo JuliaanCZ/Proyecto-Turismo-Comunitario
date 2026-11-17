@@ -1,0 +1,13 @@
+B1.2 — Cabeceras Set-Cookie (token redactado, nunca se guarda en claro)
+
+[HTTP local · COOKIE_SECURE=false]
+Status: 302 -> Location: /panel
+Cache-Control: no-store
+Set-Cookie: tc_session=<token-32B-base64url-redactado>; Max-Age=28800; Path=/; HttpOnly; SameSite=Lax
+Longitud token (base64url): 43
+SQLite sessions.token_hash === sha256(token): true
+SQLite TTL (ms): 28800000
+
+[HTTPS · COOKIE_SECURE=true]
+Status: 302 -> Location: /panel
+Set-Cookie: __Host-tc_session=<token-32B-base64url-redactado>; Max-Age=28800; Path=/; HttpOnly; Secure; SameSite=Lax
