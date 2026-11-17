@@ -1,0 +1,28 @@
+$ node --test tests/unit/db-migraciones.test.js
+✔ B0.2: openDb activa claves foráneas y busy_timeout, y WAL solo en archivo (11.7595ms)
+✔ B0.2: withTransaction confirma, revierte y rechaza funciones asíncronas (1.5681ms)
+✔ TM-DB-01: las migraciones crean las tablas, columnas e índices esperados en :memory: (7.4173ms)
+✔ TM-DB-02: reejecutar el migrador no cambia nada (6.5609ms)
+✔ TM-DB-02: modificar un archivo ya aplicado hace fallar el migrador (30.8728ms)
+✔ B0.2: el checksum ignora CRLF y BOM (clones de Windows y Linux) (26.3934ms)
+✔ B0.2: una migración aplicada que desaparece del directorio es un error (24.2678ms)
+✔ B0.2: una migración nueva con número menor que las aplicadas se aplica, y solo ella (31.2988ms)
+✔ B0.2: una migración que falla se revierte entera y no se registra (34.6567ms)
+✔ B0.2: rechaza nombres de migración inválidos y números repetidos (42.8803ms)
+✔ TM-DB-03: las claves foráneas están activas y sus ON DELETE son explícitos (8.3899ms)
+✔ TM-DB-04: UNIQUE (email) y UNIQUE (author_id, client_message_id) rechazan duplicados (4.3429ms)
+✔ TM-DB-05: los CHECK de ofertas rechazan capacidad, título, provincia y demás rangos (7.7707ms)
+✔ TM-DB-05: los CHECK de chat rechazan texto vacío, en blanco o demasiado largo (5.282ms)
+✔ TM-DB-05: los CHECK de cuentas rechazan correos, nombres, sesiones y tokens inválidos (5.0337ms)
+✔ TM-DB-05a: offer_photos admite una foto por oferta, valida formato, texto y tamaño, y cae en cascada (50.5704ms)
+✔ B0.2: cada índice documentado lo usa la consulta a la que sirve, sin ordenar aparte (11.3263ms)
+✔ B0.2: scripts/migrate.js crea la carpeta y el archivo, y la segunda ejecución no cambia nada (390.1301ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 869.9809
+código de salida: 0

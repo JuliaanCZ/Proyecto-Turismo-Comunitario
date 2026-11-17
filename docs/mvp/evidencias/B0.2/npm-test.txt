@@ -1,0 +1,36 @@
+$ npm test
+
+> turismo-comunitario@0.1.0 test
+> node --test
+
+✔ TM-BASE-01: GET /salud devuelve 200 y el estado esperado (63.1135ms)
+✔ TM-BASE-02: Express y el transporte WebSocket responden en el mismo puerto (35.0701ms)
+✔ C-ENV: conserva los valores de desarrollo y valida el número opcional (2.5983ms)
+✔ C-ENV: producción exige HTTPS, cookies seguras y un secreto propio (1.1107ms)
+✔ B0.2: openDb activa claves foráneas y busy_timeout, y WAL solo en archivo (11.9511ms)
+✔ B0.2: withTransaction confirma, revierte y rechaza funciones asíncronas (2.0693ms)
+✔ TM-DB-01: las migraciones crean las tablas, columnas e índices esperados en :memory: (8.4997ms)
+✔ TM-DB-02: reejecutar el migrador no cambia nada (8.1199ms)
+✔ TM-DB-02: modificar un archivo ya aplicado hace fallar el migrador (28.263ms)
+✔ B0.2: el checksum ignora CRLF y BOM (clones de Windows y Linux) (30.2841ms)
+✔ B0.2: una migración aplicada que desaparece del directorio es un error (25.4475ms)
+✔ B0.2: una migración nueva con número menor que las aplicadas se aplica, y solo ella (34.2633ms)
+✔ B0.2: una migración que falla se revierte entera y no se registra (28.7603ms)
+✔ B0.2: rechaza nombres de migración inválidos y números repetidos (35.2536ms)
+✔ TM-DB-03: las claves foráneas están activas y sus ON DELETE son explícitos (6.0272ms)
+✔ TM-DB-04: UNIQUE (email) y UNIQUE (author_id, client_message_id) rechazan duplicados (4.6003ms)
+✔ TM-DB-05: los CHECK de ofertas rechazan capacidad, título, provincia y demás rangos (8.6128ms)
+✔ TM-DB-05: los CHECK de chat rechazan texto vacío, en blanco o demasiado largo (5.1329ms)
+✔ TM-DB-05: los CHECK de cuentas rechazan correos, nombres, sesiones y tokens inválidos (6.1684ms)
+✔ TM-DB-05a: offer_photos admite una foto por oferta, valida formato, texto y tamaño, y cae en cascada (63.491ms)
+✔ B0.2: cada índice documentado lo usa la consulta a la que sirve, sin ordenar aparte (12.2819ms)
+✔ B0.2: scripts/migrate.js crea la carpeta y el archivo, y la segunda ejecución no cambia nada (407.4838ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1151.9791
+código de salida: 0
