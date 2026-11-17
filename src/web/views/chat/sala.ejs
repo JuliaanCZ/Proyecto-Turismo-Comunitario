@@ -1,0 +1,47 @@
+<h1>Chat del equipo</h1>
+<p class="texto-suave">Sala general para coordinar las ofertas. Los mensajes se guardan antes de enviarse.</p>
+
+<p id="chat-connection" class="chat__conexion" role="status" aria-live="polite">Conectando por WebSocket…</p>
+
+<section class="chat" aria-labelledby="chat-history-title">
+  <div class="chat__cabecera">
+    <h2 id="chat-history-title">Mensajes</h2>
+    <button id="chat-load-before" class="btn btn--secundario" type="button"<%= hasMore ? '' : ' hidden' %>>Cargar anteriores</button>
+  </div>
+
+  <p id="chat-empty" class="vacio"<%= messages.length ? ' hidden' : '' %>>Todavía no hay mensajes. Escribe el primero.</p>
+  <ol
+    id="chat-messages"
+    class="chat__mensajes"
+    role="log"
+    aria-live="polite"
+    aria-relevant="additions"
+    data-first-id="<%= firstMessageId %>"
+    data-last-id="<%= lastMessageId %>"
+    data-current-user-id="<%= principal.userId %>"
+  >
+    <% for (const message of messages) { %>
+    <li class="chat__mensaje<%= message.author.id === principal.userId ? ' chat__mensaje--propio' : '' %>" data-message-id="<%= message.id %>" data-client-message-id="<%= message.clientMessageId %>">
+      <div class="chat__mensaje-meta">
+        <strong><%= message.author.displayName %></strong>
+        <time datetime="<%= message.createdAtIso %>"><%= message.createdAtLabel %></time>
+        <% if (message.author.id === principal.userId) { %><span class="chat__estado">Confirmado</span><% } %>
+      </div>
+      <p><%= message.text %></p>
+    </li>
+    <% } %>
+  </ol>
+</section>
+
+<form id="chat-form" class="formulario chat__formulario">
+  <div class="campo">
+    <label class="campo__etiqueta" for="chat-text">Mensaje <span class="campo__obligatorio" aria-hidden="true">*</span></label>
+    <textarea id="chat-text" name="text" rows="3" required aria-describedby="chat-count chat-error"></textarea>
+    <p id="chat-count" class="campo__ayuda">0 de 500 caracteres</p>
+    <p id="chat-error" class="campo__error" role="alert"></p>
+  </div>
+  <button id="chat-submit" class="btn" type="submit">Enviar mensaje</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module" src="/js/chat.js"></script>

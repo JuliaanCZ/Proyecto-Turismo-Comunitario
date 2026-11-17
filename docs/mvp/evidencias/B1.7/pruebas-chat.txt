@@ -1,0 +1,37 @@
+Bloque: B1.7 — Chat: mensajes persistentes, historial y pantalla
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+Comando:
+node --test tests/integration/chat-servicio.test.js tests/ws/chat-mensajes.test.js
+
+Resultado final:
+tests 10
+pass 10
+fail 0
+duration_ms 475.6783
+
+TM-CHAT-01: pasa — persiste antes de emitir y entrega el mismo DTO al segundo cliente.
+TM-CHAT-02: pasa — rechaza UUID, tipo, texto vacío y más de 500 puntos de código sin insertar ni emitir.
+TM-CHAT-03: pasa — el reintento devuelve la misma fila y no vuelve a emitir ni notificar al hook.
+TM-CHAT-04: pasa — 75 mensajes se leen en páginas de 30, 30 y 15, ascendentes y sin omisiones.
+TM-CHAT-05: pasa — tras reconectar, after recupera exactamente los tres mensajes perdidos.
+TM-CHAT-06: pasa — 40 mensajes sobreviven al cierre y reapertura del archivo SQLite.
+TM-CHAT-07: pasa — el marcado se conserva literal y EJS lo muestra escapado.
+TM-CHAT-08: pasa — el historial HTTP exige sesión, usa no-store y valida límites y cursores.
+TM-CHAT-09: pasa — guard impide guardar con sesión revocada y desconecta el socket.
+
+Estabilidad: 10 ejecuciones consecutivas; 10 con código de salida 0.
+
+Comando: npm test
+Resultado: 100 pruebas, 100 aprobadas, 0 fallidas, 0 omitidas.
+Duración registrada: 1248.8889 ms.
+
+Comando: npm run lint
+Resultado: código de salida 0, sin errores ni advertencias.
+
+Primera ejecución del bloque: 9/10; la funcionalidad pasó y falló únicamente la limpieza
+del directorio temporal en Windows porque SQLite seguía abierto. Se corrigió el orden:
+cerrar la conexión y después eliminar el directorio. La ejecución final pasó completa.
+
+Evidencia manual pendiente: capturas con dos navegadores en /panel/chat. B1.2 todavía no
+está integrado; no existe ingreso real para obtener dos sesiones desde la aplicación normal.

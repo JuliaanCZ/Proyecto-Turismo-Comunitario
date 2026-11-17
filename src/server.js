@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
+import { registerChatHandlers } from './realtime/chat.handlers.js';
 import { attachGateway } from './realtime/gateway.js';
 
 const MAX_HTTP_BUFFER_SIZE = 16 * 1024;
@@ -9,5 +10,6 @@ export function createHttpServer(app, container) {
   const httpServer = createServer(app);
   const io = new Server(httpServer, { maxHttpBufferSize: MAX_HTTP_BUFFER_SIZE });
   const gateway = container ? attachGateway(io, container) : undefined;
+  if (gateway) registerChatHandlers(io, gateway, container);
   return { httpServer, io, gateway };
 }

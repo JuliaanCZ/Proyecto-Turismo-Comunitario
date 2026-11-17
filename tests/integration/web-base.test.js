@@ -412,12 +412,11 @@ test('createContainer: overrides inyectan servicios, reloj y base; la base inyec
   assert.equal(db.prepare('SELECT 1 AS uno').get().uno, 1);
 });
 
-test('esqueleto C-MOD: los módulos pendientes lanzan NOT_IMPLEMENTED (501)', (t) => {
+test('esqueleto C-MOD: el módulo de cuentas pendiente lanza NOT_IMPLEMENTED (501)', (t) => {
   const { container } = build(t, { overrides: { accounts: undefined } });
   const esperado = {
     accounts: ['registerUser', 'authenticate', 'createSession', 'resolveSession', 'revokeSession', 'revokeAllSessions',
       'requestPasswordReset', 'resetPassword', 'listMailbox'],
-    chat: ['postMessage', 'getHistory', 'lastMessageId'],
   };
   for (const [modulo, funciones] of Object.entries(esperado)) {
     assert.deepEqual(Object.keys(container[modulo]).sort(), [...funciones].sort(), modulo);
