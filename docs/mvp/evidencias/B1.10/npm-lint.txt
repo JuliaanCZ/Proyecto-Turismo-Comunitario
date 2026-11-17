@@ -1,0 +1,9 @@
+Comando: npm run lint
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+
+> turismo-comunitario@0.1.0 lint
+> eslint .
+
+
+Código de salida: 0

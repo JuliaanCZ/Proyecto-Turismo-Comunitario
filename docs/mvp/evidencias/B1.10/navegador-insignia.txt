@@ -1,0 +1,34 @@
+Fecha: 2026-11-17 · Windows · Node v24.22.3
+Navegador de Ana: Chrome/157.0.8103.79 (perfil propio) · Navegador de Luis: Chrome/157.0.8103.79 (perfil propio) · http://localhost:3100
+PASA  · Ana: el chat conecta por WebSocket — Conectado por websocket.
+PASA  · Luis abre /panel con la sesión simulada (cookie fijada por el servidor)
+PASA  · Los sockets de /panel se abren por WebSocket (101 Switching Protocols) — Luis: 101, Ana (panel): 101
+PASA  · Luis en /panel no carga chat.js (no se une a la sala)
+Luis antes del mensaje: {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":"marca-a8uvo5g2fqv","foco":"BODY","ancho":16}
+PASA  · Antes: insignia vacía, región aria-live="polite", sin contador
+  captura: 00-luis-panel-antes.png
+PASA  · Luis ve «1 mensaje nuevo» sin recargar
+Luis tras el mensaje de Ana: {"texto":"1 mensaje nuevo","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":false,"contador":"1","marca":"marca-a8uvo5g2fqv","foco":"BODY","ancho":128}
+PASA  · Sin recarga (la marca de la página sigue), el foco no se movió y chatNuevos = 1
+  captura: 01-luis-insignia-1-mensaje-nuevo.png
+  captura: 02-ana-autora-en-el-chat.png
+PASA  · Ana (autora) no ve insignia en su otra pestaña del panel — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":"marca-qgpbk25ikl","foco":"BODY","ancho":16}
+  captura: 03-ana-autora-otra-pestana-sin-insignia.png
+PASA  · Luis ve «2 mensajes nuevos» (plural)
+  captura: 04-luis-insignia-2-mensajes-nuevos.png
+PASA  · Ana sigue sin insignia tras el segundo mensaje
+PASA  · Tras navegar a otra pantalla autenticada la insignia sigue en «2 mensajes nuevos» (sessionStorage) — {"texto":"2 mensajes nuevos","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":false,"contador":"2","marca":null,"foco":"BODY","ancho":144}
+Regiones aria-live en la portada autenticada: chat-badge
+PASA  · Al abrir /panel/chat, chat.js borra chatNuevos
+PASA  · /panel/chat no carga notificaciones.js ni un segundo cliente Socket.IO
+PASA  · Luis conecta al chat
+PASA  · En la sala, Luis recibe chat:message (la lista muestra los 3 mensajes)
+  captura: 05-luis-en-el-chat-recibe-mensaje.png
+PASA  · En la sala no se acumulan avisos
+PASA  · Al volver a /panel la insignia está vacía — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":null,"foco":"BODY","ancho":16}
+  captura: 06-luis-panel-insignia-limpia.png
+PASA  · Ana (chat): sin errores de consola, CSP ni red
+PASA  · Ana (panel): sin errores de consola, CSP ni red
+PASA  · Luis: sin errores de consola, CSP ni red
+PASA  · Todas las páginas /panel y /panel/chat se sirven con Cache-Control: no-store — 4 respuestas
+RESULTADO: todas las comprobaciones pasan.

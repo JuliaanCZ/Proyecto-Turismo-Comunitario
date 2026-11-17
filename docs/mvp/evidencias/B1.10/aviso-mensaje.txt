@@ -1,0 +1,21 @@
+Comando: node --test tests/ws/aviso-mensaje.test.js
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+✔ TM-NOT-01: quien está conectado fuera de la sala recibe el aviso y no chat:message (116.8011ms)
+✔ TM-NOT-02: quien está unido a chat:general recibe chat:message y no el aviso (34.6928ms)
+✔ TM-NOT-03: el autor no recibe el aviso en ninguna de sus pestañas ni sesiones (41.7406ms)
+✔ TM-NOT-04: la carga del aviso no contiene el texto del mensaje ni correos (24.7073ms)
+✔ extra: gateway.messageStored invocado directamente emite el aviso sin pasar por el chat (20.4563ms)
+✔ extra: un envío repetido o inválido no genera aviso; uno válido sí (23.3119ms)
+✔ extra: un usuario con dos sockets fuera de la sala recibe un aviso por socket y deja de recibirlo al unirse (32.4065ms)
+✔ extra: un mensaje mal formado no rompe a los demás oyentes ni al chat y queda en el registro (15.2638ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1222.4291
+
+Código de salida: 0

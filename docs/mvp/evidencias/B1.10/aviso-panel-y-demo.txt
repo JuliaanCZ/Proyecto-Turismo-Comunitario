@@ -1,0 +1,21 @@
+Comando: node --test tests/integration/aviso-panel.test.js tests/integration/demo-aviso-chat.test.js
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+✔ aviso: /panel, la portada y un 404 con sesión cargan el aviso (111.4621ms)
+✔ aviso: /panel/chat (también con barra final o mayúsculas) no carga el aviso y sigue cargando el chat (40.0331ms)
+✔ aviso: sin sesión no se carga ningún script de tiempo real (50.3404ms)
+✔ aviso: la CSP no se relaja (scripts propios, conexión al mismo origen) y la insignia sigue vacía y oculta (19.1435ms)
+✔ demo del aviso: se niega a arrancar con APP_ENV=production (731.5611ms)
+✔ demo del aviso: cada usuario recibe su cookie por HTTP y ningún token se imprime (932.5494ms)
+✔ demo del aviso: la ruta rechaza otro Host, otro método y usuarios desconocidos (915.7686ms)
+✔ demo del aviso: con las cookies HTTP de la demo, el chat real de ana avisa a luis (883.7613ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4622.291
+
+Código de salida: 0

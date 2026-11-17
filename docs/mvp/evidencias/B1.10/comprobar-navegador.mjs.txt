@@ -1,0 +1,202 @@
+// Comprobación de B1.10 en dos Chrome reales (headless, perfiles distintos) por el protocolo DevTools.
+// Sin dependencias. Uso: node comprobar-navegador.mjs <carpeta-de-salida> <url-base>
+// Requiere `node scripts/demo-aviso-chat.js` (sesiones SIMULADAS de ana y luis; chat y aviso REALES).
+// No recibe ni imprime ningún token ni cookie: cada Chrome abre su sesión visitando
+// `<url-base>/simulacion/sesion?usuario=...` y es el servidor de simulación quien fija la cookie (Set-Cookie).
+import { spawn } from 'node:child_process';
+import { appendFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const [OUT, BASE] = process.argv.slice(2);
+const CHROME = process.env.CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+mkdirSync(OUT, { recursive: true });
+const LOG = join(OUT, 'navegador-insignia.txt');
+writeFileSync(LOG, '');
+const say = (line) => { console.log(line); appendFileSync(LOG, `${line}\n`); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let failures = 0;
+const check = (ok, label, detail = '') => {
+  if (!ok) failures += 1;
+  say(`${ok ? 'PASA ' : 'FALLA'} · ${label}${detail ? ` — ${detail}` : ''}`);
+};
+
+async function launch(port, name) {
+  const profile = mkdtempSync(join(tmpdir(), `tc-b110-${name}-`));
+  const proc = spawn(CHROME, [
+    '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
+    '--no-first-run', '--disable-gpu', '--hide-scrollbars', '--window-size=1100,430', 'about:blank',
+  ], { stdio: 'ignore' });
+  for (let i = 0; i < 60; i++) {
+    try { await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); break; } catch { await sleep(200); }
+  }
+  const version = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).Browser;
+  return { port, proc, profile, version, name };
+}
+
+async function openTab(browser) {
+  const target = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT' })).json();
+  const ws = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((r) => ws.addEventListener('open', r, { once: true }));
+  let nextId = 1;
+  const pending = new Map();
+  const listeners = [];
+  ws.addEventListener('message', (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.id && pending.has(msg.id)) {
+      const { resolve, reject } = pending.get(msg.id);
+      pending.delete(msg.id);
+      return msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
+    }
+    for (const fn of [...listeners]) fn(msg);
+    return undefined;
+  });
+  const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = nextId++;
+    pending.set(id, { resolve, reject });
+    ws.send(JSON.stringify({ id, method, params }));
+  });
+  const tab = { problems: [], documents: [], sockets: [], listeners, send };
+  const requests = new Map();
+  listeners.push((msg) => {
+    const p = msg.params;
+    if (msg.method === 'Log.entryAdded' && ['error', 'warning'].includes(p.entry.level)) tab.problems.push(`${p.entry.level}: ${p.entry.text} ${p.entry.url ?? ''}`);
+    if (msg.method === 'Runtime.exceptionThrown') tab.problems.push(`excepción: ${p.exceptionDetails.text}`);
+    if (msg.method === 'Network.responseReceived') {
+      requests.set(p.requestId, p.response.url);
+      if (p.type === 'Document') tab.documents.push({ url: p.response.url, status: p.response.status, cacheControl: p.response.headers['Cache-Control'] ?? p.response.headers['cache-control'] });
+    }
+    if (msg.method === 'Network.loadingFailed') tab.problems.push(`red falló: ${requests.get(p.requestId)} ${p.errorText}`);
+    if (msg.method === 'Network.webSocketHandshakeResponseReceived') tab.sockets.push(p.response.status);
+  });
+  for (const domain of ['Page', 'Runtime', 'Log', 'Network']) await send(`${domain}.enable`);
+  await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 430, deviceScaleFactor: 1, mobile: false });
+  tab.evaluate = async (expression) => {
+    const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) throw new Error(`${r.exceptionDetails.text} ${r.exceptionDetails.exception?.description ?? ''}`);
+    return r.result.value;
+  };
+  tab.go = async (path) => {
+    const loaded = new Promise((resolve) => {
+      const fn = (msg) => { if (msg.method === 'Page.loadEventFired') { listeners.splice(listeners.indexOf(fn), 1); resolve(); } };
+      listeners.push(fn);
+    });
+    tab.sockets.length = 0;
+    await send('Page.navigate', { url: `${BASE}${path}` });
+    await loaded;
+    await sleep(300);
+  };
+  tab.waitFor = async (expression, ms = 6000) => {
+    const end = Date.now() + ms;
+    while (Date.now() < end) {
+      if (await tab.evaluate(expression)) return true;
+      await sleep(100);
+    }
+    return false;
+  };
+  tab.shot = async (name) => {
+    const { data } = await send('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(join(OUT, name), Buffer.from(data, 'base64'));
+    say(`  captura: ${name}`);
+  };
+  tab.close = () => ws.close();
+  return tab;
+}
+
+const badge = (tab) => tab.evaluate(`(() => {
+  const b = document.getElementById('chat-badge');
+  const r = b.getBoundingClientRect();
+  return { texto: b.textContent, hidden: b.hidden, ariaLive: b.getAttribute('aria-live'), ariaAtomic: b.getAttribute('aria-atomic'),
+    recortada: b.classList.contains('sr-only'), contador: sessionStorage.getItem('chatNuevos'),
+    marca: window.__sinRecarga ?? null, foco: document.activeElement?.tagName, ancho: Math.round(r.width) };
+})()`);
+
+const sendChat = (tab, text) => tab.evaluate(`(() => {
+  document.querySelector('#chat-text').value = ${JSON.stringify(text)};
+  document.querySelector('#chat-form').requestSubmit();
+  return true;
+})()`);
+
+const ana = await launch(9341, 'ana');
+const luis = await launch(9342, 'luis');
+try {
+  say(`Fecha: ${new Date().toISOString().slice(0, 10)} · Windows · Node ${process.version}`);
+  say(`Navegador de Ana: ${ana.version} (perfil propio) · Navegador de Luis: ${luis.version} (perfil propio) · ${BASE}`);
+
+  // Ana: pestaña del chat y segunda pestaña del panel (no unida a la sala).
+  const anaChat = await openTab(ana);
+  await anaChat.go('/simulacion/sesion?usuario=ana');
+  await anaChat.go('/panel/chat');
+  check(await anaChat.waitFor("document.querySelector('#chat-connection').textContent.startsWith('Conectado')"), 'Ana: el chat conecta por WebSocket', await anaChat.evaluate("document.querySelector('#chat-connection').textContent"));
+  const anaPanel = await openTab(ana);
+  await anaPanel.go('/panel');
+  // Luis: /panel con la insignia.
+  const luisTab = await openTab(luis);
+  await luisTab.go('/simulacion/sesion?usuario=luis');
+  check(luisTab.documents.some((d) => d.url.endsWith('/panel') && d.status === 200), 'Luis abre /panel con la sesión simulada (cookie fijada por el servidor)');
+  await sleep(1200);
+  check(luisTab.sockets.includes(101) && anaPanel.sockets.includes(101), 'Los sockets de /panel se abren por WebSocket (101 Switching Protocols)', `Luis: ${luisTab.sockets}, Ana (panel): ${anaPanel.sockets}`);
+  check(await luisTab.evaluate("!document.querySelector('script[src*=\"/js/chat.js\"]')"), 'Luis en /panel no carga chat.js (no se une a la sala)');
+
+  await luisTab.evaluate("window.__sinRecarga = 'marca-' + Math.random().toString(36).slice(2); true");
+  await anaPanel.evaluate("window.__sinRecarga = 'marca-' + Math.random().toString(36).slice(2); true");
+  let b = await badge(luisTab);
+  say(`Luis antes del mensaje: ${JSON.stringify(b)}`);
+  check(b.texto === '' && b.contador === null && b.ariaLive === 'polite' && b.recortada && !b.hidden, 'Antes: insignia vacía, región aria-live="polite", sin contador');
+  await luisTab.shot('00-luis-panel-antes.png');
+
+  // Ana escribe en el chat.
+  await sendChat(anaChat, 'Hola Luis, ¿revisamos la oferta de Otavalo?');
+  check(await luisTab.waitFor("document.getElementById('chat-badge').textContent === '1 mensaje nuevo'"), 'Luis ve «1 mensaje nuevo» sin recargar');
+  b = await badge(luisTab);
+  say(`Luis tras el mensaje de Ana: ${JSON.stringify(b)}`);
+  check(b.marca?.startsWith('marca-') && b.foco === 'BODY' && b.contador === '1' && !b.recortada, 'Sin recarga (la marca de la página sigue), el foco no se movió y chatNuevos = 1');
+  await luisTab.shot('01-luis-insignia-1-mensaje-nuevo.png');
+  await anaChat.shot('02-ana-autora-en-el-chat.png');
+  await sleep(700);
+  const bAnaPanel = await badge(anaPanel);
+  check(bAnaPanel.texto === '' && bAnaPanel.contador === null && bAnaPanel.recortada, 'Ana (autora) no ve insignia en su otra pestaña del panel', JSON.stringify(bAnaPanel));
+  await anaPanel.shot('03-ana-autora-otra-pestana-sin-insignia.png');
+
+  // Segundo mensaje.
+  await sendChat(anaChat, 'Y también la de Cotacachi.');
+  check(await luisTab.waitFor("document.getElementById('chat-badge').textContent === '2 mensajes nuevos'"), 'Luis ve «2 mensajes nuevos» (plural)');
+  await luisTab.shot('04-luis-insignia-2-mensajes-nuevos.png');
+  check((await badge(anaPanel)).texto === '', 'Ana sigue sin insignia tras el segundo mensaje');
+
+  // Sobrevive a la navegación.
+  await luisTab.go('/');
+  b = await badge(luisTab);
+  check(b.texto === '2 mensajes nuevos' && b.marca === null, 'Tras navegar a otra pantalla autenticada la insignia sigue en «2 mensajes nuevos» (sessionStorage)', JSON.stringify(b));
+  const portadaAria = await luisTab.evaluate("[...document.querySelectorAll('[aria-live]')].map((e) => e.id || e.tagName).join(',')");
+  say(`Regiones aria-live en la portada autenticada: ${portadaAria}`);
+
+  // Abrir el chat la borra (chat.js) y leer en vivo no suma.
+  await luisTab.go('/panel/chat');
+  check(await luisTab.evaluate("sessionStorage.getItem('chatNuevos') === null"), 'Al abrir /panel/chat, chat.js borra chatNuevos');
+  check(await luisTab.evaluate("!document.querySelector('script[src*=\"notificaciones.js\"]') && document.querySelectorAll('script[src*=\"socket.io\"]').length === 1"), '/panel/chat no carga notificaciones.js ni un segundo cliente Socket.IO');
+  check(await luisTab.waitFor("document.querySelector('#chat-connection').textContent.startsWith('Conectado')"), 'Luis conecta al chat');
+  await sleep(500);
+  await sendChat(anaChat, 'Tercero, mientras lees el chat.');
+  check(await luisTab.waitFor("document.querySelectorAll('#chat-messages li').length >= 3"), 'En la sala, Luis recibe chat:message (la lista muestra los 3 mensajes)');
+  await luisTab.shot('05-luis-en-el-chat-recibe-mensaje.png');
+  check(await luisTab.evaluate("sessionStorage.getItem('chatNuevos') === null"), 'En la sala no se acumulan avisos');
+  await luisTab.go('/panel');
+  b = await badge(luisTab);
+  check(b.texto === '' && b.recortada, 'Al volver a /panel la insignia está vacía', JSON.stringify(b));
+  await luisTab.shot('06-luis-panel-insignia-limpia.png');
+
+  for (const [name, tab] of [['Ana (chat)', anaChat], ['Ana (panel)', anaPanel], ['Luis', luisTab]]) {
+    check(tab.problems.length === 0, `${name}: sin errores de consola, CSP ni red`, tab.problems.join(' | '));
+  }
+  const panelDocs = [...anaPanel.documents, ...luisTab.documents].filter((d) => /\/panel(\/chat)?$/.test(d.url));
+  check(panelDocs.length > 0 && panelDocs.every((d) => d.cacheControl === 'no-store'), 'Todas las páginas /panel y /panel/chat se sirven con Cache-Control: no-store', `${panelDocs.length} respuestas`);
+} finally {
+  for (const browser of [ana, luis]) {
+    browser.proc.kill();
+    await sleep(400);
+    try { rmSync(browser.profile, { recursive: true, force: true }); } catch { /* Windows aún libera el perfil */ }
+  }
+}
+say(failures === 0 ? 'RESULTADO: todas las comprobaciones pasan.' : `RESULTADO: ${failures} comprobación(es) fallan.`);
+process.exit(failures === 0 ? 0 : 1);
