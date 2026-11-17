@@ -587,6 +587,26 @@ a:hover {
   font-weight: 600;
 }
 
+.chat__presencia {
+  margin-block: var(--tc-e4);
+  padding: var(--tc-e3) var(--tc-e4);
+  border: 1px solid var(--tc-borde);
+  border-radius: var(--tc-radio);
+  background: var(--tc-superficie-suave);
+}
+
+.chat__presencia h2 {
+  margin-top: 0;
+}
+
+.chat__presencia-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tc-e2) var(--tc-e4);
+  margin-bottom: 0;
+  padding-left: var(--tc-e4);
+}
+
 .chat__formulario {
   margin-top: var(--tc-e5);
 }

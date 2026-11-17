@@ -1,0 +1,37 @@
+Bloque: B1.8 - Presencia de usuarios conectados
+Entorno: Windows - Node v24.22.3 - 2026-11-17
+
+Comando:
+node --test tests/ws/chat-presencia.test.js
+
+Resultado final:
+tests 5
+pass 5
+fail 0
+duration_ms 471.3288
+
+TM-CHAT-10: pasa - dos usuarios unidos se ven mutuamente.
+TM-CHAT-11: pasa - dos pestañas cuentan una vez; chat:leave de una no elimina al usuario y la desconexion abrupta de la ultima si.
+TM-CHAT-12: pasa - un socket conectado sin chat:join no aparece.
+TM-CHAT-13: pasa - session-revoked desconecta y retira la presencia.
+TM-CHAT-14: pasa - la carga contiene solo id y displayName, sin correo.
+
+Estabilidad: 5 ejecuciones consecutivas; 5 con codigo de salida 0.
+
+Comprobacion integrada de B1.6, B1.7 y B1.8:
+node --test tests/unit/chat-cliente.test.js tests/integration/chat-servicio.test.js tests/ws/chat-mensajes.test.js tests/ws/chat-presencia.test.js tests/ws/gateway-handshake.test.js
+Resultado: 24 pruebas, 24 aprobadas, 0 fallidas.
+
+Comando: npm test
+Resultado: 116 pruebas, 116 aprobadas, 0 fallidas, 0 omitidas.
+Duracion registrada: 1783.3335 ms.
+
+Comando: npm run lint
+Resultado: codigo de salida 0, sin errores ni advertencias.
+
+Comando: git diff --check
+Resultado: codigo de salida 0.
+
+Evidencia manual pendiente: captura con dos navegadores mostrando Conectados (2).
+B1.2 aun no esta integrado y scripts/vista-panel-simulada.js no monta Socket.IO,
+por lo que no permite comprobar presencia en tiempo real con dos sesiones desde el navegador.

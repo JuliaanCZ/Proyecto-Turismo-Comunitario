@@ -9,6 +9,8 @@ const submit = document.querySelector('#chat-submit');
 const count = document.querySelector('#chat-count');
 const error = document.querySelector('#chat-error');
 const connection = document.querySelector('#chat-connection');
+const presenceCount = document.querySelector('#chat-presence-count');
+const presenceUsers = document.querySelector('#chat-presence-users');
 
 const visibleIds = new Set(
   [...list.querySelectorAll('[data-message-id]')].map((node) => Number(node.dataset.messageId)),
@@ -21,6 +23,16 @@ let recovering = false;
 let sessionEnded = false;
 
 sessionStorage.removeItem('chatNuevos');
+
+function renderPresence(presence) {
+  presenceCount.textContent = String(presence.count);
+  presenceUsers.replaceChildren();
+  for (const user of presence.users) {
+    const item = document.createElement('li');
+    item.textContent = user.displayName;
+    presenceUsers.append(item);
+  }
+}
 
 function formatDate(timestamp) {
   return new Intl.DateTimeFormat('es-EC', {
@@ -176,6 +188,8 @@ async function sendPayload(payload) {
 
 const socket = io({ transports: ['websocket'] });
 
+socket.on('presence:update', renderPresence);
+
 socket.on('connect', async () => {
   connection.textContent = `Conectado por ${socket.io.engine.transport.name}.`;
   submit.disabled = false;
@@ -185,6 +199,7 @@ socket.on('connect', async () => {
       join: async () => {
         const joined = await socket.timeout(5_000).emitWithAck('chat:join');
         if (!joined.ok) throw new Error(joined.error?.message ?? 'No se pudo abrir la sala.');
+        renderPresence(joined.presence);
         return joined;
       },
       recover: recoverAfter,
