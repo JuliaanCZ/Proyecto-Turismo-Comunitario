@@ -23,8 +23,17 @@ function toAppError(error, logger) {
 
 function viewFor(status) {
   if (status === 404) return 'errors/404';
+  if (status === 403) return 'errors/403';
   if (status >= 500) return 'errors/500';
   return 'errors/error';
+}
+
+// `<title>` propio de cada página de error (coincide con su `<h1>`), no el mensaje del servicio.
+function titleFor(status) {
+  if (status === 404) return 'Página no encontrada';
+  if (status === 403) return 'Acción no autorizada';
+  if (status >= 500) return 'Error del servidor';
+  return 'Solicitud no procesada';
 }
 
 /**
@@ -43,7 +52,7 @@ export function errorHandler({ logger = console } = {}) {
       return res.json({ error: body });
     }
 
-    const locals = { title: appError.message, status: appError.status, code: appError.code, message: appError.message };
+    const locals = { title: titleFor(appError.status), status: appError.status, code: appError.code, message: appError.message };
     return res.renderPage(viewFor(appError.status), locals, (renderError) => {
       logger.error('No se pudo mostrar la página de error:', renderError);
       res.type('text/plain').send('Ocurrió un error. Inténtalo de nuevo más tarde.');

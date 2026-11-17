@@ -1,6 +1,16 @@
 <%#
-  Cabecera provisional de B0.4: marca y los accesos mínimos. B1.9 (Integrante 4) la
-  reemplaza con la navegación definitiva sin tocar layout.ejs. Todo dato se imprime escapado.
+  Menú único (B1.9): se escribe aquí una sola vez y lo comparten todas las pantallas.
+  - Con sesión: Inicio, Mis ofertas, Chat, nombre y «Salir» (formulario POST con CSRF).
+  - Sin sesión: Ofertas, Ingresar y Crear cuenta.
+  Contrato con B1.10: `#chat-badge` es el contenedor (oculto) de la insignia de mensajes nuevos;
+  B1.10 lo llena desde `public/js/notificaciones.js`, sin tocar esta plantilla.
+  La página actual se marca con `aria-current="page"` según `currentPath`. Todo dato del usuario
+  se imprime escapado; lo único sin escapar es un literal fijo de este archivo (nunca un dato).
+%>
+<%
+  const ruta = locals.currentPath ?? '';
+  const enRuta = (base, exacta = false) => (exacta ? ruta === base : ruta === base || ruta.startsWith(`${base}/`));
+  const actual = (base, exacta = false) => (enRuta(base, exacta) ? ' aria-current="page"' : '');
 %>
 <header class="cabecera">
   <div class="contenedor cabecera__interior">
@@ -8,7 +18,9 @@
     <nav aria-label="Principal">
       <ul class="nav">
         <% if (locals.principal) { %>
-        <li><a href="/panel"<% if (locals.currentPath === '/panel') { %> aria-current="page"<% } %>>Panel</a></li>
+        <li><a href="/panel"<%- actual('/panel', true) %>>Inicio</a></li>
+        <li><a href="/panel/ofertas"<%- actual('/panel/ofertas') %>>Mis ofertas</a></li>
+        <li><a href="/panel/chat"<%- actual('/panel/chat') %>>Chat<span id="chat-badge" class="insignia" hidden></span></a></li>
         <li class="nav__usuario"><span class="sr-only">Sesión de </span><%= principal.displayName %></li>
         <li>
           <form method="post" action="/salir">
@@ -17,8 +29,9 @@
           </form>
         </li>
         <% } else { %>
-        <li><a href="/ingreso"<% if (locals.currentPath === '/ingreso') { %> aria-current="page"<% } %>>Ingresar</a></li>
-        <li><a href="/registro"<% if (locals.currentPath === '/registro') { %> aria-current="page"<% } %>>Crear cuenta</a></li>
+        <li><a href="/ofertas"<%- actual('/ofertas') %>>Ofertas</a></li>
+        <li><a href="/ingreso"<%- actual('/ingreso', true) %>>Ingresar</a></li>
+        <li><a href="/registro"<%- actual('/registro', true) %>>Crear cuenta</a></li>
         <% } %>
       </ul>
     </nav>

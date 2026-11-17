@@ -1,0 +1,9 @@
+<%# Enlaces de regreso de las páginas de error: con sesión al panel, sin sesión al inicio. %>
+<p class="acciones acciones--bloque">
+  <% if (locals.principal) { %>
+  <a class="btn" href="/panel">Volver a mi panel</a>
+  <a class="btn btn--secundario" href="/">Ir a la portada</a>
+  <% } else { %>
+  <a class="btn" href="/">Volver al inicio</a>
+  <% } %>
+</p>

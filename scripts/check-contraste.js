@@ -29,6 +29,7 @@ const PAIRS = [
   ['aviso', 'aviso-fondo', 4.5, 'mensaje de aviso'],
   ['sobre-primario', 'error-hover', 4.5, 'botón de peligro con el puntero encima'],
   ['sobre-primario', 'error', 4.5, 'texto del botón de peligro'],
+  ['sobre-primario', 'acento', 4.5, 'texto de la insignia de mensajes nuevos'],
   ['borde-campo', 'superficie', 3, 'borde de campo sobre su relleno blanco'],
   ['borde-campo', 'fondo', 3, 'borde del estado vacío sobre el fondo'],
   ['foco', 'fondo', 3, 'anillo de foco sobre el fondo'],

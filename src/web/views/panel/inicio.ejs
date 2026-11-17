@@ -1,0 +1,30 @@
+<%#
+  Panel principal (B1.9). `resumen` = { available, total? }: si `available` es falso no se imprime
+  ninguna cifra (el servicio de ofertas aún no responde). El nombre se imprime siempre escapado.
+%>
+<h1>Hola, <%= principal.displayName %></h1>
+<p class="texto-suave">Este es tu panel: desde aquí llegas a tus ofertas y al chat del equipo.</p>
+
+<section class="resumen" aria-labelledby="t-resumen">
+  <h2 id="t-resumen">Resumen</h2>
+  <% if (resumen.available) { %>
+  <p class="resumen__dato">
+    <span class="resumen__numero"><%= resumen.total %></span>
+    <span><%= resumen.total === 1 ? 'oferta propia' : 'ofertas propias' %></span>
+  </p>
+  <% if (resumen.total === 0) { %>
+  <p>Aún no tienes ofertas. Crea la primera para verla aquí con su lugar y su fecha.</p>
+  <% } %>
+  <% } else { %>
+  <p class="mensaje mensaje--aviso" role="status"><strong>Atención:</strong> el resumen de tus ofertas no está disponible por ahora. Los accesos de abajo siguen funcionando.</p>
+  <% } %>
+</section>
+
+<section aria-labelledby="t-accesos">
+  <h2 id="t-accesos">Accesos</h2>
+  <div class="acciones acciones--bloque">
+    <a class="btn" href="/panel/ofertas/nueva">Crear una oferta</a>
+    <a class="btn btn--secundario" href="/panel/ofertas">Ver mis ofertas</a>
+    <a class="btn btn--secundario" href="/panel/chat">Ir al chat</a>
+  </div>
+</section>
