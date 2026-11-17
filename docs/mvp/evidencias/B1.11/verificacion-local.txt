@@ -1,0 +1,64 @@
+B1.11 — verificación local con certificado propio
+Fecha local: 2026-11-16 (Ecuador)
+Base: bc083bd23d5b8e4eeddd6490956e0232df1b61f1
+Entorno: Windows, Node v24.22.3, npm 11.20.0, Caddy v2.11.9
+URL: https://localhost:8443
+
+Instalación y regresión
+> npm ci
+added 195 packages, and audited 196 packages
+found 0 vulnerabilities
+> npm test
+tests 32
+pass 32
+fail 0
+> npm run lint
+Salida sin diagnósticos, código 0.
+
+En una copia aislada de despliegue
+> npm ci --omit=dev
+added 102 packages, and audited 103 packages
+found 0 vulnerabilities
+npm avisó del script de instalación de argon2. La comprobación de ejecución fue satisfactoria.
+> npm run db:migrate
+Aplicada 001_base
+Aplicada 010_accounts
+Aplicada 020_offers
+Aplicada 030_chat
+Base ../volume/app.sqlite: 4 migración(es) aplicada(s).
+> node scripts/check-sqlite-argon2.js
+SQLite (node:sqlite, :memory:): {"valor":"dato-ficticio"}
+Algoritmo: argon2id
+Hash verificado: true
+Clave distinta rechazada: true
+OK
+> node --env-file=.env server.js
+> curl.exe --fail --silent --show-error http://127.0.0.1:3099/salud
+{"status":"ok"}
+> node scripts/check-ws.js http://127.0.0.1:3099
+connect · transporte: websocket
+
+TM-DEP-01 — HTTPS local
+> caddy validate --config Caddyfile --adapter caddyfile
+Valid configuration
+El primer curl con --cacert devolvió 60: Schannel no pudo determinar el estado de revocación.
+Con la misma CA y --ssl-revoke-best-effort, el comando devolvió 0:
+> curl.exe --fail --silent --show-error --ssl-revoke-best-effort --cacert <CA local> -I https://localhost:8443/salud
+HTTP/1.1 200 OK
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Via: 1.1 Caddy
+
+TM-DEP-02 — Transporte WSS verificado por consola
+> NODE_EXTRA_CA_CERTS=<CA local> node scripts/check-ws.js https://localhost:8443
+connect · transporte: websocket
+Sonda HTTPS de Node con Upgrade: websocket y aserción del estado:
+wss://localhost:8443/socket.io/ -> HTTP 101 Switching Protocols
+Pendientes: rechazo UNAUTHENTICATED (B1.6) y captura de navegador con tramas de chat (B1.7).
+
+TM-DEP-03 — Persistencia de SQLite verificada con datos ficticios
+Proceso Node 1, PID 29552
+SQLite: oferta id=1, foto intacta (68 bytes).
+Proceso Node 2, PID 38792
+{"status":"ok"}
+SQLite: oferta id=1, foto intacta (68 bytes).
+La oferta y el BLOB se insertaron con sentencias preparadas. Las lecturas antes y después del reinicio comprobaron el BLOB byte por byte. Pendiente repetir desde el panel (B1.4/B1.5).
