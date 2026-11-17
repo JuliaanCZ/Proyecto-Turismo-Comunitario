@@ -1,0 +1,1 @@
+SEARCH offers USING COVERING INDEX idx_offers_owner_province_starts (owner_id=? AND province=?)
