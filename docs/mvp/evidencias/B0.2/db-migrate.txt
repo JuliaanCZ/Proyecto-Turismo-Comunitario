@@ -1,0 +1,89 @@
+# DATABASE_FILE=C:/Users/PERSONAL/AppData/Local/Temp/claude/62578fc076c59ca4/09228756-3a83-476e-8739-a162c3276772/scratchpad/b02-evidencia/datos/app.sqlite (archivo temporal fuera del repositorio)
+
+$ test ! -e "$DATABASE_FILE" && test ! -e "$(dirname "$DATABASE_FILE")" && echo "antes: ni el archivo ni su carpeta existen"
+antes: ni el archivo ni su carpeta existen
+código de salida: 0
+
+$ npm run db:migrate
+
+> turismo-comunitario@0.1.0 db:migrate
+> node --env-file-if-exists=.env scripts/migrate.js
+
+.env not found. Continuing without it.
+Aplicada 001_base
+Aplicada 010_accounts
+Aplicada 020_offers
+Aplicada 030_chat
+Base C:/Users/PERSONAL/AppData/Local/Temp/claude/62578fc076c59ca4/09228756-3a83-476e-8739-a162c3276772/scratchpad/b02-evidencia/datos/app.sqlite: 4 migración(es) aplicada(s).
+código de salida: 0
+
+$ ls -1 "$(dirname "$DATABASE_FILE")"
+app.sqlite
+código de salida: 0
+
+$ node --input-type=module -e "
+import { DatabaseSync } from \"node:sqlite\";
+const db = new DatabaseSync(process.env.DATABASE_FILE);
+const q = (sql) => db.prepare(sql).all();
+console.log(\"journal_mode:\", q(\"PRAGMA journal_mode\")[0].journal_mode);
+console.log(\"integrity_check:\", q(\"PRAGMA integrity_check\")[0].integrity_check);
+console.log(\"foreign_key_check (filas con error):\", q(\"PRAGMA foreign_key_check\").length);
+console.log(\"schema_migrations:\");
+for (const r of q(\"SELECT version, substr(checksum, 1, 16) AS checksum_16, applied_at FROM schema_migrations ORDER BY version\")) console.log(\"  \" + JSON.stringify(r));
+const tables = q(\"SELECT name FROM sqlite_master WHERE type = \x27table\x27 AND name NOT LIKE \x27sqlite_%\x27 ORDER BY name\").map((r) => r.name);
+console.log(\"tablas (\" + tables.length + \"):\", tables.join(\", \"));
+const idx = q(\"SELECT name FROM sqlite_master WHERE type = \x27index\x27 AND name NOT LIKE \x27sqlite_%\x27 ORDER BY name\").map((r) => r.name);
+console.log(\"índices con nombre (\" + idx.length + \"):\", idx.join(\", \"));
+console.log(\"filas de datos:\", JSON.stringify(Object.fromEntries(tables.filter((t) => t !== \"schema_migrations\").map((t) => [t, q(\"SELECT count(*) AS n FROM \" + t)[0].n]))));
+db.close();
+"
+journal_mode: wal
+integrity_check: ok
+foreign_key_check (filas con error): 0
+schema_migrations:
+  {"version":"001_base","checksum_16":"dcc73925f610f7f2","applied_at":1794873660136}
+  {"version":"010_accounts","checksum_16":"d8326f4c2d54e70e","applied_at":1794873660154}
+  {"version":"020_offers","checksum_16":"51770c824e389452","applied_at":1794873660156}
+  {"version":"030_chat","checksum_16":"922ee6ae45f68198","applied_at":1794873660158}
+tablas (8): chat_messages, mail_outbox, offer_photos, offers, password_reset_tokens, schema_migrations, sessions, users
+índices con nombre (10): idx_chat_room_id, idx_offers_owner_province_starts, idx_offers_owner_starts, idx_offers_public_starts, idx_sessions_user, ux_chat_messages_author_client, ux_password_reset_tokens_hash, ux_password_reset_tokens_user, ux_sessions_token_hash, ux_users_email
+filas de datos: {"chat_messages":0,"mail_outbox":0,"offer_photos":0,"offers":0,"password_reset_tokens":0,"sessions":0,"users":0}
+código de salida: 0
+
+$ npm run db:migrate
+
+> turismo-comunitario@0.1.0 db:migrate
+> node --env-file-if-exists=.env scripts/migrate.js
+
+.env not found. Continuing without it.
+Base C:/Users/PERSONAL/AppData/Local/Temp/claude/62578fc076c59ca4/09228756-3a83-476e-8739-a162c3276772/scratchpad/b02-evidencia/datos/app.sqlite: sin migraciones pendientes.
+código de salida: 0
+
+$ node --input-type=module -e "
+import { DatabaseSync } from \"node:sqlite\";
+const db = new DatabaseSync(process.env.DATABASE_FILE);
+const q = (sql) => db.prepare(sql).all();
+console.log(\"journal_mode:\", q(\"PRAGMA journal_mode\")[0].journal_mode);
+console.log(\"integrity_check:\", q(\"PRAGMA integrity_check\")[0].integrity_check);
+console.log(\"foreign_key_check (filas con error):\", q(\"PRAGMA foreign_key_check\").length);
+console.log(\"schema_migrations:\");
+for (const r of q(\"SELECT version, substr(checksum, 1, 16) AS checksum_16, applied_at FROM schema_migrations ORDER BY version\")) console.log(\"  \" + JSON.stringify(r));
+const tables = q(\"SELECT name FROM sqlite_master WHERE type = \x27table\x27 AND name NOT LIKE \x27sqlite_%\x27 ORDER BY name\").map((r) => r.name);
+console.log(\"tablas (\" + tables.length + \"):\", tables.join(\", \"));
+const idx = q(\"SELECT name FROM sqlite_master WHERE type = \x27index\x27 AND name NOT LIKE \x27sqlite_%\x27 ORDER BY name\").map((r) => r.name);
+console.log(\"índices con nombre (\" + idx.length + \"):\", idx.join(\", \"));
+console.log(\"filas de datos:\", JSON.stringify(Object.fromEntries(tables.filter((t) => t !== \"schema_migrations\").map((t) => [t, q(\"SELECT count(*) AS n FROM \" + t)[0].n]))));
+db.close();
+"
+journal_mode: wal
+integrity_check: ok
+foreign_key_check (filas con error): 0
+schema_migrations:
+  {"version":"001_base","checksum_16":"dcc73925f610f7f2","applied_at":1794873660136}
+  {"version":"010_accounts","checksum_16":"d8326f4c2d54e70e","applied_at":1794873660154}
+  {"version":"020_offers","checksum_16":"51770c824e389452","applied_at":1794873660156}
+  {"version":"030_chat","checksum_16":"922ee6ae45f68198","applied_at":1794873660158}
+tablas (8): chat_messages, mail_outbox, offer_photos, offers, password_reset_tokens, schema_migrations, sessions, users
+índices con nombre (10): idx_chat_room_id, idx_offers_owner_province_starts, idx_offers_owner_starts, idx_offers_public_starts, idx_sessions_user, ux_chat_messages_author_client, ux_password_reset_tokens_hash, ux_password_reset_tokens_user, ux_sessions_token_hash, ux_users_email
+filas de datos: {"chat_messages":0,"mail_outbox":0,"offer_photos":0,"offers":0,"password_reset_tokens":0,"sessions":0,"users":0}
+código de salida: 0
