@@ -1,0 +1,27 @@
+Comando: node --test tests/integration/panel-navegacion.test.js
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+✔ TM-NAV-01: /panel sin sesión redirige a /ingreso (105.6733ms)
+✔ TM-NAV-02: con sesión, el menú muestra Inicio, Mis ofertas, Chat y Salir (30.4144ms)
+✔ TM-NAV-02: el menú es idéntico en todas las pantallas autenticadas (69.1558ms)
+✔ menú público: Ofertas, Ingresar y Crear cuenta, sin Salir ni insignia (25.4088ms)
+✔ TM-NAV-03: una ruta inexistente muestra el 404 con enlace de regreso y sin trazas (40.3208ms)
+✔ 403 (origen o token rechazados) muestra una página propia con enlace de regreso (84.7092ms)
+✔ Cache-Control: no-store en la portada con sesión y en el formulario Salir con su CSRF (40.8293ms)
+✔ POST /panel con sesión y Origin correcto, pero sin token CSRF: 403 y no-store (61.2825ms)
+✔ los errores anteriores a requireAuth en /panel y /api también llevan no-store (51.1492ms)
+✔ TM-NAV-04: el nombre del usuario se muestra escapado (56.3304ms)
+✔ TM-NAV-05: el resumen refleja el número real de ofertas del usuario (52.343ms)
+✔ sin el servicio de ofertas (NOT_IMPLEMENTED) el panel abre, avisa y no inventa cifras (19.2176ms)
+✔ si el servicio de ofertas falla o responde mal, el panel abre sin cifra y el fallo queda en el registro (102.7026ms)
+✔ el servicio de ofertas asíncrono también alimenta el resumen (22.5129ms)
+✔ portada: enlaces públicos sin sesión y «Ir a mi panel» con sesión (29.1305ms)
+✔ accesibilidad: salto al contenido, un h1 y un título propios por pantalla (46.3267ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1686.1849

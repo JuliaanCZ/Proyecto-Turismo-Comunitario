@@ -1,0 +1,182 @@
+// Comprobación de B1.9 en un Chrome real (headless) por el protocolo DevTools. Sin dependencias.
+// Uso: node comprobar-navegador.mjs <carpeta-de-salida> <url-base> <completo|sin-servicio>
+// Requiere el servidor de `node scripts/vista-panel-simulada.js` (sesión y ofertas SIMULADAS).
+// No recibe ni imprime ningún token: Chrome abre la sesión ficticia visitando `<url-base>/simulacion/sesion`,
+// y es el propio servidor de simulación quien fija la cookie (`Set-Cookie`).
+import { spawn } from 'node:child_process';
+import { mkdirSync, mkdtempSync, writeFileSync, appendFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const [OUT, BASE, MODE = 'completo'] = process.argv.slice(2);
+const CHROME = process.env.CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const PORT = 9334;
+mkdirSync(OUT, { recursive: true });
+const LOG = join(OUT, `navegador-${MODE}.txt`);
+writeFileSync(LOG, '');
+const say = (line) => { console.log(line); appendFileSync(LOG, `${line}\n`); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const profile = mkdtempSync(join(tmpdir(), 'tc-chrome-b19-'));
+const chrome = spawn(CHROME, [
+  '--headless=new', `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`,
+  '--no-first-run', '--disable-gpu', '--hide-scrollbars', 'about:blank',
+], { stdio: 'ignore' });
+
+async function connect() {
+  for (let i = 0; i < 50; i++) {
+    try {
+      const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
+      const page = list.find((t) => t.type === 'page');
+      if (page) return page.webSocketDebuggerUrl;
+    } catch { /* aún arrancando */ }
+    await sleep(200);
+  }
+  throw new Error('Chrome no respondió');
+}
+
+const ws = new WebSocket(await connect());
+await new Promise((r) => ws.addEventListener('open', r, { once: true }));
+let nextId = 1;
+const pending = new Map();
+const listeners = [];
+ws.addEventListener('message', (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.id && pending.has(msg.id)) {
+    const { resolve, reject } = pending.get(msg.id);
+    pending.delete(msg.id);
+    return msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
+  }
+  for (const fn of listeners) fn(msg);
+  return undefined;
+});
+const send = (method, params = {}) => new Promise((resolve, reject) => {
+  const id = nextId++;
+  pending.set(id, { resolve, reject });
+  ws.send(JSON.stringify({ id, method, params }));
+});
+const evaluate = async (expression) => {
+  const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+  if (r.exceptionDetails) throw new Error(`${r.exceptionDetails.text} ${r.exceptionDetails.exception?.description ?? ''}`);
+  return r.result.value;
+};
+
+const problems = [];
+const requests = new Map();
+listeners.push((msg) => {
+  if (msg.method === 'Log.entryAdded' && ['error', 'warning'].includes(msg.params.entry.level)) {
+    const { text, url, level } = msg.params.entry;
+    problems.push(`${level}: ${text} ${url ?? ''}`);
+  }
+  if (msg.method === 'Runtime.exceptionThrown') problems.push(`excepción: ${msg.params.exceptionDetails.text}`);
+  if (msg.method === 'Network.responseReceived') requests.set(msg.params.requestId, `${msg.params.response.status} ${msg.params.response.url}`);
+  if (msg.method === 'Network.loadingFailed') problems.push(`red falló: ${requests.get(msg.params.requestId)} ${msg.params.errorText}`);
+});
+for (const domain of ['Page', 'Runtime', 'Log', 'Network']) await send(`${domain}.enable`);
+
+async function go(path) {
+  const loaded = new Promise((resolve) => {
+    const fn = (msg) => { if (msg.method === 'Page.loadEventFired') { listeners.splice(listeners.indexOf(fn), 1); resolve(); } };
+    listeners.push(fn);
+  });
+  await send('Page.navigate', { url: `${BASE}${path}` });
+  await loaded;
+  await sleep(300);
+}
+async function fullShot(name) {
+  const { cssContentSize } = await send('Page.getLayoutMetrics');
+  const clip = { x: 0, y: 0, width: cssContentSize.width, height: cssContentSize.height, scale: 1 };
+  const { data } = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip });
+  writeFileSync(join(OUT, name), Buffer.from(data, 'base64'));
+  say(`  captura: ${name}`);
+}
+async function key(k, code, vk) {
+  for (const type of ['keyDown', 'keyUp']) {
+    await send('Input.dispatchKeyEvent', { type, key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
+  }
+}
+const setSession = (on) => (on
+  ? go('/simulacion/sesion') // 302 a /panel con Set-Cookie: la cookie la fija el servidor, no este script
+  : send('Network.deleteCookies', { name: 'tc_session', url: BASE }));
+
+const medidas = `(() => {
+  const de = document.documentElement;
+  const visible = (e) => { const r = e.getBoundingClientRect(); const cs = getComputedStyle(e);
+    return r.height > 0 && r.width > 1 && cs.visibility !== 'hidden' && !e.closest('.saltar'); };
+  const interactivos = [...document.querySelectorAll('a, button, input, select, textarea')].filter(visible);
+  const bajos = interactivos.filter((e) => e.getBoundingClientRect().height < 43.5)
+    .map((e) => (e.textContent || e.name).trim() + ' ' + Math.round(e.getBoundingClientRect().height) + 'px');
+  return {
+    titulo: document.title, h1: [...document.querySelectorAll('h1')].map((h) => h.textContent.trim()),
+    lang: de.lang, viewport: document.querySelector('meta[name=viewport]').content,
+    anchoVentana: window.innerWidth, anchoContenido: de.scrollWidth, desbordaHorizontal: de.scrollWidth > window.innerWidth,
+    controlesBajoDe44px: bajos, enlacesMenu: [...document.querySelectorAll('header nav a')].map((a) => a.textContent.trim() + ' -> ' + a.getAttribute('href')),
+    actual: [...document.querySelectorAll('header [aria-current]')].map((a) => a.textContent.trim()),
+    botonSalir: !!document.querySelector('header form[method=post][action="/salir"] input[name=_csrf]'),
+    insignia: (() => { const b = document.getElementById('chat-badge'); return b ? 'display:' + getComputedStyle(b).display : 'sin #chat-badge'; })(),
+  };
+})()`;
+
+const viewports = [
+  ['escritorio', { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false }],
+  ['movil', { width: 375, height: 812, deviceScaleFactor: 1, mobile: true }],
+];
+say(`Chrome ${(await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).Browser} · modo: ${MODE}`);
+
+for (const [nombre, metrics] of viewports) {
+  await send('Emulation.setDeviceMetricsOverride', metrics);
+  say(`== ${nombre} ${metrics.width}x${metrics.height}`);
+
+  if (MODE === 'completo') {
+    await setSession(false);
+    await go('/');
+    say(`portada sin sesión: ${JSON.stringify(await evaluate(medidas))}`);
+    await fullShot(`portada-${nombre}.png`);
+
+    await setSession(true);
+    await go('/');
+    say(`portada con sesión, enlaces del cuerpo: ${JSON.stringify(await evaluate("[...document.querySelectorAll('main a')].map((a) => a.textContent.trim() + ' -> ' + a.getAttribute('href'))"))}`);
+  }
+
+  await setSession(true);
+  await go('/panel');
+  say(`panel con sesión: ${JSON.stringify(await evaluate(medidas))}`);
+  say(`  resumen: ${JSON.stringify(await evaluate("document.querySelector('.resumen').innerText.replace(/\\s+/g, ' ')"))}`);
+  await fullShot(MODE === 'completo' ? `panel-${nombre}.png` : `panel-sin-servicio-${nombre}.png`);
+
+  if (MODE === 'completo') {
+    // Teclado: «Saltar al contenido» y el recorrido del menú con anillo de foco visible.
+    await go('/panel');
+    await key('Tab', 'Tab', 9);
+    const skip = await evaluate(`(() => { const e = document.activeElement; const r = e.getBoundingClientRect(); const cs = getComputedStyle(e);
+      return { texto: e.textContent, esSaltar: e.classList.contains('saltar'), visibleEnPantalla: r.top >= 0 && r.bottom > 0,
+        focusVisible: e.matches(':focus-visible'), contorno: cs.outlineStyle + ' ' + cs.outlineWidth + ' ' + cs.outlineColor }; })()`);
+    say(`  primer Tab: ${JSON.stringify(skip)}`);
+    if (nombre === 'movil') {
+      const { data } = await send('Page.captureScreenshot', { format: 'png', clip: { x: 0, y: 0, width: 375, height: 220, scale: 1 } });
+      writeFileSync(join(OUT, 'foco-saltar-movil.png'), Buffer.from(data, 'base64'));
+      say('  captura: foco-saltar-movil.png');
+    }
+    await key('Enter', 'Enter', 13);
+    await sleep(150);
+    say(`  tras Enter el foco pasa a: ${await evaluate('document.activeElement.id || document.activeElement.tagName')}`);
+    await go('/panel');
+    const foco = [];
+    for (let i = 0; i < 8; i++) {
+      await key('Tab', 'Tab', 9);
+      foco.push(await evaluate(`(() => { const e = document.activeElement; const cs = getComputedStyle(e);
+        return (e.textContent || e.name || '').trim().slice(0, 22) + ' | ' + (e.matches(':focus-visible') ? 'focus-visible' : 'SIN foco visible') + ' | ' + cs.outlineStyle + ' ' + cs.outlineWidth + ' ' + cs.outlineColor; })()`));
+    }
+    say(`  recorrido con Tab:\n    ${foco.join('\n    ')}`);
+
+    await go('/panel/no-existe');
+    say(`404 con sesión: ${JSON.stringify(await evaluate(medidas))}`);
+    await fullShot(`404-${nombre}.png`);
+  }
+}
+
+say(problems.length ? `PROBLEMAS DE CONSOLA O RED:\n  ${problems.join('\n  ')}` : 'Sin errores ni advertencias de consola, ni peticiones fallidas (incluye CSP).');
+ws.close();
+chrome.kill();
+await sleep(300);
+process.exit(0);

@@ -1,9 +1,10 @@
 import console from 'node:console';
+import { readFileSync } from 'node:fs';
 import process from 'node:process';
 import { URL } from 'node:url';
 import { io } from 'socket.io-client';
 
-function checkWebSocket(rawUrl) {
+function checkWebSocket(rawUrl, cookie) {
   let url;
   try {
     url = new URL(rawUrl);
@@ -19,7 +20,10 @@ function checkWebSocket(rawUrl) {
   const origin = url.origin.replace(/^ws/, 'http');
   const socket = io(url.href, {
     transports: ['websocket'],
-    extraHeaders: { Origin: origin },
+    extraHeaders: {
+      Origin: origin,
+      ...(cookie ? { Cookie: cookie } : {}),
+    },
     reconnection: false,
     timeout: 5000,
   });
@@ -38,4 +42,14 @@ function checkWebSocket(rawUrl) {
   });
 }
 
-checkWebSocket(process.argv[2]);
+const cookieFromStdin = process.argv[3] === '--cookie-stdin';
+const cookie = cookieFromStdin ? readFileSync(0, 'utf8').trim() : undefined;
+if (process.argv[3] && !cookieFromStdin) {
+  console.error('Opción inválida. Usa --cookie-stdin para una comprobación autenticada.');
+  process.exitCode = 2;
+} else if (cookieFromStdin && !cookie) {
+  console.error('No se recibió una cookie por la entrada estándar.');
+  process.exitCode = 2;
+} else {
+  checkWebSocket(process.argv[2], cookie);
+}

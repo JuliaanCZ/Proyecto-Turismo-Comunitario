@@ -48,8 +48,17 @@ export function requireAuth(req, res, next) {
   return res.redirect(302, `/ingreso?next=${encodeURIComponent(returnTo)}`);
 }
 
-/** Respuestas de `/panel` y `/api` (C-HTTP): nada de esto debe quedar en cachés. */
+/** Respuestas de `/panel` y `/api` (C-HTTP): nada de esto debe quedar en cachés, con o sin sesión. */
 export function noStore(_req, res, next) {
   res.set('Cache-Control', 'no-store');
+  next();
+}
+
+/**
+ * Toda respuesta a una petición con sesión es personal (menú con el nombre, token CSRF, errores de
+ * esa sesión): no debe guardarse en cachés. Va después de `attachPrincipal`.
+ */
+export function noStoreWithSession(req, res, next) {
+  if (req.principal) res.set('Cache-Control', 'no-store');
   next();
 }

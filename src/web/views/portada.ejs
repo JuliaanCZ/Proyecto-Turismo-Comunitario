@@ -1,0 +1,29 @@
+<%#
+  Portada pública (B1.9). Sin sesión ofrece ver ofertas, ingresar y crear cuenta;
+  con sesión añade «Ir a mi panel». No muestra datos de ninguna cuenta.
+%>
+<section class="portada" aria-labelledby="t-portada">
+  <h1 id="t-portada">Turismo comunitario</h1>
+  <p class="portada__lead">Aquí las personas que coordinan experiencias de turismo comunitario publican sus ofertas y conversan con su equipo.</p>
+  <div class="acciones acciones--bloque">
+    <% if (locals.principal) { %>
+    <a class="btn" href="/panel">Ir a mi panel</a>
+    <a class="btn btn--secundario" href="/ofertas">Ver ofertas</a>
+    <% } else { %>
+    <a class="btn" href="/ofertas">Ver ofertas</a>
+    <a class="btn btn--secundario" href="/ingreso">Ingresar</a>
+    <a class="btn btn--secundario" href="/registro">Crear cuenta</a>
+    <% } %>
+  </div>
+</section>
+
+<section class="rutas" aria-label="Qué puedes hacer aquí">
+  <div class="ruta">
+    <h2>Conocer las ofertas</h2>
+    <p>Cada oferta muestra su lugar y su fecha para que las encuentres de un vistazo.</p>
+  </div>
+  <div class="ruta">
+    <h2>Gestionar las tuyas</h2>
+    <p>Con una cuenta creas y editas tus ofertas y conversas con el equipo en el chat.</p>
+  </div>
+</section>

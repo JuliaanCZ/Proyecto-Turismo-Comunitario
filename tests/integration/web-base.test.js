@@ -135,9 +135,10 @@ test('TM-WEB-04: /panel sin sesión → 302 a /ingreso?next=%2Fpanel; /api/x sin
   const rancia = await request(app).get('/panel').set('Cookie', 'tc_session=caducada');
   assert.equal(rancia.status, 302);
 
-  // Con sesión pasa la barrera: el panel y /api aún no tienen rutas (B1.9, B1.7), así que responden 404.
+  // Con sesión pasa la barrera: /panel lo sirve B1.9 (200) y una ruta del panel sin implementar sigue en 404.
   const conSesion = await request(app).get('/panel').set('Cookie', COOKIE);
-  assert.equal(conSesion.status, 404);
+  assert.equal(conSesion.status, 200);
+  assert.equal((await request(app).get('/panel/no-existe').set('Cookie', COOKIE)).status, 404);
   const apiConSesion = await request(app).get('/api/x').set('Cookie', COOKIE);
   assert.equal(apiConSesion.status, 404);
   assert.equal(apiConSesion.body.error.code, 'NOT_FOUND');
@@ -200,7 +201,7 @@ test('TM-WEB-06 (HTTPS): connect-src usa wss del origen, cookie __Host- y sin vi
 
   // Con COOKIE_SECURE solo vale __Host-tc_session; la cookie sin prefijo se ignora.
   const host = await request(app).get('/panel').set('Cookie', `__Host-tc_session=${TOKEN}`);
-  assert.equal(host.status, 404);
+  assert.equal(host.status, 200);
   const plana = await request(app).get('/panel').set('Cookie', COOKIE);
   assert.equal(plana.status, 302);
 

@@ -1,0 +1,10 @@
+Chrome Chrome/157.0.8103.79 · modo: sin-servicio
+== escritorio 1280x800
+panel con sesión: {"titulo":"Mi panel · Turismo comunitario","h1":["Hola, Ana Quispe"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":1280,"anchoContenido":1280,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Inicio -> /panel","Mis ofertas -> /panel/ofertas","Chat -> /panel/chat"],"actual":["Inicio"],"botonSalir":true,"insignia":"display:none"}
+  resumen: "Resumen Atención: el resumen de tus ofertas no está disponible por ahora. Los accesos de abajo siguen funcionando."
+  captura: panel-sin-servicio-escritorio.png
+== movil 375x812
+panel con sesión: {"titulo":"Mi panel · Turismo comunitario","h1":["Hola, Ana Quispe"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":375,"anchoContenido":375,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Inicio -> /panel","Mis ofertas -> /panel/ofertas","Chat -> /panel/chat"],"actual":["Inicio"],"botonSalir":true,"insignia":"display:none"}
+  resumen: "Resumen Atención: el resumen de tus ofertas no está disponible por ahora. Los accesos de abajo siguen funcionando."
+  captura: panel-sin-servicio-movil.png
+Sin errores ni advertencias de consola, ni peticiones fallidas (incluye CSP).

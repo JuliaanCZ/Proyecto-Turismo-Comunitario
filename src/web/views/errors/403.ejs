@@ -1,0 +1,5 @@
+<%# Acción rechazada (origen o token CSRF): 403. %>
+<h1>No pudimos autorizar la acción</h1>
+<p class="mensaje mensaje--error" role="alert"><strong>Error:</strong> <%= message %></p>
+<p class="texto-suave">Código: <%= code %></p>
+<%- include('../partials/volver') %>

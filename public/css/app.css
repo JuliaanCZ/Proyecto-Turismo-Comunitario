@@ -234,8 +234,21 @@ a:hover {
 }
 
 .nav__usuario {
+  max-width: 14rem;
   color: var(--tc-texto-suave);
   font-size: var(--tc-texto-chico);
+  overflow-wrap: anywhere;
+}
+
+/* Insignia de mensajes nuevos (la llena B1.10): oculta mientras no tenga contenido */
+.insignia {
+  margin-left: var(--tc-e2);
+  padding: 0 var(--tc-e2);
+  border-radius: 999px;
+  background: var(--tc-acento);
+  color: var(--tc-sobre-primario);
+  font-size: var(--tc-texto-chico);
+  line-height: 1.5;
 }
 
 .nav form {
@@ -457,6 +470,82 @@ a:hover {
 .vacio h2,
 .vacio h3 {
   margin-bottom: var(--tc-e2);
+}
+
+/* Portada: texto de entrada y dos rutas, sin tarjetas (la tarjeta es de la oferta) */
+.portada {
+  margin-bottom: var(--tc-e6);
+}
+
+.portada__lead {
+  font-size: 1.25rem;
+}
+
+.rutas {
+  display: grid;
+  gap: var(--tc-e5);
+  padding-top: var(--tc-e5);
+  border-top: 1px solid var(--tc-borde);
+}
+
+.ruta h2 {
+  font-size: 1.25rem;
+}
+
+.ruta p {
+  margin: 0;
+}
+
+/* Panel: resumen con la cifra grande y accesos separados por una línea */
+.resumen {
+  margin-block: var(--tc-e5);
+  padding-block: var(--tc-e4);
+  border-block: 1px solid var(--tc-borde);
+}
+
+.resumen h2 {
+  font-size: 1.25rem;
+}
+
+.resumen__dato {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tc-e1) var(--tc-e3);
+  margin: 0 0 var(--tc-e3);
+}
+
+.resumen__numero {
+  font-family: var(--tc-fuente-titulo);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tc-primario);
+}
+
+.resumen > :last-child {
+  margin-bottom: 0;
+}
+
+/* Móvil: los botones de una fila de acciones ocupan todo el ancho (44 px de alto, fáciles de tocar) */
+@media (max-width: 35.99rem) {
+  .acciones--bloque .btn {
+    width: 100%;
+  }
+
+  .cabecera__interior {
+    align-items: flex-start;
+  }
+
+  .nav__usuario {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 36rem) {
+  .rutas {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (min-width: 48rem) {
