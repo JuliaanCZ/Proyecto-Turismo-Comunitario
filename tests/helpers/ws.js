@@ -37,32 +37,14 @@ export function connect({ url, cookie, origin, transports = ['websocket'] }) {
     } : {}),
   });
   const received = [];
-  const listeners = new Map();
-  const record = (event, ...args) => {
+  socket.onAny((event, ...args) => {
     const item = { event, args, data: args.length === 1 ? args[0] : args };
     received.push(item);
-    const eventListeners = listeners.get(event) ?? [];
-    for (const listener of eventListeners) listener();
-  };
-  const originalOn = socket.on.bind(socket);
-  socket.on = (event, listener) => {
-    if (event !== 'connect' && event !== 'connect_error' && event !== 'disconnect') {
-      const eventListeners = listeners.get(event) ?? [];
-      listeners.set(event, [...eventListeners, listener]);
-    }
-    return originalOn(event, listener);
-  };
-  const trackedEvents = new Set();
-  const track = (event) => {
-    if (trackedEvents.has(event)) return;
-    trackedEvents.add(event);
-    originalOn(event, (...args) => record(event, ...args));
-  };
+  });
 
   return Object.assign(socket, {
     received,
     waitFor(event, count = 1) {
-      track(event);
       const matching = () => received.filter((item) => item.event === event).length;
       if (matching() >= count) return Promise.resolve();
       if (!socket.connected) {
@@ -71,6 +53,7 @@ export function connect({ url, cookie, origin, transports = ['websocket'] }) {
       return new Promise((resolve, reject) => {
         const check = () => {
           if (matching() >= count) {
+            socket.off(event, check);
             socket.off('disconnect', disconnected);
             socket.off('connect_error', failed);
             resolve();
@@ -78,10 +61,14 @@ export function connect({ url, cookie, origin, transports = ['websocket'] }) {
         };
         const disconnected = (reason) => {
           socket.off(event, check);
+          socket.off('disconnect', disconnected);
+          socket.off('connect_error', failed);
           reject(new Error(`No llegaron ${count} eventos "${event}"; Socket.IO se desconectó: ${reason}.`));
         };
         const failed = (error) => {
           socket.off(event, check);
+          socket.off('disconnect', disconnected);
+          socket.off('connect_error', failed);
           reject(new Error(`No llegaron ${count} eventos "${event}"; conexión fallida: ${error.message}.`));
         };
         socket.on(event, check);
@@ -102,11 +89,21 @@ export function expectNoEvent(client, event, witness) {
       cleanup();
       resolve();
     };
+    const disconnected = (reason) => {
+      cleanup();
+      reject(new Error(`No llegó el testigo "${witness}"; Socket.IO se desconectó: ${reason}.`));
+    };
     const cleanup = () => {
       client.off(event, forbidden);
       client.off(witness, witnessed);
+      client.off('disconnect', disconnected);
     };
+    if (!client.connected) {
+      disconnected('el cliente ya estaba desconectado');
+      return;
+    }
     client.once(event, forbidden);
     client.once(witness, witnessed);
+    client.once('disconnect', disconnected);
   });
 }

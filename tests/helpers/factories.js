@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 const PASSWORD_HASH = '$argon2id$v=19$m=8,t=1,p=1$test$test';
 
 function now(ctx) {
@@ -63,7 +65,7 @@ export function createMessages(ctx, count, { authors } = {}) {
       ? (author.displayName ?? author.display_name)
       : `Usuario ${authorId}`;
     const text = `Mensaje de prueba ${index + 1}`;
-    const clientMessageId = `test-message-${index + 1}`;
+    const clientMessageId = randomUUID();
     const result = insert.run(authorId, authorName, text, clientMessageId, now(ctx));
     messages.push({
       id: Number(result.lastInsertRowid),
