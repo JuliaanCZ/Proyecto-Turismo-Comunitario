@@ -1,0 +1,12 @@
+Comando: node --test tests/base/arnes.test.js
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+✔ TM-ARN-01: createSessionFor genera 32 bytes en base64url y guarda solo el hash de la sesión
+✔ TM-ARN-02: waitFor espera n eventos, conserva connect_error y aplica límite de seguridad
+✔ TM-ARN-03: expectNoEvent distingue ausencia y presencia, y rechaza desconexión o falta de testigo
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+
+Comprobación de estabilidad: 10 ejecuciones consecutivas, 10 con código de salida 0.
+No se usaron pausas fijas; los temporizadores solo rechazan al superar el límite máximo.
