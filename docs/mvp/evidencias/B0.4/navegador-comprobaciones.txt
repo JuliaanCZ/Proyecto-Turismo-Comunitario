@@ -1,0 +1,46 @@
+Chrome Chrome/157.0.8103.51
+== Móvil 375×812 (/dev/diseno)
+módulo cargado y formulario enlazado: true (noValidate=true significa que form-validate.js corrió)
+  {"anchoVentana":375,"anchoContenido":375,"desbordaHorizontal":false,"textoBase":"17px","h1":"29.375px","nombreOferta":"22px","familiaTitulo":"\"Iowan Old Style\", \"Palatino Linotype\", ","familiaTexto":"\"Segoe UI\", system-ui, -apple-","controlesBajoDe44px":[],"viewportMeta":"width=device-width, initial-scale=1","lang":"es-EC","tituloPagina":"Guía visual · Turismo comunitario","h1Cantidad":1,"mainId":"contenido","etiquetasSinInput":0}
+  captura: diseno-movil.png
+== Enlace «Saltar al contenido» y foco por teclado
+  primer Tab: {"texto":"Saltar al contenido","esSaltar":true,"visible":true,"top":8,"focusVisible":true,"contorno":"solid 3px rgb(26, 79, 160)"}
+  captura: foco-saltar.png
+  tras Enter el foco pasa a: contenido
+  botón con foco: {"tag":"BUTTON","texto":"Publicar oferta","focusVisible":true,"outline":"solid 3px rgb(26, 79, 160)","offset":"3px"}
+  captura: foco-boton.png
+  foco en campo: {"id":"campo-nombre","focusVisible":true,"outline":"solid 3px rgb(26, 79, 160)"}
+  foco en campo: {"id":"campo-correo","focusVisible":true,"outline":"solid 3px rgb(26, 79, 160)"}
+  foco en campo: {"id":"campo-cupo","focusVisible":true,"outline":"solid 3px rgb(26, 79, 160)"}
+== Validación en el navegador (mismo validate.js)
+  envío vacío → url sin cambiar: true; foco: campo-nombre
+  errores: {"nombre":"El nombre es obligatorio.","correo":"El correo es obligatorio.","cupo":"El cupo es obligatorio."}
+  aria-invalid en nombre: true; wrapper con error: true
+  captura: errores-formulario.png
+  correo inválido al salir del campo: "El correo no tiene un formato válido."
+  al completar el correo con @ejemplo.ec el error desaparece (se revalida al escribir): ""
+  envío válido → POST real del navegador con su Origin: mensaje = "Listo: el servidor validó los datos con las mismas reglas."
+== Escritorio 1280×800
+  desborda horizontal: false
+  captura: diseno-escritorio.png
+  portada: título "Inicio · Turismo comunitario", h1 "Turismo comunitario"
+  captura: portada-escritorio.png
+  404: h1 "No encontramos esa página"
+== Problemas de consola, CSP o red durante toda la sesión (se excluye el 404 de la ruta inexistente, pedido a propósito)
+  ninguno
+== Peticiones de /js
+  200 text/css http://localhost:3000/css/app.css
+  200 text/javascript http://localhost:3000/js/form-validate.js
+  200 text/javascript http://localhost:3000/js/shared/validate.js
+  304 text/css http://localhost:3000/css/app.css
+  304 text/javascript http://localhost:3000/js/form-validate.js
+  304 text/javascript http://localhost:3000/js/shared/validate.js
+  304 text/css http://localhost:3000/css/app.css
+  304 text/javascript http://localhost:3000/js/form-validate.js
+  304 text/javascript http://localhost:3000/js/shared/validate.js
+  304 text/css http://localhost:3000/css/app.css
+  304 text/javascript http://localhost:3000/js/form-validate.js
+  304 text/javascript http://localhost:3000/js/shared/validate.js
+  304 text/css http://localhost:3000/css/app.css
+  304 text/javascript http://localhost:3000/js/form-validate.js
+  304 text/javascript http://localhost:3000/js/shared/validate.js

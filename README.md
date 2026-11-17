@@ -27,6 +27,8 @@ Con el servidor en marcha, abre `http://localhost:3000/salud`. Debe responder `{
 
 SQLite se usa mediante `node:sqlite`, integrado en Node, así que `npm ci` no compila nada para la base de datos. Comprueba SQLite en memoria y Argon2 con `node scripts/check-sqlite-argon2.js`.
 
+`npm start` ahora monta la aplicación completa (`createContainer` y `createApp`): abre `./data/app.sqlite`, aplica las migraciones pendientes y sirve la portada en `http://localhost:3000/`, con Socket.IO en el mismo puerto. Fuera de producción, `http://localhost:3000/dev/diseno` muestra los componentes de la [guía visual](docs/mvp/diseno-visual.md). `node scripts/check-contraste.js` verifica el contraste de la paleta. Las cuentas, las ofertas y el chat se implementan en sus propios bloques; sus servicios lanzan `NOT_IMPLEMENTED` hasta entonces y Socket.IO aún no autentica (B1.6).
+
 Ejecuta `npm test` para las pruebas automatizadas y `npm run lint` para revisar el JavaScript. La [evidencia de B0.1](docs/mvp/evidencias/B0.1/) guarda los resultados de la comprobación. Los siguientes bloques se toman en el orden de sus dependencias y se integran mediante PR.
 
 ## Plan general de referencia
