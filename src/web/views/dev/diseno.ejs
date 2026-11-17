@@ -1,0 +1,66 @@
+<%#
+  Vista de ejemplo de la guía visual (docs/mvp/diseno-visual.md). Solo existe fuera de producción.
+  Muestra cada componente compartido; las pantallas reales las construye cada bloque.
+%>
+<div class="pila">
+  <div>
+    <h1>Guía visual: vista de ejemplo</h1>
+    <p>Esta página reúne los componentes compartidos para revisar contraste, foco y lectura en móvil. No es parte del producto.</p>
+  </div>
+
+  <section aria-labelledby="t-botones">
+    <h2 id="t-botones">Botones</h2>
+    <div class="acciones">
+      <button class="btn" type="button">Publicar oferta</button>
+      <button class="btn btn--secundario" type="button">Guardar borrador</button>
+      <button class="btn btn--peligro" type="button">Eliminar oferta</button>
+      <button class="btn" type="button" disabled>No disponible</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-ofertas">
+    <h2 id="t-ofertas">Ofertas</h2>
+    <ul class="ofertas">
+      <% for (const oferta of ofertas) { %>
+      <li class="oferta">
+        <h3 class="oferta__nombre"><%= oferta.nombre %></h3>
+        <dl class="oferta__datos">
+          <dt>Lugar</dt>
+          <dd><%= oferta.lugar %></dd>
+          <dt>Fecha</dt>
+          <dd class="oferta__fecha"><%= formatDate(oferta.inicio) %></dd>
+        </dl>
+      </li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section aria-labelledby="t-form">
+    <h2 id="t-form">Formulario</h2>
+    <% if (exito) { %><p class="mensaje mensaje--exito" role="status"><strong>Listo:</strong> el servidor validó los datos con las mismas reglas.</p><% } %>
+    <% if (Object.keys(errores).length) { %><p class="mensaje mensaje--error" role="alert"><strong>Error:</strong> revisa los campos marcados.</p><% } %>
+    <form class="formulario" method="post" action="/dev/diseno" data-schema="<%= JSON.stringify(esquema) %>">
+      <% if (locals.principal) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% } %>
+      <%- include('../partials/form-field', { name: 'nombre', label: 'Nombre de quien coordina', required: true, autocomplete: 'name', hint: 'Entre 2 y 80 caracteres.', value: valores.nombre, errors: errores.nombre }) %>
+      <%- include('../partials/form-field', { name: 'correo', label: 'Correo', type: 'email', required: true, autocomplete: 'email', value: valores.correo, errors: errores.correo }) %>
+      <%- include('../partials/form-field', { name: 'cupo', label: 'Cupo de personas', type: 'text', inputmode: 'numeric', required: true, hint: 'Un número entero de 1 a 1000.', value: valores.cupo, errors: errores.cupo }) %>
+      <button class="btn" type="submit">Enviar</button>
+    </form>
+  </section>
+
+  <section aria-labelledby="t-mensajes">
+    <h2 id="t-mensajes">Mensajes</h2>
+    <p class="mensaje mensaje--exito" role="status"><strong>Listo:</strong> la oferta se guardó como borrador.</p>
+    <p class="mensaje mensaje--aviso"><strong>Atención:</strong> para publicarla falta una foto.</p>
+    <p class="mensaje mensaje--error" role="alert"><strong>Error:</strong> no pudimos guardar los cambios.</p>
+  </section>
+
+  <section aria-labelledby="t-vacio">
+    <h2 id="t-vacio">Estado vacío</h2>
+    <div class="vacio">
+      <h3>Aún no tienes ofertas</h3>
+      <p>Crea la primera para que aparezca aquí con su lugar y su fecha.</p>
+      <a class="btn" href="/panel/ofertas/nueva">Crear oferta</a>
+    </div>
+  </section>
+</div>

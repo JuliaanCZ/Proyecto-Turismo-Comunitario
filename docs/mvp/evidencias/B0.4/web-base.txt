@@ -1,0 +1,30 @@
+$ node --test tests/integration/web-base.test.js
+✔ TM-WEB-01: POST sin Origin → 403 ORIGIN_MISMATCH (96.2845ms)
+✔ TM-WEB-02: POST con Origin de otro sitio → 403; GET, HEAD y OPTIONS no lo exigen (91.011ms)
+✔ TM-WEB-03: con sesión, POST sin token CSRF → 403; con token → pasa el guardián (102.2008ms)
+✔ TM-WEB-04: /panel sin sesión → 302 a /ingreso?next=%2Fpanel; /api/x sin sesión → 401 JSON (41.802ms)
+✔ TM-WEB-05: safeNext rechaza //evil.test, /\evil y https://x; acepta /panel/ofertas?pagina=2 (0.7486ms)
+✔ TM-WEB-06: cabeceras CSP, X-Content-Type-Options y no-store en /panel (29.8765ms)
+✔ TM-WEB-06 (HTTPS): connect-src usa wss del origen, cookie __Host- y sin vista de diseño (31.474ms)
+✔ TM-WEB-07: una ruta inexistente muestra la página 404 sin trazas (19.7554ms)
+✔ C-ERR: un error inesperado → INTERNAL_ERROR sin trazas hacia el cliente y con registro en el servidor (19.9427ms)
+✔ C-ERR: AppError → su estado y código, en página o JSON; cuerpo mal formado o mayor de 16 kB → 422 (41.5824ms)
+✔ C-SES: el resolvedor recibe el token y la hora del reloj inyectado; sin cookie no se consulta (41.4385ms)
+✔ csrf: el token es determinista, ligado a la sesión y al secreto (0.4513ms)
+✔ TM-WEB-08: npm run lint rechaza un import prohibido (fixture) y acepta los permitidos (308.2754ms)
+✔ TM-WEB-08: /js/shared/validate.js se sirve idéntico a src/shared/validation/validate.js (51.7151ms)
+✔ integración B0.2: createContainer abre la base migrada y la cierra (37.4701ms)
+✔ createContainer: overrides inyectan servicios, reloj y base; la base inyectada no se cierra (8.9754ms)
+✔ esqueleto C-MOD: las funciones públicas lanzan NOT_IMPLEMENTED (501) (10.2736ms)
+✔ esqueleto: con las cuentas sin implementar, una cookie de sesión devuelve 501 y sin cookie la app funciona (23.1521ms)
+✔ gateway: onMessageStored registra y messageStored invoca (enganche de C-EVT) (0.4194ms)
+✔ vista de diseño: formulario con data-schema, errores del servidor asociados al campo y salida escapada (30.163ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2001.1693
+[salida: 0]

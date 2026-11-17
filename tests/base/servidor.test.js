@@ -3,12 +3,20 @@ import { once } from 'node:events';
 import test from 'node:test';
 import { io as connect } from 'socket.io-client';
 import request from 'supertest';
+import { createApp } from '../../src/app.js';
 import { loadConfig } from '../../src/config.js';
-import { createBaseApp, createHttpServer } from '../../src/server.js';
+import { createContainer } from '../../src/container.js';
+import { createHttpServer } from '../../src/server.js';
+import { openDb } from '../../src/shared/db.js';
 
 async function listen(t) {
-  const { httpServer, io } = createHttpServer(createBaseApp());
-  t.after(() => new Promise((resolve) => io.close(resolve)));
+  // La app real (B0.4) con la base en memoria; HTTP y Socket.IO comparten puerto como en B0.1.
+  const container = createContainer(loadConfig({}), { db: openDb(':memory:'), logger: { error() {} } });
+  const { httpServer, io } = createHttpServer(createApp(container));
+  t.after(() => new Promise((resolve) => io.close(() => {
+    container.close();
+    resolve();
+  })));
   const listening = once(httpServer, 'listening');
   httpServer.listen(0, '127.0.0.1');
   await listening;

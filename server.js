@@ -1,28 +1,34 @@
 import console from 'node:console';
 import process from 'node:process';
+import { createApp } from './src/app.js';
 import { loadConfig } from './src/config.js';
-import { createBaseApp, createHttpServer } from './src/server.js';
+import { createContainer } from './src/container.js';
+import { createGateway } from './src/realtime/gateway.js';
+import { createHttpServer } from './src/server.js';
 
+// config → base y migraciones (dentro del contenedor) → app → servidor HTTP + Socket.IO.
 function start() {
   const config = loadConfig();
-  const { httpServer, io } = createHttpServer(createBaseApp());
-
-  httpServer.once('error', (error) => {
-    console.error(`No se pudo iniciar el servidor: ${error.code ?? 'ERROR'}.`);
-    process.exitCode = 1;
-    void io.close();
-  });
-
-  httpServer.listen(config.port, () => {
-    console.log(`Servidor de turismo comunitario en el puerto ${config.port}.`);
-  });
+  const container = createContainer(config);
+  const { httpServer, io } = createHttpServer(createApp(container));
+  createGateway({ io, container });
 
   let closing = false;
   function close() {
     if (closing) return;
     closing = true;
-    void io.close();
+    io.close(() => container.close());
   }
+
+  httpServer.once('error', (error) => {
+    console.error(`No se pudo iniciar el servidor: ${error.code ?? 'ERROR'}.`);
+    process.exitCode = 1;
+    close();
+  });
+
+  httpServer.listen(config.port, () => {
+    console.log(`Servidor de turismo comunitario en el puerto ${config.port}.`);
+  });
 
   process.once('SIGINT', close);
   process.once('SIGTERM', close);

@@ -1,0 +1,66 @@
+$ npm test
+
+> turismo-comunitario@0.1.0 test
+> node --test
+
+✔ TM-BASE-01: GET /salud devuelve 200 y el estado esperado (86.3095ms)
+✔ TM-BASE-02: Express y el transporte WebSocket responden en el mismo puerto (64.4752ms)
+✔ C-ENV: conserva los valores de desarrollo y valida el número opcional (1.5664ms)
+✔ C-ENV: producción exige HTTPS, cookies seguras y un secreto propio (0.766ms)
+✔ TM-WEB-01: POST sin Origin → 403 ORIGIN_MISMATCH (118.5301ms)
+✔ TM-WEB-02: POST con Origin de otro sitio → 403; GET, HEAD y OPTIONS no lo exigen (97.8715ms)
+✔ TM-WEB-03: con sesión, POST sin token CSRF → 403; con token → pasa el guardián (106.6501ms)
+✔ TM-WEB-04: /panel sin sesión → 302 a /ingreso?next=%2Fpanel; /api/x sin sesión → 401 JSON (48.2479ms)
+✔ TM-WEB-05: safeNext rechaza //evil.test, /\evil y https://x; acepta /panel/ofertas?pagina=2 (0.8092ms)
+✔ TM-WEB-06: cabeceras CSP, X-Content-Type-Options y no-store en /panel (35.4056ms)
+✔ TM-WEB-06 (HTTPS): connect-src usa wss del origen, cookie __Host- y sin vista de diseño (30.0413ms)
+✔ TM-WEB-07: una ruta inexistente muestra la página 404 sin trazas (21.6691ms)
+✔ C-ERR: un error inesperado → INTERNAL_ERROR sin trazas hacia el cliente y con registro en el servidor (21.9989ms)
+✔ C-ERR: AppError → su estado y código, en página o JSON; cuerpo mal formado o mayor de 16 kB → 422 (47.0459ms)
+✔ C-SES: el resolvedor recibe el token y la hora del reloj inyectado; sin cookie no se consulta (42.5646ms)
+✔ csrf: el token es determinista, ligado a la sesión y al secreto (0.4585ms)
+✔ TM-WEB-08: npm run lint rechaza un import prohibido (fixture) y acepta los permitidos (298.9735ms)
+✔ TM-WEB-08: /js/shared/validate.js se sirve idéntico a src/shared/validation/validate.js (46.6607ms)
+✔ integración B0.2: createContainer abre la base migrada y la cierra (36.3098ms)
+✔ createContainer: overrides inyectan servicios, reloj y base; la base inyectada no se cierra (7.8862ms)
+✔ esqueleto C-MOD: las funciones públicas lanzan NOT_IMPLEMENTED (501) (8.0388ms)
+✔ esqueleto: con las cuentas sin implementar, una cookie de sesión devuelve 501 y sin cookie la app funciona (21.0278ms)
+✔ gateway: onMessageStored registra y messageStored invoca (enganche de C-EVT) (0.5007ms)
+✔ vista de diseño: formulario con data-schema, errores del servidor asociados al campo y salida escapada (31.3191ms)
+✔ B0.2: openDb activa claves foráneas y busy_timeout, y WAL solo en archivo (15.0954ms)
+✔ B0.2: withTransaction confirma, revierte y rechaza funciones asíncronas (1.4549ms)
+✔ TM-DB-01: las migraciones crean las tablas, columnas e índices esperados en :memory: (14.5609ms)
+✔ TM-DB-02: reejecutar el migrador no cambia nada (16.8762ms)
+✔ TM-DB-02: modificar un archivo ya aplicado hace fallar el migrador (29.3331ms)
+✔ B0.2: el checksum ignora CRLF y BOM (clones de Windows y Linux) (29.3861ms)
+✔ B0.2: una migración aplicada que desaparece del directorio es un error (30.9217ms)
+✔ B0.2: una migración nueva con número menor que las aplicadas se aplica, y solo ella (37.3901ms)
+✔ B0.2: una migración que falla se revierte entera y no se registra (29.3543ms)
+✔ B0.2: rechaza nombres de migración inválidos y números repetidos (36.3818ms)
+✔ TM-DB-03: las claves foráneas están activas y sus ON DELETE son explícitos (10.9249ms)
+✔ TM-DB-04: UNIQUE (email) y UNIQUE (author_id, client_message_id) rechazan duplicados (9.2908ms)
+✔ TM-DB-05: los CHECK de ofertas rechazan capacidad, título, provincia y demás rangos (14.7064ms)
+✔ TM-DB-05: los CHECK de chat rechazan texto vacío, en blanco o demasiado largo (10.4211ms)
+✔ TM-DB-05: los CHECK de cuentas rechazan correos, nombres, sesiones y tokens inválidos (9.5491ms)
+✔ TM-DB-05a: offer_photos admite una foto por oferta, valida formato, texto y tamaño, y cae en cascada (64.5273ms)
+✔ B0.2: cada índice documentado lo usa la consulta a la que sirve, sin ordenar aparte (19.1746ms)
+✔ B0.2: scripts/migrate.js crea la carpeta y el archivo, y la segunda ejecución no cambia nada (416.7403ms)
+✔ time: Ecuador UTC−5 ida y vuelta y rechazo de 2026-02-30 (4.9307ms)
+✔ clock: systemClock y fixedClock con advance (0.6715ms)
+✔ errors: AppError y catálogo C-ERR (2.335ms)
+✔ TM-VAL-01: campos obligatorios, recorte y mensajes por campo (4.9907ms)
+✔ TM-VAL-02: longitudes en puntos de código (emoji = 1) y NFC (0.9571ms)
+✔ TM-VAL-03: enteros estrictos y rangos (0.6471ms)
+✔ TM-VAL-04: correo válido, inválido, minúsculas y máximo 254 (0.9068ms)
+✔ TM-VAL-05: equalsField y enum (0.8815ms)
+✔ TM-VAL-06: localDateTime Ecuador ida/vuelta y rechazo de fecha inexistente (0.5697ms)
+✔ TM-VAL-07: validate.js no contiene import, require ni node: (0.9556ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2203.6952
+[salida: 0]
