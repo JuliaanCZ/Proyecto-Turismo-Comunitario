@@ -126,6 +126,14 @@ test('TM-VAL-05: equalsField y enum', () => {
   assert.match(spacingMismatch.errors.passwordConfirm[0], /coincid|igual/i);
   assert.equal(spacingMismatch.values.password, 'secreto  1234');
 
+  const spacesOnly = validate(schema, {
+    password: '          ',
+    passwordConfirm: '          ',
+    provincia: 'Pichincha',
+  });
+  assert.equal(spacesOnly.ok, false);
+  assert.deepEqual(spacesOnly.errors.password, ['El Contraseña es obligatorio.']);
+
   const badEnum = validate(schema, {
     password: 'secreto1234',
     passwordConfirm: 'secreto1234',

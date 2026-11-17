@@ -24,6 +24,11 @@ function isBlank(value) {
   return value === '' || value === null || value === undefined;
 }
 
+/** Vacío o solo whitespace (útil con preserveExact en contraseñas). */
+function isBlankOrWhitespace(value) {
+  return isBlank(value) || (typeof value === 'string' && value.trim() === '');
+}
+
 function pushError(errors, field, message) {
   if (!errors[field]) errors[field] = [];
   errors[field].push(message);
@@ -78,7 +83,8 @@ export function validate(schema, input) {
       incoming = incoming === null || incoming === undefined ? '' : String(incoming).trim();
     }
 
-    if (isBlank(incoming)) {
+    const blank = rule.preserveExact ? isBlankOrWhitespace(incoming) : isBlank(incoming);
+    if (blank) {
       if (rule.required) {
         pushError(errors, field, msg(rule, `El ${label} es obligatorio.`));
       }
