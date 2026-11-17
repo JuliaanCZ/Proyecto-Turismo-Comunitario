@@ -3,15 +3,13 @@ import process from 'node:process';
 import { createApp } from './src/app.js';
 import { loadConfig } from './src/config.js';
 import { createContainer } from './src/container.js';
-import { createGateway } from './src/realtime/gateway.js';
 import { createHttpServer } from './src/server.js';
 
 // config → base y migraciones (dentro del contenedor) → app → servidor HTTP + Socket.IO.
 function start() {
   const config = loadConfig();
   const container = createContainer(config);
-  const { httpServer, io } = createHttpServer(createApp(container));
-  createGateway({ io, container });
+  const { httpServer, io } = createHttpServer(createApp(container), container);
 
   let closing = false;
   function close() {
