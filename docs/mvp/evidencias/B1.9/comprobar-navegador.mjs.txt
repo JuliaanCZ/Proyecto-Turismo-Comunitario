@@ -1,12 +1,14 @@
 // Comprobación de B1.9 en un Chrome real (headless) por el protocolo DevTools. Sin dependencias.
-// Uso: node comprobar-navegador.mjs <carpeta-de-salida> <url-base> <token-de-sesion-simulada> <completo|sin-servicio>
+// Uso: node comprobar-navegador.mjs <carpeta-de-salida> <url-base> <completo|sin-servicio>
 // Requiere el servidor de `node scripts/vista-panel-simulada.js` (sesión y ofertas SIMULADAS).
+// No recibe ni imprime ningún token: Chrome abre la sesión ficticia visitando `<url-base>/simulacion/sesion`,
+// y es el propio servidor de simulación quien fija la cookie (`Set-Cookie`).
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync, appendFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const [OUT, BASE, TOKEN, MODE = 'completo'] = process.argv.slice(2);
+const [OUT, BASE, MODE = 'completo'] = process.argv.slice(2);
 const CHROME = process.env.CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const PORT = 9334;
 mkdirSync(OUT, { recursive: true });
@@ -94,7 +96,7 @@ async function key(k, code, vk) {
   }
 }
 const setSession = (on) => (on
-  ? send('Network.setCookie', { name: 'tc_session', value: TOKEN, url: BASE })
+  ? go('/simulacion/sesion') // 302 a /panel con Set-Cookie: la cookie la fija el servidor, no este script
   : send('Network.deleteCookies', { name: 'tc_session', url: BASE }));
 
 const medidas = `(() => {

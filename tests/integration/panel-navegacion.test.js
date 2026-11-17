@@ -170,6 +170,87 @@ test('403 (origen o token rechazados) muestra una página propia con enlace de r
   assert.equal(logged.length, 0);
 });
 
+test('Cache-Control: no-store en la portada con sesión y en el formulario Salir con su CSRF', async (t) => {
+  const { app, signIn } = setup(t);
+  const { cookie, csrf } = signIn();
+
+  const conSesion = await request(app).get('/').set('Cookie', cookie);
+  assert.equal(conSesion.status, 200);
+  assert.equal(conSesion.headers['cache-control'], 'no-store');
+  const salir = /<form method="post" action="\/salir">[\s\S]*?<\/form>/.exec(header(conSesion.text))?.[0];
+  assert.ok(salir, 'la portada con sesión incluye el formulario Salir');
+  assert.match(salir, new RegExp(`name="_csrf" value="${csrf}"`));
+
+  // La portada pública no es personal: no lleva el token ni se fuerza `no-store`.
+  const publica = await request(app).get('/');
+  assert.equal(publica.status, 200);
+  assert.notEqual(publica.headers['cache-control'], 'no-store');
+  assert.doesNotMatch(publica.text, /name="_csrf"/);
+
+  // Una página de error de la sesión (404 fuera de /panel) también es personal.
+  const noExiste = await request(app).get('/no-existe').set('Cookie', cookie);
+  assert.equal(noExiste.status, 404);
+  assert.equal(noExiste.headers['cache-control'], 'no-store');
+});
+
+test('POST /panel con sesión y Origin correcto, pero sin token CSRF: 403 y no-store', async (t) => {
+  const { app, signIn, logged } = setup(t);
+  const { cookie, csrf } = signIn();
+
+  const sinToken = await request(app).post('/panel').set('Origin', ORIGIN).set('Cookie', cookie).type('form').send({});
+  assert.equal(sinToken.status, 403);
+  assert.equal(sinToken.headers['cache-control'], 'no-store');
+  assert.match(sinToken.text, /CSRF_INVALID/);
+
+  const tokenAjeno = await request(app).post('/panel').set('Origin', ORIGIN).set('Cookie', cookie).type('form').send({ _csrf: 'otro' });
+  assert.equal(tokenAjeno.status, 403);
+  assert.equal(tokenAjeno.headers['cache-control'], 'no-store');
+
+  // Se conservan las comprobaciones: con origen y token válidos la petición pasa el CSRF (no hay POST /panel: 404).
+  const valido = await request(app).post('/panel').set('Origin', ORIGIN).set('Cookie', cookie).type('form').send({ _csrf: csrf });
+  assert.equal(valido.status, 404);
+  assert.equal(valido.headers['cache-control'], 'no-store');
+
+  // Sin Origin o con otro sitio sigue siendo ORIGIN_MISMATCH, aun con token válido.
+  for (const origin of [undefined, 'https://otro.example']) {
+    const req = request(app).post('/panel').set('Cookie', cookie).type('form');
+    if (origin) req.set('Origin', origin);
+    const res = await req.send({ _csrf: csrf });
+    assert.equal(res.status, 403, String(origin));
+    assert.match(res.text, /ORIGIN_MISMATCH/);
+    assert.equal(res.headers['cache-control'], 'no-store', String(origin));
+  }
+  assert.equal(logged.length, 0);
+});
+
+test('los errores anteriores a requireAuth en /panel y /api también llevan no-store', async (t) => {
+  const { app } = setup(t);
+
+  // Sin sesión: origen rechazado, cuerpo mal formado, 401 y 404 de la API.
+  const origen = await request(app).post('/panel').type('form').send({});
+  assert.equal(origen.status, 403);
+  assert.match(origen.text, /ORIGIN_MISMATCH/);
+  assert.equal(origen.headers['cache-control'], 'no-store');
+
+  const jsonRoto = await request(app).post('/panel').set('Origin', ORIGIN).set('Content-Type', 'application/json').send('{no es json');
+  assert.equal(jsonRoto.status, 422);
+  assert.equal(jsonRoto.headers['cache-control'], 'no-store');
+
+  const apiOrigen = await request(app).post('/api/lo-que-sea').send({});
+  assert.equal(apiOrigen.status, 403);
+  assert.equal(apiOrigen.body.error.code, 'ORIGIN_MISMATCH');
+  assert.equal(apiOrigen.headers['cache-control'], 'no-store');
+
+  const api401 = await request(app).get('/api/lo-que-sea');
+  assert.equal(api401.status, 401);
+  assert.equal(api401.headers['cache-control'], 'no-store');
+
+  const post302 = await request(app).post('/panel').set('Origin', ORIGIN).type('form').send({});
+  assert.equal(post302.status, 302);
+  assert.equal(post302.headers.location, '/ingreso?next=%2Fpanel');
+  assert.equal(post302.headers['cache-control'], 'no-store');
+});
+
 test('TM-NAV-04: el nombre del usuario se muestra escapado', async (t) => {
   const { app, signIn } = setup(t);
   const { cookie } = signIn('<b>Ana</b>');

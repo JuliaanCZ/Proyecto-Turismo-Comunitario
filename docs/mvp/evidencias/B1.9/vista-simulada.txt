@@ -1,0 +1,14 @@
+Comando: node --test tests/integration/vista-panel-simulada.test.js
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+✔ vista simulada: se niega a arrancar con APP_ENV=production (629.5765ms)
+✔ vista simulada: /simulacion/sesion fija la cookie por HTTP, sin imprimir el token (776.6411ms)
+✔ vista simulada: la ruta de sesión no existe en la aplicación real y rechaza otro Host (698.9068ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2993.7272

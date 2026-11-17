@@ -3,7 +3,7 @@ import { fileURLToPath, URL } from 'node:url';
 import ejs from 'ejs';
 import express from 'express';
 import helmet from 'helmet';
-import { attachPrincipal, noStore, requireAuth, sessionCookieName } from './shared/http/auth.js';
+import { attachPrincipal, noStore, noStoreWithSession, requireAuth, sessionCookieName } from './shared/http/auth.js';
 import { csrf } from './shared/http/csrf.js';
 import { errorHandler, notFoundHandler } from './shared/http/error-handler.js';
 import { originGuard } from './shared/http/origin.js';
@@ -47,8 +47,8 @@ function securityHeaders(config) {
 
 /**
  * Monta Express con el contenedor ya compuesto (C-HTTP). Orden: cabeceras de seguridad →
- * estáticos → origen → cuerpos (16 kB) → sesión → datos de página → CSRF → `/panel` y `/api` con sesión y `no-store`
- * → routers de módulos → 404 → manejador de errores. El gateway Socket.IO se adjunta
+ * estáticos → `no-store` de `/panel` y `/api` → origen → cuerpos (16 kB) → sesión (con `no-store` si la hay) → datos de página
+ * → CSRF → `requireAuth` en `/panel` y `/api` → routers de módulos → 404 → manejador de errores. El gateway Socket.IO se adjunta
  * al `http.Server` en `server.js`, en el mismo puerto.
  */
 export function createApp(container) {
@@ -73,6 +73,9 @@ export function createApp(container) {
   app.use('/js', express.static(join(ROOT, 'public/js'), { index: false }));
   app.use('/css', express.static(join(ROOT, 'public/css'), { index: false }));
 
+  // `no-store` en `/panel` y `/api` desde la entrada: así también lo llevan los rechazos que ocurren antes
+  // de `requireAuth` (origen, cuerpo mal formado, CSRF, 401 y redirecciones).
+  app.use(['/panel', '/api'], noStore);
   app.use(renderPage);
   app.use(originGuard(config.appOrigin));
   app.use(express.urlencoded({ extended: false, limit: BODY_LIMIT }));
@@ -81,11 +84,13 @@ export function createApp(container) {
     (token, now) => container.accounts.resolveSession(token, now),
     { cookieName: sessionCookieName(config), clock: container.clock },
   ));
+  // Cualquier respuesta (página, error o redirección) de una petición con sesión es personal: `no-store`.
+  app.use(noStoreWithSession);
   // `pageLocals` va antes de `csrf`: si el token falla, la página 403 ya conoce la sesión y muestra el menú y el regreso correctos.
   app.use(pageLocals);
   app.use(csrf(config.csrfSecret));
 
-  app.use(['/panel', '/api'], noStore, requireAuth);
+  app.use(['/panel', '/api'], requireAuth);
 
   app.use(createPanelRouter(container));
   app.use(createAccountsRouter(container));
