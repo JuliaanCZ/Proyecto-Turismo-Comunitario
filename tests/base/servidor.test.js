@@ -57,6 +57,13 @@ test('C-ENV: conserva los valores de desarrollo y valida el número opcional', (
   assert.throws(() => loadConfig({ WHATSAPP_BOOKING_NUMBER: '+593990000000' }), /WHATSAPP_BOOKING_NUMBER/);
 });
 
+test('C-ENV: BIND_HOST configura una IP de escucha opcional', () => {
+  assert.equal(loadConfig({}).bindHost, undefined);
+  assert.equal(loadConfig({ BIND_HOST: ' 127.0.0.1 ' }).bindHost, '127.0.0.1');
+  assert.equal(loadConfig({ BIND_HOST: '::1' }).bindHost, '::1');
+  assert.throws(() => loadConfig({ BIND_HOST: 'localhost:3000' }), /BIND_HOST/);
+});
+
 test('C-ENV: producción exige HTTPS, cookies seguras y un secreto propio', () => {
   const env = { APP_ENV: 'production', APP_ORIGIN: 'https://turismo.example' };
   assert.throws(() => loadConfig({ ...env, APP_ORIGIN: 'http://turismo.example' }), /APP_ORIGIN/);

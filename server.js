@@ -26,7 +26,7 @@ function start() {
     close();
   });
 
-  httpServer.listen(config.port, () => {
+  httpServer.listen(config.port, config.bindHost, () => {
     console.log(`Servidor de turismo comunitario en el puerto ${config.port}.`);
   });
 

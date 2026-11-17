@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import process from 'node:process';
 import { URL } from 'node:url';
 
@@ -60,6 +61,8 @@ export function loadConfig(env = process.env) {
 
   const production = appEnv === 'production';
   const port = integer(env, 'PORT', 3000, 1, 65535);
+  const bindHost = env.BIND_HOST?.trim() || undefined;
+  if (bindHost && !isIP(bindHost)) invalid('BIND_HOST', 'debe ser una dirección IPv4 o IPv6');
   const origin = appOrigin(env.APP_ORIGIN ?? (production ? '' : `http://localhost:${port}`), production);
   const databaseFile = env.DATABASE_FILE ?? './data/app.sqlite';
   if (!databaseFile.trim() || /[\x00-\x1f]/.test(databaseFile) || (production && databaseFile === ':memory:')) {
@@ -84,6 +87,7 @@ export function loadConfig(env = process.env) {
   return Object.freeze({
     appEnv,
     port,
+    bindHost,
     appOrigin: origin,
     databaseFile,
     whatsappBookingNumber: whatsappBookingNumber || null,

@@ -2,7 +2,7 @@
 
 ## Alojamiento y estado
 
-B1.11 se verificó en Windows con Caddy 2.11.9 y Node.js 24.22.3, en `https://localhost:8443` con certificado propio. El alojamiento público y el presupuesto siguen pendientes (PM-03). El entorno público necesita una instancia con un proceso Node persistente, HTTPS con certificado válido, WebSocket por el mismo origen, variables de entorno y un volumen de escritura que conserve el archivo SQLite y sus auxiliares `-wal` y `-shm` junto a él. Las fotos viven en SQLite. En el entorno local, Caddy escucha solo en loopback, termina TLS, reenvía el cambio de protocolo y conserva `Host` y `Origin` hacia el servidor HTTP. En un despliegue público, el puerto interno de Node debe quedar accesible solo desde el proxy o la red privada de la plataforma.
+B1.11 se verificó sobre `main` con B0.4 integrado (`699f9d0`), en Windows con Caddy 2.11.9 y Node.js 24.22.3, en `https://localhost:8443` con certificado propio. El alojamiento público y el presupuesto siguen pendientes (PM-03). El entorno público necesita una instancia con un proceso Node persistente, HTTPS con certificado válido, WebSocket por el mismo origen, variables de entorno y un volumen de escritura que conserve el archivo SQLite y sus auxiliares `-wal` y `-shm` junto a él. Las fotos viven en SQLite. En la variante local, Node escucha solo en `127.0.0.1` y Caddy también queda en loopback. Caddy termina TLS, reenvía el cambio de protocolo y conserva `Host` y `Origin` hacia Node. En un despliegue público, el puerto interno de Node debe quedar accesible solo desde el proxy o la red privada de la plataforma.
 
 ## Repetir la variante local
 
@@ -13,13 +13,14 @@ B1.11 se verificó en Windows con Caddy 2.11.9 y Node.js 24.22.3, en `https://lo
    APP_ENV=production
    APP_ORIGIN=https://localhost:8443
    PORT=3099
+   BIND_HOST=127.0.0.1
    COOKIE_SECURE=true
    TRUST_PROXY=1
    DATABASE_FILE=C:/ruta/al/volumen/app.sqlite
    DEMO_MAILBOX_ENABLED=false
    ```
 
-   La configuración de cookies prepara `__Host-tc_session` cuando se integre B1.2. En producción pública, usa el origen canónico del dominio. La variante local de Caddy se usa únicamente con `localhost`.
+   La configuración de cookies prepara `__Host-tc_session` cuando se integre B1.2. En producción pública, usa el origen canónico del dominio. La variante local de Caddy se usa únicamente con `localhost`. `BIND_HOST` acepta una dirección IPv4 o IPv6 y, si está vacío, Node usa su escucha predeterminada. Mantén `BIND_HOST=127.0.0.1` en esta variante para que el puerto interno no se publique en las interfaces de red.
 
 3. En la copia de despliegue, instala las dependencias, migra y arranca un único proceso. En Windows usa `npm.cmd` si PowerShell bloquea el script `npm.ps1`.
 
@@ -29,6 +30,8 @@ B1.11 se verificó en Windows con Caddy 2.11.9 y Node.js 24.22.3, en `https://lo
    node scripts/check-sqlite-argon2.js
    npm start
    ```
+
+   Con Node en marcha, verifica la escucha en Windows con `netstat -ano -p tcp | Select-String ':3099'`. La fila de escucha del PID de Node debe mostrar `127.0.0.1:3099` como dirección local.
 
 4. En otra terminal, fija `PORT` al mismo valor que en `.env` y usa una carpeta de Caddy de tu usuario. La CA y las claves quedan en esa carpeta. La configuración evita instalar la CA en el almacén del sistema.
 
@@ -54,8 +57,8 @@ B1.11 se verificó en Windows con Caddy 2.11.9 y Node.js 24.22.3, en `https://lo
 
 - **TM-DEP-01** · Verificado en local con la CA de Caddy. Repetir con el certificado público cuando se resuelva PM-03.
 - **TM-DEP-02** · Transporte WSS y estado 101 verificados por consola. Cuando se integre B1.6, comprobar que un cliente sin cookie recibe `connect_error` con código `UNAUTHENTICATED`. El script vigente imprime ese código y sale con 1 porque interpreta todo rechazo como error. Con sesión válida, abrir `/panel/chat` y capturar la conexión `wss://`, el estado 101 y una trama `42[…]` en DevTools tras enviar un mensaje.
-- **TM-DEP-03** · Un registro ficticio de oferta y sus 68 bytes de foto sobrevivieron al reinicio de Node en la copia aislada. La inserción y la lectura se hicieron en SQLite mediante sentencias preparadas y se comparó el BLOB completo. Con B1.4 y B1.5 integrados, crear la oferta y subir su foto desde el panel, reiniciar usando el mismo volumen y comprobar que el detalle y la foto siguen accesibles.
+- **TM-DEP-03** · Una oferta ficticia y su foto de 68 bytes sobrevivieron al reinicio de Node sobre el mismo archivo de la copia aislada. Se creó y consultó con sentencias preparadas usando la base de un contenedor B0.4. Se compararon los datos de la oferta y los bytes de la foto antes y después del reinicio. Con B1.4 y B1.5 integrados, crear la oferta y subir su foto desde el panel, reiniciar usando el mismo volumen y comprobar que el detalle y la foto siguen accesibles.
 
-`server.js` ya escucha `SIGTERM` y cierra Socket.IO y el servidor HTTP. En la base actual el proceso web no abre SQLite. El cierre de esa conexión en el arranque integrado queda por comprobar con el Integrante 4. La prueba de reinicio en Windows detuvo el proceso y arrancó otro sobre el mismo volumen. La [evidencia de consola](evidencias/B1.11/verificacion-local.txt) registra los resultados y los límites de la verificación.
+Desde B0.4, `createContainer` abre SQLite y aplica las migraciones. Cuando `server.js` procesa `SIGINT` o `SIGTERM`, cierra Socket.IO y el servidor HTTP y luego llama a `container.close()` para liberar la base. En Windows, la prueba activó el manejador `SIGTERM` dentro del proceso Node, verificó la salida con código 0 y comprobó que el archivo `-wal` dejó de existir antes de volver a arrancar sobre el mismo volumen. La [evidencia de consola](evidencias/B1.11/verificacion-local.txt) registra los resultados y los límites de la verificación.
 
 Referencias de operación: [proxy inverso de Caddy](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy) y [CA local de Caddy](https://caddyserver.com/docs/caddyfile/directives/tls#internal).
