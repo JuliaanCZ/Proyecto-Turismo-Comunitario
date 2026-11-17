@@ -1,13 +1,13 @@
 import { notImplementedService } from '../../shared/not-implemented.js';
+import { createUsersRepo } from './data/users.repo.js';
+import { createHasher } from './service/hasher.js';
+import { createRegister } from './service/register.js';
 
 /**
- * Esqueleto del módulo `accounts` (B0.4). Lo reemplazan B1.1 a B1.3 (Integrante 1).
- * Firmas de C-MOD (§5.1); `resolveSession(token, now) → Principal | null` es el que
- * usa `attachPrincipal` y el gateway.
+ * Módulo `accounts`. B1.1 implementa `registerUser`; B1.2/B1.3 completan el resto.
  * `deps` = { db, clock, config, sessionEvents, logger }.
  */
-const FUNCTIONS = [
-  'registerUser',
+const PENDING = [
   'authenticate',
   'createSession',
   'resolveSession',
@@ -18,7 +18,15 @@ const FUNCTIONS = [
   'listMailbox',
 ];
 
+export { registerSchema } from './domain/schemas.js';
+export { checkPasswordPolicy, COMMON_PASSWORDS } from './domain/password-policy.js';
+
 export function createAccountsService(deps) {
-  void deps;
-  return notImplementedService('accounts', FUNCTIONS);
+  const hasher = createHasher(deps.config);
+  const users = createUsersRepo(deps.db);
+  const { registerUser } = createRegister({ ...deps, hasher, users });
+  return {
+    ...notImplementedService('accounts', PENDING),
+    registerUser,
+  };
 }
