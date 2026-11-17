@@ -1,3 +1,5 @@
+import { insertMessageNodeInOrder, joinAndRecover } from './chat-client.js';
+
 const list = document.querySelector('#chat-messages');
 const empty = document.querySelector('#chat-empty');
 const loadBeforeButton = document.querySelector('#chat-load-before');
@@ -72,7 +74,7 @@ function appendMessage(message) {
     pending.delete(message.clientMessageId);
   }
   visibleIds.add(message.id);
-  list.append(messageNode(message));
+  insertMessageNodeInOrder(list, messageNode(message), message.id);
   updateBounds(message);
   empty.hidden = true;
 }
@@ -178,9 +180,15 @@ socket.on('connect', async () => {
   connection.textContent = `Conectado por ${socket.io.engine.transport.name}.`;
   submit.disabled = false;
   try {
-    const joined = await socket.timeout(5_000).emitWithAck('chat:join');
-    if (!joined.ok) throw new Error(joined.error?.message ?? 'No se pudo abrir la sala.');
-    await recoverAfter(lastId);
+    await joinAndRecover({
+      readCursor: () => lastId,
+      join: async () => {
+        const joined = await socket.timeout(5_000).emitWithAck('chat:join');
+        if (!joined.ok) throw new Error(joined.error?.message ?? 'No se pudo abrir la sala.');
+        return joined;
+      },
+      recover: recoverAfter,
+    });
   } catch (joinError) {
     connection.textContent = joinError.message;
   }
