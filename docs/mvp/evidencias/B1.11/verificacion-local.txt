@@ -1,0 +1,57 @@
+B1.11 — verificación de los ajustes del PR #7
+Base: origin/main 699f9d0 (B0.4 integrado) más los ajustes del PR #7
+Entorno: Windows, Node v24.22.3, npm 11.20.0, Caddy v2.11.9
+URL: https://localhost:8443 (certificado de la CA local de Caddy)
+Escucha de Node: BIND_HOST=127.0.0.1, PORT=3099
+
+Instalación y regresión
+> npm ci
+added 195 packages, and audited 196 packages
+> npm test
+tests 53
+pass 53
+fail 0
+> npm run lint
+Salida sin diagnósticos, código 0.
+
+Copia aislada de despliegue
+> npm ci --omit=dev
+added 102 packages, and audited 103 packages
+> npm run db:migrate
+Aplicada 001_base
+Aplicada 010_accounts
+Aplicada 020_offers
+Aplicada 030_chat
+Base ../volume/app.sqlite: 4 migración(es) aplicada(s).
+> node scripts/check-sqlite-argon2.js
+SQLite (node:sqlite, :memory:): {"valor":"dato-ficticio"}
+Algoritmo: argon2id
+Hash verificado: true
+Clave distinta rechazada: true
+OK
+
+Verificación final
+- caddy validate comprobó el archivo deploy/Caddyfile final.
+- netstat -ano -p tcp confirmó la dirección de escucha del PID de Node en los dos arranques.
+- TM-DEP-01: curl.exe --fail --silent --show-error --ssl-revoke-best-effort --cacert <CA local> -I https://localhost:8443/salud. Se comprobó una sola cabecera HSTS.
+- TM-DEP-02: node scripts/check-ws.js https://localhost:8443 con NODE_EXTRA_CA_CERTS apuntando a la CA local y sonda HTTPS de Node con Upgrade: websocket, Origin del proxy y aserción 101.
+- TM-DEP-03: se insertó una oferta ficticia y una foto PNG mediante sentencias preparadas en el volumen de pruebas. Un proceso auxiliar abrió la base mediante createContainer y verificó la oferta y su foto byte por byte antes y después del reinicio. Para probar el cierre en Windows se disparó el evento SIGTERM dentro del proceso Node con un mensaje del proceso de prueba. Se comprobó el archivo -wal mientras el servidor tenía la base abierta y su retirada tras la salida limpia.
+
+Valid configuration
+Node PID 33780 escucha exclusivamente en 127.0.0.1:3099
+HTTP/1.1 200 OK
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Via: 1.1 Caddy
+connect · transporte: websocket
+wss://localhost:8443/socket.io/ -> HTTP 101 Switching Protocols
+SQLite: oferta id=1, datos correctos y foto intacta (68 bytes).
+Manejador SIGTERM en Windows: salida 0, WAL cerrado.
+Node PID 36680 escucha exclusivamente en 127.0.0.1:3099
+GET /salud tras reinicio: {"status":"ok"}
+SQLite: oferta id=1, datos correctos y foto intacta (68 bytes).
+Manejador SIGTERM en Windows: salida 0, WAL cerrado.
+
+Pendientes
+- PM-03: despliegue público con un volumen persistente.
+- TM-DEP-02: rechazo UNAUTHENTICATED (B1.6) y captura del chat con tramas 42[…] (B1.7).
+- TM-DEP-03: repetir desde el panel cuando se integren B1.4 y B1.5.
