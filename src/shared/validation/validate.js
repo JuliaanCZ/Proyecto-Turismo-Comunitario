@@ -69,7 +69,10 @@ export function validate(schema, input) {
     const type = rule.type || 'string';
     let incoming = raw[field];
 
-    if (type === 'string' || type === 'email' || type === 'localDateTime' || type === 'enum') {
+    if (rule.preserveExact) {
+      // Contraseñas y similares: sin recorte, NFC ni colapso (equalsField compara bytes lógicos exactos).
+      incoming = incoming === null || incoming === undefined ? '' : String(incoming);
+    } else if (type === 'string' || type === 'email' || type === 'localDateTime' || type === 'enum') {
       incoming = normalizeString(incoming);
     } else if (type === 'int') {
       incoming = incoming === null || incoming === undefined ? '' : String(incoming).trim();

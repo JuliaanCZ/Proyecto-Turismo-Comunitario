@@ -86,12 +86,20 @@ test('TM-VAL-04: correo válido, inválido, minúsculas y máximo 254', () => {
 
 test('TM-VAL-05: equalsField y enum', () => {
   const schema = {
-    password: { type: 'string', label: 'Contraseña', required: true, min: 10, max: 128 },
+    password: {
+      type: 'string',
+      label: 'Contraseña',
+      required: true,
+      min: 10,
+      max: 128,
+      preserveExact: true,
+    },
     passwordConfirm: {
       type: 'string',
       label: 'Confirmación',
       required: true,
       equalsField: 'password',
+      preserveExact: true,
     },
     provincia: {
       type: 'enum',
@@ -108,6 +116,15 @@ test('TM-VAL-05: equalsField y enum', () => {
   });
   assert.equal(mismatch.ok, false);
   assert.match(mismatch.errors.passwordConfirm[0], /coincid|igual/i);
+
+  const spacingMismatch = validate(schema, {
+    password: 'secreto  1234',
+    passwordConfirm: 'secreto 1234',
+    provincia: 'Pichincha',
+  });
+  assert.equal(spacingMismatch.ok, false);
+  assert.match(spacingMismatch.errors.passwordConfirm[0], /coincid|igual/i);
+  assert.equal(spacingMismatch.values.password, 'secreto  1234');
 
   const badEnum = validate(schema, {
     password: 'secreto1234',
