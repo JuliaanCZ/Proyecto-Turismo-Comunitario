@@ -26,16 +26,35 @@ function readMultipart(req) {
     let file = null;
     let altText = '';
     let problem = null;
+    const failIncomplete = () => {
+      problem ??= invalid('imageBytes', 'La carga de la foto quedó incompleta.');
+      reject(problem);
+    };
+    const abort = () => {
+      failIncomplete();
+      req.unpipe(parser);
+      parser.destroy();
+    };
+    req.on('aborted', abort);
+    req.on('error', abort);
+    req.on('close', () => { if (!req.complete) abort(); });
+
     parser.on('file', (name, stream, info) => {
       if (name !== 'foto' || file) problem = invalid('imageBytes', 'Envía una sola foto.');
       const chunks = [];
       let size = 0;
+      let ended = false;
+      stream.on('error', failIncomplete);
+      stream.on('close', () => { if (!ended) failIncomplete(); });
       stream.on('data', (chunk) => {
         size += chunk.length;
         if (size <= MAX_BYTES) chunks.push(chunk);
       });
       stream.on('limit', () => { problem = invalid('imageBytes', 'La foto no puede superar 2 MiB.'); });
-      stream.on('end', () => { file = { bytes: Buffer.concat(chunks), mimeType: info.mimeType }; });
+      stream.on('end', () => {
+        ended = true;
+        file = { bytes: Buffer.concat(chunks), mimeType: info.mimeType };
+      });
     });
     parser.on('field', (name, value, info) => {
       if (name !== 'altText' || info.valueTruncated) {
@@ -45,8 +64,9 @@ function readMultipart(req) {
     parser.on('filesLimit', () => { problem = invalid('imageBytes', 'Envía una sola foto.'); });
     parser.on('fieldsLimit', () => { problem = invalid('altText', 'Envía un solo texto alternativo.'); });
     parser.on('partsLimit', () => { problem = invalid('imageBytes', 'El formulario tiene demasiadas partes.'); });
-    parser.on('error', () => reject(invalid('imageBytes', 'No pudimos leer la foto.')));
+    parser.on('error', failIncomplete);
     parser.on('close', () => {
+      if (!req.complete) failIncomplete();
       if (problem) reject(problem);
       else if (!file?.bytes.length) reject(invalid('imageBytes', 'Selecciona una foto.'));
       else resolve({ ...file, altText });

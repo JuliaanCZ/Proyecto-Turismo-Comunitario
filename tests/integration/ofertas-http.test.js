@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+import { request as httpRequest } from 'node:http';
 import test from 'node:test';
 import request from 'supertest';
 import sharp from 'sharp';
@@ -12,6 +13,7 @@ import { toEcuadorLocalDateTime } from '../../src/shared/time.js';
 import { createSessionFor, fakeAccounts } from '../helpers/auth.js';
 import { createTestContext } from '../helpers/context.js';
 import { createUser } from '../helpers/factories.js';
+import { startTestServer } from '../helpers/ws.js';
 
 const ORIGIN = 'http://localhost:3000';
 const NOW = Date.UTC(2026, 10, 17, 12);
@@ -183,4 +185,86 @@ test('TM-OFE-17: catálogo solo publicado, futuro y con foto; contacto configura
   assert.equal(withNumber.status, 200);
   assert.match(withNumber.text, /https:\/\/wa\.me\/593999999999\?text=/);
   assert.doesNotMatch(withNumber.text, /ana@test.local/);
+});
+
+test('TM-OFE-16 regresión: multipart truncado rechaza, conserva foto y mantiene servidor', async (t) => {
+  const { ctx, a } = setup(t);
+  const offer = create(ctx, a);
+  const first = await png('#123456');
+  ctx.container.offers.setOfferPhoto(a.principal, offer.id, {
+    contentType: 'image/png', altText: 'Foto anterior', imageBytes: first,
+  });
+  const before = ctx.container.offers.getOwnOfferPhoto(a.principal, offer.id);
+  const server = await startTestServer(ctx);
+  t.after(() => server.close());
+
+  const boundary = 'b15-truncado';
+  const incoming = await png('#abcdef');
+  const prefix = Buffer.from(
+    '--' + boundary + '\r\n' +
+    'Content-Disposition: form-data; name="altText"\r\n\r\nFoto nueva\r\n' +
+    '--' + boundary + '\r\n' +
+    'Content-Disposition: form-data; name="foto"; filename="foto.png"\r\n' +
+    'Content-Type: image/png\r\n\r\n',
+  );
+  // Los bytes de la imagen son válidos, pero falta el límite final multipart.
+  const truncated = Buffer.concat([prefix, incoming]);
+  const response = await globalThis.fetch(server.url + '/panel/ofertas/' + offer.id + '/foto', {
+    method: 'POST',
+    headers: {
+      Cookie: a.cookie, Origin: ORIGIN, 'x-csrf-token': a.csrf,
+      'Content-Type': 'multipart/form-data; boundary=' + boundary,
+      Accept: 'application/json',
+    },
+    body: truncated,
+    signal: globalThis.AbortSignal.timeout(3_000),
+  });
+  assert.equal(response.status, 422);
+  const result = await response.json();
+  assert.equal(result.error.code, 'VALIDATION_ERROR');
+  assert.ok(result.error.fieldErrors.imageBytes?.length);
+  assert.deepEqual(ctx.container.offers.getOwnOfferPhoto(a.principal, offer.id), before);
+
+  const health = await globalThis.fetch(server.url + '/salud');
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: 'ok' });
+  const detail = await globalThis.fetch(server.url + '/panel/ofertas/' + offer.id, {
+    headers: { Cookie: a.cookie },
+  });
+  assert.equal(detail.status, 200);
+});
+
+test('TM-OFE-16 regresión: cierre anticipado del cliente mantiene servidor y foto', async (t) => {
+  const { ctx, a } = setup(t);
+  const offer = create(ctx, a);
+  const first = await png('#123456');
+  ctx.container.offers.setOfferPhoto(a.principal, offer.id, {
+    contentType: 'image/png', altText: 'Foto anterior', imageBytes: first,
+  });
+  const before = ctx.container.offers.getOwnOfferPhoto(a.principal, offer.id);
+  const server = await startTestServer(ctx);
+  t.after(() => server.close());
+
+  const boundary = 'b15-abortado';
+  const body = Buffer.from(
+    '--' + boundary + '\r\n' +
+    'Content-Disposition: form-data; name="foto"; filename="foto.png"\r\n' +
+    'Content-Type: image/png\r\n\r\n' + 'bytes incompletos',
+  );
+  const client = httpRequest(server.url + '/panel/ofertas/' + offer.id + '/foto', {
+    method: 'POST',
+    headers: {
+      Cookie: a.cookie, Origin: ORIGIN, 'x-csrf-token': a.csrf,
+      'Content-Type': 'multipart/form-data; boundary=' + boundary,
+      'Content-Length': body.length + 1000,
+    },
+  });
+  client.on('error', () => {});
+  const closed = new Promise((resolve) => client.on('close', resolve));
+  client.write(body, () => client.destroy());
+  await closed;
+
+  const health = await globalThis.fetch(server.url + '/salud');
+  assert.equal(health.status, 200);
+  assert.deepEqual(ctx.container.offers.getOwnOfferPhoto(a.principal, offer.id), before);
 });

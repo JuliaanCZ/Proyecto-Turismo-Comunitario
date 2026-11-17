@@ -1,13 +1,15 @@
 # Evidencia B1.5 — ofertas HTTP
 
-Fecha local: 2026-11-17. Rama: `codex/B1.5-ofertas-http`, creada desde `main` en `7d30f22` (B1.4 integrado).
+Fecha local: 2026-11-17. Rama: `bloque/B1.5-ofertas-http`; incluye `main` en `f8381cd` (B1.1 y B1.4 integrados).
 
 ## Comprobaciones reales
 
 - `npm ci`: pasó al repetirlo con el servidor temporal de capturas detenido; 202 paquetes instalados, 0 vulnerabilidades reportadas. El primer intento falló con `EPERM` porque ese servidor mantenía abierta `libvips-42.dll` de Sharp.
-- `node --test tests/integration/ofertas-http.test.js`: 6/6 casos pasaron; salida en `pruebas-bloque.txt`. Cubren TM-OFE-09 a TM-OFE-17 mediante aserciones reales.
-- `npm test`: 96/96 pasaron; salida en `npm-test.txt`.
+- `node --test tests/integration/ofertas-http.test.js`: 8/8 casos pasaron; salida en `pruebas-bloque.txt`. Cubren TM-OFE-09 a TM-OFE-17 mediante aserciones reales.
+- `npm test`: 107/107 pasaron; salida en `npm-test.txt`.
 - `npm run lint`: pasó; salida en `npm-lint.txt`.
+
+Las dos regresiones de TM-OFE-16 envían un multipart sin límite final y un cierre anticipado del cliente. Comprueban respuesta 422 cuando puede responderse, bytes de foto sin cambios y `/salud` en el mismo servidor después del fallo.
 
 ## Capturas
 
