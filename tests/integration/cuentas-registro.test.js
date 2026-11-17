@@ -112,3 +112,49 @@ test('POST /registro válido redirige a ingreso y no inicia sesión', async (t) 
   assert.equal(db.prepare('SELECT count(*) AS n FROM users').get().n, 1);
   assert.equal(res.headers['set-cookie'], undefined);
 });
+
+test('POST /registro con sesión válida exige y acepta _csrf del formulario', async (t) => {
+  const { db, container, app } = setup(t);
+  const token = 'tok-registro-csrf';
+  const principal = Object.freeze({
+    userId: 99,
+    sessionId: 'sesion-registro-csrf',
+    displayName: 'Visitante',
+    sessionExpiresAt: 9_999_999_999_999,
+  });
+  container.accounts.resolveSession = (value) => (value === token ? principal : null);
+
+  const page = await request(app).get('/registro').set('Cookie', `tc_session=${token}`);
+  assert.equal(page.status, 200);
+  const match = page.text.match(/name="_csrf"\s+value="([^"]+)"/);
+  assert.ok(match, 'el formulario con sesión debe incluir _csrf');
+
+  const sinCsrf = await request(app).post('/registro').set('Origin', ORIGIN)
+    .set('Cookie', `tc_session=${token}`).type('form').send(input({ email: 'con-sesion@example.test' }));
+  assert.equal(sinCsrf.status, 403);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM users').get().n, 0);
+
+  const conCsrf = await request(app).post('/registro').set('Origin', ORIGIN)
+    .set('Cookie', `tc_session=${token}`).type('form')
+    .send({ ...input({ email: 'con-sesion@example.test' }), _csrf: match[1] });
+  assert.equal(conCsrf.status, 302);
+  assert.equal(conCsrf.headers.location, '/ingreso?aviso=cuenta-creada');
+  assert.equal(db.prepare('SELECT count(*) AS n FROM users').get().n, 1);
+});
+
+test('GET/POST /registro con datos inválidos muestra errores por campo (evidencia HTML)', async (t) => {
+  const { db, app } = setup(t);
+  const res = await request(app).post('/registro').set('Origin', ORIGIN).type('form').send({
+    displayName: 'A',
+    email: 'malo',
+    password: 'corta',
+    passwordConfirm: 'otra',
+  });
+  assert.equal(res.status, 422);
+  assert.match(res.text, /campo--error/);
+  assert.match(res.text, /data-error-for="displayName"/);
+  assert.match(res.text, /data-error-for="email"/);
+  assert.match(res.text, /data-error-for="password"/);
+  assert.doesNotMatch(res.text, /corta|otra/);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM users').get().n, 0);
+});

@@ -1,5 +1,5 @@
 <%#
-  Registro de cuenta (B1.1). Sin sesión: no lleva CSRF.
+  Registro de cuenta (B1.1). Con sesión: incluye _csrf (mismo patrón que la guía visual).
   Las contraseñas no se reimprimen tras un error.
 %>
 <div class="pila">
@@ -13,6 +13,7 @@
   <% } %>
 
   <form class="formulario" method="post" action="/registro" data-schema="<%= JSON.stringify(schema) %>" autocomplete="on">
+    <% if (locals.principal) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% } %>
     <%- include('../partials/form-field', {
       name: 'displayName',
       label: 'Nombre',

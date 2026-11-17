@@ -1,15 +1,17 @@
-﻿✔ TM-CTA-01: registro válido crea fila con hash argon2id distinto de la contraseña (28.9945ms)
-✔ TM-CTA-02: dos usuarios con la misma contraseña tienen hashes distintos (13.3583ms)
-✔ TM-CTA-03: cada regla incumplida no inserta y marca su campo (8.8082ms)
-✔ TM-CTA-04: correo duplicado (también con otra capitalización) → EMAIL_TAKEN (119.586ms)
-✔ TM-CTA-05: POST /registro sin Origin válido → 403 y sin fila (33.2722ms)
-✔ POST /registro válido redirige a ingreso y no inicia sesión (23.6999ms)
-✔ TM-CTA-03 (unidad): esquema y política rechazan cada regla con error por campo (2.5411ms)
-ℹ tests 7
+﻿✔ TM-CTA-01: registro válido crea fila con hash argon2id distinto de la contraseña (16.9863ms)
+✔ TM-CTA-02: dos usuarios con la misma contraseña tienen hashes distintos (8.5463ms)
+✔ TM-CTA-03: cada regla incumplida no inserta y marca su campo (4.7299ms)
+✔ TM-CTA-04: correo duplicado (también con otra capitalización) → EMAIL_TAKEN (60.7435ms)
+✔ TM-CTA-05: POST /registro sin Origin válido → 403 y sin fila (12.5619ms)
+✔ POST /registro válido redirige a ingreso y no inicia sesión (9.0844ms)
+✔ POST /registro con sesión válida exige y acepta _csrf del formulario (23.8122ms)
+✔ GET/POST /registro con datos inválidos muestra errores por campo (evidencia HTML) (15.513ms)
+✔ TM-CTA-03 (unidad): esquema y política rechazan cada regla con error por campo (1.5335ms)
+ℹ tests 9
 ℹ suites 0
-ℹ pass 7
+ℹ pass 9
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 754.094
+ℹ duration_ms 583.6535

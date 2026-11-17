@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear cuenta · Turismo comunitario</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <script type="module" src="/js/form-validate.js"></script>
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  
+
+<header class="cabecera">
+  <div class="contenedor cabecera__interior">
+    <a class="marca" href="/">Turismo comunitario</a>
+    <nav aria-label="Principal">
+      <ul class="nav">
+        
+        <li><a href="/ofertas">Ofertas</a></li>
+        <li><a href="/ingreso">Ingresar</a></li>
+        <li><a href="/registro" aria-current="page">Crear cuenta</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+  <main id="contenido" class="contenedor principal" tabindex="-1">
+
+<div class="pila">
+  <div>
+    <h1>Crear cuenta</h1>
+    <p>Regístrate para publicar ofertas y usar el chat de la comunidad.</p>
+  </div>
+
+  
+  <p class="mensaje mensaje--error" role="alert"><strong>Error:</strong> Revisa los campos indicados.</p>
+  
+
+  <form class="formulario" method="post" action="/registro" data-schema="{&#34;displayName&#34;:{&#34;type&#34;:&#34;string&#34;,&#34;label&#34;:&#34;nombre&#34;,&#34;required&#34;:true,&#34;min&#34;:2,&#34;max&#34;:80},&#34;email&#34;:{&#34;type&#34;:&#34;email&#34;,&#34;label&#34;:&#34;correo&#34;,&#34;required&#34;:true},&#34;password&#34;:{&#34;type&#34;:&#34;string&#34;,&#34;label&#34;:&#34;contraseña&#34;,&#34;required&#34;:true,&#34;min&#34;:10,&#34;max&#34;:128,&#34;preserveExact&#34;:true},&#34;passwordConfirm&#34;:{&#34;type&#34;:&#34;string&#34;,&#34;label&#34;:&#34;confirmación&#34;,&#34;required&#34;:true,&#34;min&#34;:10,&#34;max&#34;:128,&#34;preserveExact&#34;:true,&#34;equalsField&#34;:&#34;password&#34;}}" autocomplete="on">
+    
+    
+
+<div class="campo campo--error">
+  <label class="campo__etiqueta" for="campo-displayName">Nombre <span class="campo__obligatorio" aria-hidden="true">*</span><span class="sr-only">(obligatorio)</span></label>
+  <p class="campo__ayuda" id="campo-displayName-ayuda">Entre 2 y 80 caracteres.</p>
+  
+  <input id="campo-displayName" name="displayName" type="text" value="A" aria-describedby="campo-displayName-ayuda campo-displayName-error" autocomplete="name" aria-invalid="true" required>
+  
+  <p class="campo__error" id="campo-displayName-error" data-error-for="displayName" aria-live="polite">El nombre debe tener al menos 2 caracteres.</p>
+</div>
+
+    
+
+<div class="campo campo--error">
+  <label class="campo__etiqueta" for="campo-email">Correo <span class="campo__obligatorio" aria-hidden="true">*</span><span class="sr-only">(obligatorio)</span></label>
+  
+  
+  <input id="campo-email" name="email" type="email" value="malo" aria-describedby="campo-email-error" autocomplete="email" aria-invalid="true" required>
+  
+  <p class="campo__error" id="campo-email-error" data-error-for="email" aria-live="polite">El correo no tiene un formato válido.</p>
+</div>
+
+    
+
+<div class="campo campo--error">
+  <label class="campo__etiqueta" for="campo-password">Contraseña <span class="campo__obligatorio" aria-hidden="true">*</span><span class="sr-only">(obligatorio)</span></label>
+  <p class="campo__ayuda" id="campo-password-ayuda">Entre 10 y 128 caracteres. No uses el correo ni una clave muy común.</p>
+  
+  <input id="campo-password" name="password" type="password" value="" aria-describedby="campo-password-ayuda campo-password-error" autocomplete="new-password" aria-invalid="true" required>
+  
+  <p class="campo__error" id="campo-password-error" data-error-for="password" aria-live="polite">El contraseña debe tener al menos 10 caracteres.</p>
+</div>
+
+    
+
+<div class="campo campo--error">
+  <label class="campo__etiqueta" for="campo-passwordConfirm">Confirmar contraseña <span class="campo__obligatorio" aria-hidden="true">*</span><span class="sr-only">(obligatorio)</span></label>
+  
+  
+  <input id="campo-passwordConfirm" name="passwordConfirm" type="password" value="" aria-describedby="campo-passwordConfirm-error" autocomplete="new-password" aria-invalid="true" required>
+  
+  <p class="campo__error" id="campo-passwordConfirm-error" data-error-for="passwordConfirm" aria-live="polite">El confirmación debe tener al menos 10 caracteres.</p>
+</div>
+
+    <div class="acciones">
+      <button class="btn" type="submit">Crear cuenta</button>
+      <a class="btn btn--secundario" href="/ingreso">Ya tengo cuenta</a>
+    </div>
+  </form>
+</div>
+
+  </main>
+  <footer class="pie">
+    <div class="contenedor">
+      <p>Proyecto académico de Aplicaciones Web Avanzadas. Los datos de ejemplo son ficticios.</p>
+    </div>
+  </footer>
+</body>
+</html>
