@@ -414,13 +414,19 @@ test('createContainer: overrides inyectan servicios, reloj y base; la base inyec
 
 test('esqueleto C-MOD: los módulos pendientes lanzan NOT_IMPLEMENTED (501)', (t) => {
   const { container } = build(t, { overrides: { accounts: undefined } });
+  // B1.1 ya implementa registerUser; el resto de accounts sigue pendiente hasta B1.2/B1.3.
+  assert.equal(typeof container.accounts.registerUser, 'function');
   const esperado = {
-    accounts: ['registerUser', 'authenticate', 'createSession', 'resolveSession', 'revokeSession', 'revokeAllSessions',
+    accounts: ['authenticate', 'createSession', 'resolveSession', 'revokeSession', 'revokeAllSessions',
       'requestPasswordReset', 'resetPassword', 'listMailbox'],
     chat: ['postMessage', 'getHistory', 'lastMessageId'],
   };
   for (const [modulo, funciones] of Object.entries(esperado)) {
-    assert.deepEqual(Object.keys(container[modulo]).sort(), [...funciones].sort(), modulo);
+    const keys = Object.keys(container[modulo]).sort();
+    const expectedKeys = modulo === 'accounts'
+      ? ['registerUser', ...funciones].sort()
+      : [...funciones].sort();
+    assert.deepEqual(keys, expectedKeys, modulo);
     for (const nombre of funciones) {
       assert.throws(
         () => container[modulo][nombre](),
