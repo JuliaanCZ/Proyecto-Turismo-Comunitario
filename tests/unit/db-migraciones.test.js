@@ -269,7 +269,8 @@ test('B0.2: el checksum ignora CRLF y BOM (clones de Windows y Linux)', (t) => {
   migrate(db, { dir });
 
   const file = join(dir, '020_offers.sql');
-  writeFileSync(file, `﻿${readFileSync(file, 'utf8').replace(/\n/g, '\r\n')}`);
+  const originalLf = readFileSync(file, 'utf8').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
+  writeFileSync(file, `\uFEFF${originalLf.replace(/\n/g, '\r\n')}`);
   assert.deepEqual(migrate(db, { dir }), []);
 });
 
@@ -440,7 +441,7 @@ test('TM-DB-05: los CHECK de chat rechazan texto vacío, en blanco o demasiado l
   const message = (over) => messageRow(author, over);
 
   rejects(db, 'chat_messages', message({ text: '' }), CHECK);
-  for (const blank of [' ', '   ', '\t', '\n', ' \r\n\t ', ' ', ' ', '　', ' ', '﻿', '\u0085']) {
+  for (const blank of [' ', '   ', '\t', '\n', ' \r\n\t ', '\u00A0', '\u2003', '\u3000', '\u2028', '\uFEFF', '\u0085']) {
     rejects(db, 'chat_messages', message({ text: blank }), CHECK);
   }
   rejects(db, 'chat_messages', message({ text: 'a'.repeat(501) }), CHECK);
