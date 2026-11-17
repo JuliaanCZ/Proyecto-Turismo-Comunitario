@@ -633,3 +633,15 @@ a:hover {
     transition: none !important;
   }
 }
+
+/* Foto de ofertas B1.5: tamaño legible sin desbordar en móvil. */
+.oferta__imagen {
+  display: block;
+  width: 100%;
+  max-width: 36rem;
+  height: auto;
+  margin-block: var(--tc-e4);
+}
+.ofertas .oferta__imagen {
+  max-width: 30rem;
+}

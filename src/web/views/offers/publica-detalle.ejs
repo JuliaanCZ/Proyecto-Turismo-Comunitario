@@ -1,0 +1,11 @@
+<h1><%= offer.title %></h1>
+<img src="/ofertas/<%= offer.id %>/foto" alt="<%= photoAltText %>" class="oferta__imagen" width="640">
+<p><%= offer.description %></p>
+<dl class="oferta__datos"><dt>Provincia</dt><dd><%= offer.provinceLabel %></dd>
+<dt>Ubicación</dt><dd><%= offer.locationText %></dd>
+<dt>Fecha</dt><dd><%= formatEcuadorDateTime(offer.startsAt) %></dd>
+<dt>Cupo referencial</dt><dd><%= offer.capacity %></dd></dl>
+<p>Se abre una conversación por WhatsApp. La PYME confirma la disponibilidad y el cupo por ese canal.</p>
+<% if (whatsappUrl) { %><p><a class="btn" href="<%= whatsappUrl %>" rel="noopener noreferrer">Consultar reserva por WhatsApp</a></p><% } else { %>
+<p class="mensaje mensaje--aviso" role="status">Contacto por WhatsApp no disponible</p><% } %>
+<p><a href="/ofertas">Volver al catálogo</a></p>
