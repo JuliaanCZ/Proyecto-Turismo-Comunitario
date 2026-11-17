@@ -1,0 +1,25 @@
+Bloque: B1.6 — Gateway Socket.IO autenticado y cierre por sesión
+Entorno: Windows · Node v24.22.3 · 2026-11-17
+
+Comando: node --test tests/ws/gateway-handshake.test.js
+Resultado: 7 pruebas, 7 aprobadas, 0 fallidas.
+
+TM-WS-01: pasa — rechaza cookie ausente o malformada y no crea salas.
+TM-WS-02: pasa — rechaza Origin ajeno o ausente.
+TM-WS-03: pasa — rechaza sesión revocada, inexistente o vencida.
+TM-WS-04: pasa — conecta por websocket y entra en las salas de usuario y sesión.
+TM-WS-05: pasa — revocación por sessionId o userId cierra solo los sockets correspondientes.
+TM-WS-06: pasa — guard revalida, confirma UNAUTHENTICATED y desconecta.
+TM-WS-07: pasa — el temporizador emite session:expired y desconecta al vencer.
+
+Estabilidad: 10 ejecuciones consecutivas; 10 con código de salida 0.
+
+Comando: npm test
+Resultado: 63 pruebas, 63 aprobadas, 0 fallidas, 0 omitidas.
+Duración de la ejecución registrada: 1112.3864 ms.
+
+Comando: npm run lint
+Resultado: código de salida 0, sin errores ni advertencias.
+
+Evidencia manual pendiente: docs/mvp/evidencias/B1.6/websocket-devtools.png
+Debe mostrar el 101 y las tramas sin revelar la cookie ni el token.

@@ -1,9 +1,13 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
+import { attachGateway } from './realtime/gateway.js';
+
+const MAX_HTTP_BUFFER_SIZE = 16 * 1024;
 
 /** Un solo `http.Server`: Express (`app`) y Socket.IO comparten el puerto (B0.1). */
-export function createHttpServer(app) {
+export function createHttpServer(app, container) {
   const httpServer = createServer(app);
-  const io = new Server(httpServer);
-  return { httpServer, io };
+  const io = new Server(httpServer, { maxHttpBufferSize: MAX_HTTP_BUFFER_SIZE });
+  const gateway = container ? attachGateway(io, container) : undefined;
+  return { httpServer, io, gateway };
 }
