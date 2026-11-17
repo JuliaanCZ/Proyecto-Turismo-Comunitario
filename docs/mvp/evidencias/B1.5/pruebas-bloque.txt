@@ -1,0 +1,14 @@
+✔ TM-OFE-09 y 15: ciclo CRUD por HTTP y confirmación obligatoria (58.2913ms)
+✔ TM-OFE-10: 422 conserva valores y muestra error junto al campo (5.9539ms)
+✔ TM-OFE-11 y 12: rutas privadas requieren sesión y ocultan ofertas ajenas (31.808ms)
+✔ TM-OFE-13 y 14: salida escapada, 25 filtradas y paginación estable (14.4339ms)
+✔ TM-OFE-16: foto válida, reemplazo y rechazos conservan la anterior (55.529ms)
+✔ TM-OFE-17: catálogo solo publicado, futuro y con foto; contacto configurado (21.1888ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 464.5242

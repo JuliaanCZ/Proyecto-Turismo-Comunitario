@@ -1,0 +1,31 @@
+<h1><%= offer ? 'Editar oferta' : 'Nueva oferta' %></h1>
+<p>La fecha y hora se indican en hora de Ecuador continental. El cupo es referencial; la PYME confirma la disponibilidad por WhatsApp.</p>
+<% if (message) { %><p class="mensaje mensaje--error" role="alert" tabindex="-1">Error: <%= message %></p><% } %>
+<form method="post" action="<%= offer ? '/panel/ofertas/' + offer.id + '/editar' : '/panel/ofertas' %>" data-schema="<%= JSON.stringify(offerSchema) %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../partials/form-field', { name: 'title', label: 'Título', value: values.title, required: true, errors: errors.title }) %>
+  <%- include('../partials/form-field', { name: 'description', label: 'Descripción', type: 'textarea', rows: 6, value: values.description, required: true, errors: errors.description }) %>
+  <div class="campo<%= errors.province?.length ? ' campo--error' : '' %>">
+    <label class="campo__etiqueta" for="campo-province">Provincia <span aria-hidden="true">*</span></label>
+    <select id="campo-province" name="province" aria-describedby="campo-province-error" required<% if (errors.province?.length) { %> aria-invalid="true"<% } %>>
+      <option value="">Elige una provincia</option>
+      <% for (const province of provinces) { %><option value="<%= province.code %>"<% if (values.province === province.code) { %> selected<% } %>><%= province.label %></option><% } %>
+    </select>
+    <p class="campo__error" id="campo-province-error" data-error-for="province" aria-live="polite"><%= (errors.province ?? []).join(' ') %></p>
+  </div>
+  <%- include('../partials/form-field', { name: 'locationText', label: 'Ubicación', value: values.locationText, required: true, errors: errors.locationText }) %>
+  <%- include('../partials/form-field', { name: 'startsAt', label: 'Fecha y hora', type: 'datetime-local', value: values.startsAt, required: true, hint: 'Hora de Ecuador continental', errors: errors.startsAt }) %>
+  <%- include('../partials/form-field', { name: 'capacity', label: 'Cupo referencial', type: 'number', value: values.capacity, required: true, inputmode: 'numeric', errors: errors.capacity }) %>
+  <% if (offer) { %>
+  <div class="campo<%= errors.isPublished?.length ? ' campo--error' : '' %>">
+    <label class="campo__etiqueta" for="campo-isPublished">Publicación</label>
+    <select id="campo-isPublished" name="isPublished" aria-describedby="campo-isPublished-error">
+      <option value="false"<% if ((values.isPublished ?? offer.isPublished) === false || values.isPublished === 'false') { %> selected<% } %>>Borrador</option>
+      <option value="true"<% if ((values.isPublished ?? offer.isPublished) === true || values.isPublished === 'true') { %> selected<% } %>>Publicada</option>
+    </select>
+    <p class="campo__error" id="campo-isPublished-error" data-error-for="isPublished" aria-live="polite"><%= (errors.isPublished ?? []).join(' ') %></p>
+  </div>
+  <% if (!offer.hasPhoto) { %><p class="mensaje mensaje--aviso">Atención: añade una foto antes de publicar.</p><% } %>
+  <% } %>
+  <div class="acciones"><button class="btn" type="submit">Guardar oferta</button><a class="btn btn--secundario" href="<%= offer ? '/panel/ofertas/' + offer.id : '/panel/ofertas' %>">Cancelar</a></div>
+</form>

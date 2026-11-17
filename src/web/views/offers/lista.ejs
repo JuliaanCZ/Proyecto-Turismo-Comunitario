@@ -1,0 +1,38 @@
+<h1>Mis ofertas</h1>
+<p>Gestiona tus experiencias y publica las que tengan una foto y fecha futura.</p>
+<p><a class="btn" href="/panel/ofertas/nueva">Nueva oferta</a></p>
+<form method="get" action="/panel/ofertas" class="campo">
+  <label class="campo__etiqueta" for="provincia">Provincia</label>
+  <select id="provincia" name="provincia">
+    <option value="">Todas las provincias</option>
+    <% for (const province of provinces) { %>
+    <option value="<%= province.code %>"<% if (result.provincia === province.code) { %> selected<% } %>><%= province.label %></option>
+    <% } %>
+  </select>
+  <button class="btn btn--secundario" type="submit">Filtrar</button>
+  <% if (result.provincia) { %><a href="/panel/ofertas">Quitar filtro</a><% } %>
+</form>
+<% if (aviso) { %><p class="mensaje mensaje--exito" role="status">Listo: <%= aviso %></p><% } %>
+<% if (!result.items.length) { %>
+<section class="vacio"><h2>No hay ofertas en esta lista</h2>
+<p>Prueba otra provincia o crea una nueva oferta.</p><a href="/panel/ofertas/nueva">Nueva oferta</a></section>
+<% } else { %>
+<ul class="ofertas">
+  <% for (const offer of result.items) { %>
+  <li class="oferta">
+    <h2 class="oferta__nombre"><a href="/panel/ofertas/<%= offer.id %>"><%= offer.title %></a></h2>
+    <p><%= offer.isPublished ? 'Publicada' : 'Borrador' %><%= offer.hasPhoto ? ' · Con foto' : ' · Sin foto' %></p>
+    <dl class="oferta__datos"><dt>Provincia</dt><dd><%= offer.provinceLabel %></dd>
+      <dt>Fecha</dt><dd class="oferta__fecha"><%= formatEcuadorDateTime(offer.startsAt) %></dd>
+      <dt>Cupo referencial</dt><dd><%= offer.capacity %></dd></dl>
+  </li>
+  <% } %>
+</ul>
+<% } %>
+<% if (result.totalPages > 1) { %>
+<nav aria-label="Páginas de mis ofertas"><ul class="acciones">
+  <% for (let page = 1; page <= result.totalPages; page += 1) { %>
+  <li><a href="<%= pageLink(page, result.provincia) %>"<% if (page === result.page) { %> aria-current="page"<% } %>><%= page %></a></li>
+  <% } %>
+</ul></nav>
+<% } %>
