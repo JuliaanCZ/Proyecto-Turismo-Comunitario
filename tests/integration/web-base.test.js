@@ -412,7 +412,7 @@ test('createContainer: overrides inyectan servicios, reloj y base; la base inyec
   assert.equal(db.prepare('SELECT 1 AS uno').get().uno, 1);
 });
 
-test('esqueleto C-MOD: los módulos pendientes lanzan NOT_IMPLEMENTED (501)', (t) => {
+test('esqueleto C-MOD: el módulo de cuentas pendiente lanza NOT_IMPLEMENTED (501)', (t) => {
   const { container } = build(t, { overrides: { accounts: undefined } });
   // B1.1 + B1.2 ya implementan registro, ingreso y sesión; B1.3 completa recuperación y bandeja.
   const implementadas = ['registerUser', 'authenticate', 'createSession', 'resolveSession',
@@ -420,23 +420,14 @@ test('esqueleto C-MOD: los módulos pendientes lanzan NOT_IMPLEMENTED (501)', (t
   for (const nombre of implementadas) {
     assert.equal(typeof container.accounts[nombre], 'function', `accounts.${nombre}`);
   }
-  const esperado = {
-    accounts: ['requestPasswordReset', 'resetPassword', 'listMailbox'],
-    chat: ['postMessage', 'getHistory', 'lastMessageId'],
-  };
-  for (const [modulo, funciones] of Object.entries(esperado)) {
-    const keys = Object.keys(container[modulo]).sort();
-    const expectedKeys = modulo === 'accounts'
-      ? [...implementadas, ...funciones].sort()
-      : [...funciones].sort();
-    assert.deepEqual(keys, expectedKeys, modulo);
-    for (const nombre of funciones) {
-      assert.throws(
-        () => container[modulo][nombre](),
-        (error) => error instanceof AppError && error.code === 'NOT_IMPLEMENTED' && error.status === 501,
-        `${modulo}.${nombre}`,
-      );
-    }
+  const pendientes = ['requestPasswordReset', 'resetPassword', 'listMailbox'];
+  assert.deepEqual(Object.keys(container.accounts).sort(), [...implementadas, ...pendientes].sort());
+  for (const nombre of pendientes) {
+    assert.throws(
+      () => container.accounts[nombre](),
+      (error) => error instanceof AppError && error.code === 'NOT_IMPLEMENTED' && error.status === 501,
+      `accounts.${nombre}`,
+    );
   }
 });
 

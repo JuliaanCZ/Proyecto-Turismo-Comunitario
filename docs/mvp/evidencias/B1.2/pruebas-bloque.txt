@@ -1,11 +1,12 @@
-﻿✔ TM-CTA-06: ingreso correcto fija cookie HttpOnly + SameSite=Lax y guarda solo SHA-256 en SQLite (82.9877ms)
-✔ TM-CTA-07: contraseña incorrecta y correo inexistente devuelven el mismo estado y mensaje (25.8579ms)
-✔ TM-CTA-08: /panel sin cookie → 302 a /ingreso; con cookie válida → 200 (18.4115ms)
-✔ TM-CTA-09: POST /salir revoca la sesión, limpia la cookie, emite session-revoked y es idempotente (22.3973ms)
-✔ TM-CTA-10: sesión vencida (reloj +8 h) no da acceso (13.4662ms)
-✔ TM-CTA-11: cada ingreso genera un token nuevo y nunca reutiliza la cookie presentada (sin fijación) (17.1053ms)
-✔ TM-CTA-12: next hostil (https://evil.test, //evil.test) se ignora y redirige a /panel; ruta interna válida se respeta (21.6227ms)
-✔ Integración B0.5 + B1.2/B1.3: resolveSession acepta createSessionFor y revokeAllSessions/revokeAllInTx funcionan (8.5646ms)
+$ node --test tests/integration/cuentas-sesion.test.js
+✔ TM-CTA-06: ingreso correcto fija cookie HttpOnly + SameSite=Lax y guarda solo SHA-256 en SQLite (74.2837ms)
+✔ TM-CTA-07: contraseña incorrecta y correo inexistente devuelven el mismo estado y mensaje (20.8458ms)
+✔ TM-CTA-08: /panel sin cookie → 302 a /ingreso; con cookie válida → 200 (16.7822ms)
+✔ TM-CTA-09: POST /salir revoca la sesión, limpia la cookie, emite session-revoked y es idempotente (26.1015ms)
+✔ TM-CTA-10: sesión vencida (reloj +8 h) no da acceso (13.2604ms)
+✔ TM-CTA-11: cada ingreso genera un token nuevo y nunca reutiliza la cookie presentada (sin fijación) (13.0378ms)
+✔ TM-CTA-12: next hostil (https://evil.test, //evil.test) se ignora y redirige a /panel; ruta interna válida se respeta (21.2844ms)
+✔ Integración B0.5 + B1.2/B1.3: resolveSession acepta createSessionFor y revokeAllSessions/revokeAllInTx funcionan (9.5391ms)
 ℹ tests 8
 ℹ suites 0
 ℹ pass 8
@@ -13,4 +14,5 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 623.1407
+ℹ duration_ms 611.7419
+(exit 0)
