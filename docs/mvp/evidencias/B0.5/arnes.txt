@@ -1,0 +1,10 @@
+Comando: node --test tests/base/arnes.test.js
+
+✔ TM-ARN-01: createSessionFor guarda solo el hash de la sesión
+✔ TM-ARN-02: waitFor espera n eventos y falla claramente si se desconecta
+✔ TM-ARN-03: expectNoEvent distingue ausencia y presencia usando un testigo
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
