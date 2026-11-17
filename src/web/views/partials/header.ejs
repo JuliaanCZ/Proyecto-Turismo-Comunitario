@@ -1,0 +1,26 @@
+<%#
+  Cabecera provisional de B0.4: marca y los accesos mínimos. B1.9 (Integrante 4) la
+  reemplaza con la navegación definitiva sin tocar layout.ejs. Todo dato se imprime escapado.
+%>
+<header class="cabecera">
+  <div class="contenedor cabecera__interior">
+    <a class="marca" href="/">Turismo comunitario</a>
+    <nav aria-label="Principal">
+      <ul class="nav">
+        <% if (locals.principal) { %>
+        <li><a href="/panel"<% if (locals.currentPath === '/panel') { %> aria-current="page"<% } %>>Panel</a></li>
+        <li class="nav__usuario"><span class="sr-only">Sesión de </span><%= principal.displayName %></li>
+        <li>
+          <form method="post" action="/salir">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--secundario" type="submit">Salir</button>
+          </form>
+        </li>
+        <% } else { %>
+        <li><a href="/ingreso"<% if (locals.currentPath === '/ingreso') { %> aria-current="page"<% } %>>Ingresar</a></li>
+        <li><a href="/registro"<% if (locals.currentPath === '/registro') { %> aria-current="page"<% } %>>Crear cuenta</a></li>
+        <% } %>
+      </ul>
+    </nav>
+  </div>
+</header>

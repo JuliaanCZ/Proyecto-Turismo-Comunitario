@@ -1,15 +1,7 @@
 import { createServer } from 'node:http';
-import express from 'express';
 import { Server } from 'socket.io';
 
-export function createBaseApp() {
-  const app = express();
-  app.disable('x-powered-by');
-  app.get('/salud', (_req, res) => res.json({ status: 'ok' }));
-  app.get('/', (_req, res) => res.type('text').send('Turismo comunitario'));
-  return app;
-}
-
+/** Un solo `http.Server`: Express (`app`) y Socket.IO comparten el puerto (B0.1). */
 export function createHttpServer(app) {
   const httpServer = createServer(app);
   const io = new Server(httpServer);

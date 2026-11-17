@@ -1,0 +1,24 @@
+<%#
+  Campo de formulario con etiqueta, ayuda y mensaje de error asociados.
+  Uso: include('../partials/form-field', { name: 'correo', label: 'Correo', type: 'email' })
+  Parámetros: name, label (obligatorios); type ('text'), value (''), hint, required (false),
+  autocomplete, inputmode, rows (solo type 'textarea'), errors (arreglo de mensajes del servidor).
+  El párrafo con data-error-for igual a name existe siempre: public/js/form-validate.js escribe ahí con textContent.
+  El esquema del formulario va en data-schema como JSON: las expresiones regulares deben ser cadenas.
+%>
+<%
+  const fieldId = `campo-${name}`;
+  const fieldType = locals.type || 'text';
+  const fieldErrors = locals.errors || [];
+  const describedBy = [locals.hint ? `${fieldId}-ayuda` : null, `${fieldId}-error`].filter(Boolean).join(' ');
+%>
+<div class="campo<%= fieldErrors.length ? ' campo--error' : '' %>">
+  <label class="campo__etiqueta" for="<%= fieldId %>"><%= label %><% if (locals.required) { %> <span class="campo__obligatorio" aria-hidden="true">*</span><span class="sr-only">(obligatorio)</span><% } %></label>
+  <% if (locals.hint) { %><p class="campo__ayuda" id="<%= fieldId %>-ayuda"><%= hint %></p><% } %>
+  <% if (fieldType === 'textarea') { %>
+  <textarea id="<%= fieldId %>" name="<%= name %>" rows="<%= locals.rows || 4 %>" aria-describedby="<%= describedBy %>"<% if (fieldErrors.length) { %> aria-invalid="true"<% } %><% if (locals.required) { %> required<% } %>><%= locals.value || '' %></textarea>
+  <% } else { %>
+  <input id="<%= fieldId %>" name="<%= name %>" type="<%= fieldType %>" value="<%= locals.value || '' %>" aria-describedby="<%= describedBy %>"<% if (locals.autocomplete) { %> autocomplete="<%= autocomplete %>"<% } %><% if (locals.inputmode) { %> inputmode="<%= inputmode %>"<% } %><% if (fieldErrors.length) { %> aria-invalid="true"<% } %><% if (locals.required) { %> required<% } %>>
+  <% } %>
+  <p class="campo__error" id="<%= fieldId %>-error" data-error-for="<%= name %>" aria-live="polite"><%= fieldErrors.join(' ') %></p>
+</div>

@@ -1,0 +1,67 @@
+$ curl -s -i http://localhost:3000/salud | head -1; curl -s http://localhost:3000/salud
+HTTP/1.1 200 OK
+{"status":"ok"}[salida: 0]
+
+$ curl -s -i http://localhost:3000/ | sed -n '1p;/^Content-Type/p;/^Cache-Control/p'
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+[salida: 0]
+
+$ curl -s http://localhost:3000/ | grep -E '<title>|<h1>|saltar|<main|stylesheet|form-validate'
+  <title>Inicio · Turismo comunitario</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <script type="module" src="/js/form-validate.js"></script>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <main id="contenido" class="contenedor principal" tabindex="-1">
+<h1>Turismo comunitario</h1>
+[salida: 0]
+
+$ curl -s -o /dev/null -w 'validate.js servido: HTTP %{http_code}, %{content_type}, %{size_download} bytes\n' http://localhost:3000/js/shared/validate.js
+validate.js servido: HTTP 200, text/javascript; charset=utf-8, 6162 bytes
+[salida: 0]
+
+$ curl -s http://localhost:3000/js/shared/validate.js | sha256sum; sha256sum src/shared/validation/validate.js
+2b16984848d7714a969323b0ead8147d93b6e79fab4aac1bf7e82929cf3e78b8 *-
+2b16984848d7714a969323b0ead8147d93b6e79fab4aac1bf7e82929cf3e78b8 *src/shared/validation/validate.js
+[salida: 0]
+
+$ curl -s http://localhost:3000/js/shared/validate.js | cmp - src/shared/validation/validate.js && echo 'IDENTICO byte a byte'
+IDENTICO byte a byte
+[salida: 0]
+
+$ curl -s http://localhost:3000/js/form-validate.js | grep -n "from '/js/shared/validate.js'"
+5:import { validate } from '/js/shared/validate.js';
+[salida: 0]
+
+$ curl -s -o /dev/null -w 'css: HTTP %{http_code} %{content_type}\n' http://localhost:3000/css/app.css
+css: HTTP 200 text/css; charset=utf-8
+[salida: 0]
+
+$ curl -s -i -X POST http://localhost:3000/registro -d a=1 | sed -n '1p'
+HTTP/1.1 403 Forbidden
+[salida: 0]
+
+$ curl -s -X POST http://localhost:3000/api/x -H 'Content-Type: application/json' -d '{}'
+{"error":{"code":"ORIGIN_MISMATCH","message":"No pudimos verificar el origen de la solicitud."}}[salida: 0]
+
+$ curl -s -X POST http://localhost:3000/api/x -H 'Origin: https://evil.test' -H 'Content-Type: application/json' -d '{}'
+{"error":{"code":"ORIGIN_MISMATCH","message":"No pudimos verificar el origen de la solicitud."}}[salida: 0]
+
+$ curl -s -i http://localhost:3000/panel | sed -n '1p;/^Location/p;/^Cache-Control/p'
+HTTP/1.1 302 Found
+Cache-Control: no-store
+Location: /ingreso?next=%2Fpanel
+[salida: 0]
+
+$ curl -s -i http://localhost:3000/api/x | sed -n '1p;/^Cache-Control/p;$p'
+HTTP/1.1 401 Unauthorized
+Cache-Control: no-store
+{"error":{"code":"UNAUTHENTICATED","message":"Debes iniciar sesión para continuar."}}[salida: 0]
+
+$ curl -s -o /dev/null -w 'ruta inexistente: HTTP %{http_code}\n' http://localhost:3000/no-existe
+ruta inexistente: HTTP 404
+[salida: 0]
+
+$ node scripts/check-ws.js http://localhost:3000
+connect · transporte: websocket
+[salida: 0]
