@@ -47,7 +47,7 @@ function securityHeaders(config) {
 
 /**
  * Monta Express con el contenedor ya compuesto (C-HTTP). Orden: cabeceras de seguridad →
- * estáticos → origen → cuerpos (16 kB) → sesión → CSRF → `/panel` y `/api` con sesión y `no-store`
+ * estáticos → origen → cuerpos (16 kB) → sesión → datos de página → CSRF → `/panel` y `/api` con sesión y `no-store`
  * → routers de módulos → 404 → manejador de errores. El gateway Socket.IO se adjunta
  * al `http.Server` en `server.js`, en el mismo puerto.
  */
@@ -81,8 +81,9 @@ export function createApp(container) {
     (token, now) => container.accounts.resolveSession(token, now),
     { cookieName: sessionCookieName(config), clock: container.clock },
   ));
-  app.use(csrf(config.csrfSecret));
+  // `pageLocals` va antes de `csrf`: si el token falla, la página 403 ya conoce la sesión y muestra el menú y el regreso correctos.
   app.use(pageLocals);
+  app.use(csrf(config.csrfSecret));
 
   app.use(['/panel', '/api'], noStore, requireAuth);
 

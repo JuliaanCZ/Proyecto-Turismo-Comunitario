@@ -1,0 +1,45 @@
+Chrome Chrome/157.0.8103.79 · modo: completo
+== escritorio 1280x800
+portada sin sesión: {"titulo":"Inicio · Turismo comunitario","h1":["Turismo comunitario"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":1280,"anchoContenido":1280,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Ofertas -> /ofertas","Ingresar -> /ingreso","Crear cuenta -> /registro"],"actual":[],"botonSalir":false,"insignia":"sin #chat-badge"}
+  captura: portada-escritorio.png
+portada con sesión, enlaces del cuerpo: ["Ir a mi panel -> /panel","Ver ofertas -> /ofertas"]
+panel con sesión: {"titulo":"Mi panel · Turismo comunitario","h1":["Hola, Ana Quispe"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":1280,"anchoContenido":1280,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Inicio -> /panel","Mis ofertas -> /panel/ofertas","Chat -> /panel/chat"],"actual":["Inicio"],"botonSalir":true,"insignia":"display:none"}
+  resumen: "Resumen 3 ofertas propias"
+  captura: panel-escritorio.png
+  primer Tab: {"texto":"Saltar al contenido","esSaltar":true,"visibleEnPantalla":true,"focusVisible":true,"contorno":"solid 3px rgb(26, 79, 160)"}
+  tras Enter el foco pasa a: contenido
+  recorrido con Tab:
+    Saltar al contenido | focus-visible | solid 3px rgb(26, 79, 160)
+    Turismo comunitario | focus-visible | solid 3px rgb(26, 79, 160)
+    Inicio | focus-visible | solid 3px rgb(26, 79, 160)
+    Mis ofertas | focus-visible | solid 3px rgb(26, 79, 160)
+    Chat | focus-visible | solid 3px rgb(26, 79, 160)
+    Salir | focus-visible | solid 3px rgb(26, 79, 160)
+    Crear una oferta | focus-visible | solid 3px rgb(26, 79, 160)
+    Ver mis ofertas | focus-visible | solid 3px rgb(26, 79, 160)
+404 con sesión: {"titulo":"Página no encontrada · Turismo comunitario","h1":["No encontramos esa página"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":1280,"anchoContenido":1280,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Inicio -> /panel","Mis ofertas -> /panel/ofertas","Chat -> /panel/chat"],"actual":[],"botonSalir":true,"insignia":"display:none"}
+  captura: 404-escritorio.png
+== movil 375x812
+portada sin sesión: {"titulo":"Inicio · Turismo comunitario","h1":["Turismo comunitario"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":375,"anchoContenido":375,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Ofertas -> /ofertas","Ingresar -> /ingreso","Crear cuenta -> /registro"],"actual":[],"botonSalir":false,"insignia":"sin #chat-badge"}
+  captura: portada-movil.png
+portada con sesión, enlaces del cuerpo: ["Ir a mi panel -> /panel","Ver ofertas -> /ofertas"]
+panel con sesión: {"titulo":"Mi panel · Turismo comunitario","h1":["Hola, Ana Quispe"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":375,"anchoContenido":375,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Inicio -> /panel","Mis ofertas -> /panel/ofertas","Chat -> /panel/chat"],"actual":["Inicio"],"botonSalir":true,"insignia":"display:none"}
+  resumen: "Resumen 3 ofertas propias"
+  captura: panel-movil.png
+  primer Tab: {"texto":"Saltar al contenido","esSaltar":true,"visibleEnPantalla":true,"focusVisible":true,"contorno":"solid 3px rgb(26, 79, 160)"}
+  captura: foco-saltar-movil.png
+  tras Enter el foco pasa a: contenido
+  recorrido con Tab:
+    Saltar al contenido | focus-visible | solid 3px rgb(26, 79, 160)
+    Turismo comunitario | focus-visible | solid 3px rgb(26, 79, 160)
+    Inicio | focus-visible | solid 3px rgb(26, 79, 160)
+    Mis ofertas | focus-visible | solid 3px rgb(26, 79, 160)
+    Chat | focus-visible | solid 3px rgb(26, 79, 160)
+    Salir | focus-visible | solid 3px rgb(26, 79, 160)
+    Crear una oferta | focus-visible | solid 3px rgb(26, 79, 160)
+    Ver mis ofertas | focus-visible | solid 3px rgb(26, 79, 160)
+404 con sesión: {"titulo":"Página no encontrada · Turismo comunitario","h1":["No encontramos esa página"],"lang":"es-EC","viewport":"width=device-width, initial-scale=1","anchoVentana":375,"anchoContenido":375,"desbordaHorizontal":false,"controlesBajoDe44px":[],"enlacesMenu":["Inicio -> /panel","Mis ofertas -> /panel/ofertas","Chat -> /panel/chat"],"actual":[],"botonSalir":true,"insignia":"display:none"}
+  captura: 404-movil.png
+PROBLEMAS DE CONSOLA O RED:
+  error: Failed to load resource: the server responded with a status of 404 (Not Found) http://localhost:3100/panel/no-existe
+  error: Failed to load resource: the server responded with a status of 404 (Not Found) http://localhost:3100/panel/no-existe

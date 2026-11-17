@@ -50,6 +50,7 @@ Escala de 0,25 rem (`--tc-e1` a `--tc-e7`). Contenedor de 60 rem máximo, con 1 
 | Oferta | `.oferta`, `.oferta__nombre`, `.oferta__datos`, `.oferta__fecha` | `<dl>` con «Lugar» y «Fecha» |
 | Estado vacío | `.vacio` | Dice qué falta y ofrece la acción siguiente |
 | Accesibilidad | `.saltar`, `.sr-only`, `:focus-visible` | Enlace «Saltar al contenido» hacia `<main id="contenido">` |
+| Portada y panel (B1.9) | `.portada`, `.rutas`, `.resumen`, `.resumen__numero`, `.acciones--bloque`, `.insignia` | Sin tarjetas: el resumen va entre dos líneas y la cifra en serif verde; en móvil los botones de `.acciones--bloque` ocupan todo el ancho |
 
 Cada pantalla tiene un `<h1>` y un `<title>` propios (`title` en `res.renderPage`). El formulario lleva su esquema en `data-schema` (JSON; las expresiones regulares como cadenas).
 
@@ -65,6 +66,6 @@ Todo se ejecutó; las salidas están en `docs/mvp/evidencias/B0.4/`.
 ## Límites conocidos
 
 - No hay modo oscuro ni se probó con lector de pantalla ni en Safari o Firefox; solo en Chrome 157.
-- La cabecera es provisional: B1.9 la reemplaza (`partials/header.ejs`) sin tocar `layout.ejs`.
+- La cabecera ya es la definitiva (B1.9, `partials/header.ejs`); `#chat-badge` queda oculto hasta que B1.10 lo llene. Evidencias de portada, panel y menú en `docs/mvp/evidencias/B1.9/`.
 - El anillo de foco no se mide contra el verde del botón porque no son adyacentes (hay 3 px de separación); lo documenta `check-contraste.js`.
 - Si se agrega una fuente propia hay que permitirla en la CSP (`font-src 'self'`) y coordinarlo con el Integrante 4.
