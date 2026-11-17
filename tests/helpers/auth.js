@@ -4,7 +4,7 @@ const SESSION_COOKIE = 'tc_session';
 const DEFAULT_TTL_MS = 8 * 60 * 60 * 1000;
 
 export function createSessionFor(ctx, userId, { ttlMs = DEFAULT_TTL_MS } = {}) {
-  const token = randomBytes(32).toString('hex');
+  const token = randomBytes(32).toString('base64url');
   const sessionId = randomUUID();
   const createdAt = ctx.clock.now();
   const expiresAt = createdAt + ttlMs;

@@ -12,6 +12,8 @@ test('TM-ARN-01: createSessionFor guarda solo el hash de la sesión', (t) => {
   const user = createUser(ctx, { email: 'ana@test.local', displayName: 'Ana Test' });
   const session = createSessionFor(ctx, user.id);
   const row = ctx.db.prepare('SELECT token_hash FROM sessions WHERE id = ?').get(session.sessionId);
+  assert.match(session.token, /^[A-Za-z0-9_-]{43}$/);
+  assert.equal(session.cookie, `tc_session=${session.token}`);
   assert.match(row.token_hash, /^[0-9a-f]{64}$/);
   assert.equal(row.token_hash, createHash('sha256').update(session.token).digest('hex'));
   assert.notEqual(row.token_hash, session.token);
@@ -22,7 +24,9 @@ test('TM-ARN-01: createSessionFor guarda solo el hash de la sesión', (t) => {
 
 test('TM-ARN-02: waitFor espera n eventos y falla claramente si se desconecta', async (t) => {
   const ctx = createTestContext();
+  t.after(() => ctx.close());
   const server = await startTestServer(ctx);
+  t.after(() => server.close());
   server.io.on('connection', (socket) => {
     socket.emit('early', { ok: true });
     socket.on('request-ready', () => {
@@ -36,15 +40,8 @@ test('TM-ARN-02: waitFor espera n eventos y falla claramente si se desconecta', 
     cookie: 'tc_session=test-token',
     origin: 'http://localhost:3000',
   });
-  t.after(async () => {
-    client.disconnect();
-    await server.close();
-    ctx.close();
-  });
-  await new Promise((resolve, reject) => {
-    client.once('connect', resolve);
-    client.once('connect_error', reject);
-  });
+  t.after(() => client.disconnect());
+  await client.waitForConnection();
   assert.equal(client.received.filter(({ event }) => event === 'early').length, 1);
   await assert.doesNotReject(client.waitFor('early'));
   let removedCalls = 0;
@@ -57,23 +54,45 @@ test('TM-ARN-02: waitFor espera n eventos y falla claramente si se desconecta', 
   client.emit('request-ready');
   await assert.doesNotReject(ready);
   assert.equal(removedCalls, 0);
+  await assert.rejects(
+    client.waitFor('never', 1, { timeoutMs: 25 }),
+    /No llegaron 1 eventos "never" en 25 ms/,
+  );
   client.disconnect();
   await assert.rejects(client.waitFor('never', 1), /No llegaron 1 eventos "never"/);
+
+  server.io.use((_socket, next) => {
+    const error = new Error('rechazo original del arnés');
+    error.data = { code: 'HARNESS_REJECTION' };
+    next(error);
+  });
+  const rejected = connect({
+    url: server.url,
+    cookie: 'tc_session=reject',
+    origin: 'http://localhost:3000',
+  });
+  try {
+    await assert.rejects(
+      rejected.waitForConnection(),
+      (error) => error.message === 'rechazo original del arnés'
+        && error.data?.code === 'HARNESS_REJECTION',
+    );
+  } finally {
+    rejected.disconnect();
+  }
 });
 
 test('TM-ARN-03: expectNoEvent distingue ausencia y presencia usando un testigo', async (t) => {
   const ctx = createTestContext();
+  t.after(() => ctx.close());
   const server = await startTestServer(ctx);
+  t.after(() => server.close());
   const client = connect({
     url: server.url,
     cookie: 'tc_session=test-token',
     origin: 'http://localhost:3000',
   });
-  t.after(async () => {
-    client.disconnect();
-    await server.close();
-    ctx.close();
-  });
+  t.after(() => client.disconnect());
   server.io.on('connection', (socket) => {
     socket.on('request-witness', () => socket.emit('witness'));
     socket.on('request-both', () => {
@@ -81,10 +100,7 @@ test('TM-ARN-03: expectNoEvent distingue ausencia y presencia usando un testigo'
       socket.emit('witness');
     });
   });
-  await new Promise((resolve, reject) => {
-    client.once('connect', resolve);
-    client.once('connect_error', reject);
-  });
+  await client.waitForConnection();
   const absent = expectNoEvent(client, 'forbidden', 'witness');
   client.emit('request-witness');
   await assert.doesNotReject(absent);
@@ -95,10 +111,7 @@ test('TM-ARN-03: expectNoEvent distingue ausencia y presencia usando un testigo'
     origin: 'http://localhost:3000',
   });
   t.after(() => second.disconnect());
-  await new Promise((resolve, reject) => {
-    second.once('connect', resolve);
-    second.once('connect_error', reject);
-  });
+  await second.waitForConnection();
   const present = expectNoEvent(second, 'forbidden', 'witness');
   second.emit('request-both');
   await assert.rejects(present, /evento prohibido/);
@@ -109,11 +122,11 @@ test('TM-ARN-03: expectNoEvent distingue ausencia y presencia usando un testigo'
     origin: 'http://localhost:3000',
   });
   t.after(() => disconnected.disconnect());
-  await new Promise((resolve, reject) => {
-    disconnected.once('connect', resolve);
-    disconnected.once('connect_error', reject);
-  });
+  await disconnected.waitForConnection();
   const pending = expectNoEvent(disconnected, 'forbidden', 'never');
   disconnected.disconnect();
   await assert.rejects(pending, /Socket\.IO se desconectó/);
+
+  const timedOut = expectNoEvent(client, 'forbidden', 'never', { timeoutMs: 25 });
+  await assert.rejects(timedOut, /No llegó el testigo "never" en 25 ms/);
 });

@@ -13,8 +13,14 @@ const user = createUser(ctx, { email: 'ana@test.local', displayName: 'Ana Test' 
 const session = createSessionFor(ctx, user.id);
 const server = await startTestServer(ctx);
 const client = connect({ url: server.url, cookie: session.cookie, origin: ctx.container.config.appOrigin });
-await new Promise((resolve) => client.once('connect', resolve));
+await client.waitForConnection();
 ```
 
-`createSessionFor` guarda `sha256(token)` en hexadecimal minúscula en `sessions` y
-devuelve la cookie `tc_session`; no se registra ningún token ni cookie.
+`createSessionFor` genera 32 bytes en base64url, guarda `sha256(token)` en hexadecimal
+minúscula en `sessions` y devuelve la cookie `tc_session`; no se registra ningún token
+ni cookie.
+
+`waitForConnection`, `waitFor` y `expectNoEvent` usan un tiempo máximo solo como
+límite de seguridad. Las pruebas se sincronizan mediante `connect`, `connect_error`,
+eventos testigo o `disconnect`; no usan pausas fijas. Si la conexión falla,
+`waitForConnection` conserva el error original de Socket.IO.
