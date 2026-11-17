@@ -412,13 +412,11 @@ test('createContainer: overrides inyectan servicios, reloj y base; la base inyec
   assert.equal(db.prepare('SELECT 1 AS uno').get().uno, 1);
 });
 
-test('esqueleto C-MOD: las funciones públicas lanzan NOT_IMPLEMENTED (501)', (t) => {
+test('esqueleto C-MOD: los módulos pendientes lanzan NOT_IMPLEMENTED (501)', (t) => {
   const { container } = build(t, { overrides: { accounts: undefined } });
   const esperado = {
     accounts: ['registerUser', 'authenticate', 'createSession', 'resolveSession', 'revokeSession', 'revokeAllSessions',
       'requestPasswordReset', 'resetPassword', 'listMailbox'],
-    offers: ['createOffer', 'listOffers', 'getOffer', 'updateOffer', 'deleteOffer', 'setOfferPhoto', 'getOwnOfferPhoto',
-      'listPublicOffers', 'getPublicOffer', 'getPublicOfferPhoto'],
     chat: ['postMessage', 'getHistory', 'lastMessageId'],
   };
   for (const [modulo, funciones] of Object.entries(esperado)) {

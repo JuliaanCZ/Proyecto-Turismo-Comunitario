@@ -1,0 +1,15 @@
+✔ TM-OFE-01: crear persiste los seis atributos y devuelve DTO privado (6.4197ms)
+✔ TM-OFE-02: entrada inválida y fecha pasada no insertan (2.3633ms)
+✔ TM-OFE-03/04/07: filtro, propiedad, páginas y parámetros literales (2.7724ms)
+✔ TM-OFE-05/06: propiedad uniforme y confirmación para eliminar (1.9436ms)
+✔ TM-OFE-08: la consulta filtrada usa el índice de propietario y provincia (2.2416ms)
+✔ TM-OFE-08a: foto, publicación, vencimiento y cascada (2.5137ms)
+✔ TM-OFE-02: provincias, límites, tipos y formato generan errores por campo (1.0014ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169.2607
