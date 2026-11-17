@@ -9,8 +9,8 @@ import { createOffer, createUser } from '../helpers/factories.js';
 
 // B1.9 — panel y navegación. Usa el arnés de B0.5: contexto con base en memoria, usuarios y ofertas
 // de fábrica, sesión creada con `createSessionFor` y `fakeAccounts` como resolvedor de sesión.
-// El servicio `offers` real aún no existe (B1.4/B1.5): aquí se simula con un doble que cuenta las
-// ofertas de la base de pruebas y registra cómo se le llama.
+// Por defecto se inyecta un doble de ofertas que registra sus llamadas. La integración con B1.4
+// usa el servicio real del contenedor para comprobar el resumen.
 
 const ORIGIN = 'http://localhost:3000';
 
@@ -304,8 +304,22 @@ test('TM-NAV-05: el resumen refleja el número real de ofertas del usuario', asy
   assert.ok(linkTo(deAna.text, '/panel/chat', 'Ir al chat'));
 });
 
+test('integración B1.4: el panel muestra el total del servicio real para el propietario', async (t) => {
+  const { app, ctx, signIn } = setup(t, { offers: 'real' });
+  const ana = signIn('Ana Quispe');
+  const luis = signIn('Luis Tapia');
+  for (let i = 0; i < 12; i += 1) createOffer(ctx, ana.user.id);
+  createOffer(ctx, luis.user.id);
+
+  const res = await request(app).get('/panel').set('Cookie', ana.cookie);
+  assert.equal(res.status, 200);
+  assert.match(res.text, /<span class="resumen__numero">12<\/span>/);
+});
+
 test('sin el servicio de ofertas (NOT_IMPLEMENTED) el panel abre, avisa y no inventa cifras', async (t) => {
-  const { app, signIn, logged } = setup(t, { offers: 'real' });
+  const { app, signIn, logged } = setup(t, {
+    offers: { listOffers() { throw AppError.fromCatalog('NOT_IMPLEMENTED'); } },
+  });
   const { cookie } = signIn();
   const res = await request(app).get('/panel').set('Cookie', cookie);
   assert.equal(res.status, 200);

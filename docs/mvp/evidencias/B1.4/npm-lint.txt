@@ -2,3 +2,4 @@
 > turismo-comunitario@0.1.0 lint
 > eslint .
 
+Código de salida: 0.

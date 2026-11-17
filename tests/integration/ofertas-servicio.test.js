@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+import { privateListSql } from '../../src/modules/offers/data/offers.repo.js';
+import { PAGE_SIZE } from '../../src/modules/offers/domain/pagination.js';
 import { createTestContext } from '../helpers/context.js';
 import { createUser } from '../helpers/factories.js';
 import { fixedClock } from '../../src/shared/clock.js';
@@ -85,10 +87,11 @@ test('TM-OFE-05/06: propiedad uniforme y confirmación para eliminar', (t) => {
 test('TM-OFE-08: la consulta filtrada usa el índice de propietario y provincia', (t) => {
   const { ctx, offers, a } = setup(t);
   offers.createOffer(a, input(ctx));
-  const plan = ctx.db.prepare(`EXPLAIN QUERY PLAN SELECT id FROM offers
-    WHERE owner_id = ? AND province = ? ORDER BY starts_at, id LIMIT ? OFFSET ?`)
-    .all(a.userId, 'PICHINCHA', 10, 0);
-  assert.match(plan.map((row) => row.detail).join(' '), /idx_offers_owner_province_starts/);
+  const plan = ctx.db.prepare(`EXPLAIN QUERY PLAN ${privateListSql(true)}`)
+    .all(a.userId, 'PICHINCHA', PAGE_SIZE, 0);
+  const detail = plan.map((row) => row.detail).join(' | ');
+  assert.match(detail, /idx_offers_owner_province_starts/);
+  assert.doesNotMatch(detail, /USE TEMP B-TREE/);
 });
 
 test('TM-OFE-08a: foto, publicación, vencimiento y cascada', (t) => {

@@ -91,7 +91,7 @@ export function createOffersService({ db, clock }) {
       const province = isProvince(provincia) ? provincia : null;
       const total = repo.privateCount(owner, province);
       const page = normalizePage(pagina, total);
-      const { items } = repo.privateList(owner, province, page);
+      const items = repo.privateList(owner, province, page);
       return { items: items.map(dto), page, pageSize: PAGE_SIZE, total,
         totalPages: Math.ceil(total / PAGE_SIZE), provincia: province };
     },
