@@ -527,6 +527,74 @@ a:hover {
   margin-bottom: 0;
 }
 
+/* Chat: historial legible, texto plano con ajuste y estados visibles sin depender del color */
+.chat {
+  margin-block: var(--tc-e5);
+}
+
+.chat__cabecera,
+.chat__mensaje-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tc-e2) var(--tc-e4);
+}
+
+.chat__cabecera {
+  margin-bottom: var(--tc-e3);
+}
+
+.chat__mensajes {
+  display: grid;
+  gap: var(--tc-e3);
+  max-height: 32rem;
+  margin: 0;
+  padding: var(--tc-e3);
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--tc-borde);
+  border-radius: var(--tc-radio);
+  background: var(--tc-superficie-suave);
+}
+
+.chat__mensaje {
+  padding: var(--tc-e3) var(--tc-e4);
+  border: 1px solid var(--tc-borde);
+  border-radius: var(--tc-radio);
+  background: var(--tc-superficie);
+  overflow-wrap: anywhere;
+}
+
+.chat__mensaje--propio {
+  border-left: 0.35rem solid var(--tc-primario);
+}
+
+.chat__mensaje-meta {
+  margin-bottom: var(--tc-e2);
+  color: var(--tc-texto-suave);
+  font-size: var(--tc-texto-chico);
+}
+
+.chat__mensaje p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.chat__conexion,
+.chat__estado {
+  font-weight: 600;
+}
+
+.chat__formulario {
+  margin-top: var(--tc-e5);
+}
+
+.chat__reintentar {
+  margin-top: var(--tc-e3);
+}
+
 /* Móvil: los botones de una fila de acciones ocupan todo el ancho (44 px de alto, fáciles de tocar) */
 @media (max-width: 35.99rem) {
   .acciones--bloque .btn {

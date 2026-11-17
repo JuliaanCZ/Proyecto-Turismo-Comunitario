@@ -412,14 +412,13 @@ test('createContainer: overrides inyectan servicios, reloj y base; la base inyec
   assert.equal(db.prepare('SELECT 1 AS uno').get().uno, 1);
 });
 
-test('esqueleto C-MOD: los módulos pendientes lanzan NOT_IMPLEMENTED (501)', (t) => {
+test('esqueleto C-MOD: el módulo de cuentas pendiente lanza NOT_IMPLEMENTED (501)', (t) => {
   const { container } = build(t, { overrides: { accounts: undefined } });
   // B1.1 ya implementa registerUser; el resto de accounts sigue pendiente hasta B1.2/B1.3.
   assert.equal(typeof container.accounts.registerUser, 'function');
   const esperado = {
     accounts: ['authenticate', 'createSession', 'resolveSession', 'revokeSession', 'revokeAllSessions',
       'requestPasswordReset', 'resetPassword', 'listMailbox'],
-    chat: ['postMessage', 'getHistory', 'lastMessageId'],
   };
   for (const [modulo, funciones] of Object.entries(esperado)) {
     const keys = Object.keys(container[modulo]).sort();

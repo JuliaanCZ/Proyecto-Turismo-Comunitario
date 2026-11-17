@@ -85,6 +85,10 @@ export default [
         FormData: 'readonly',
         CSS: 'readonly',
         fetch: 'readonly',
+        io: 'readonly',
+        crypto: 'readonly',
+        sessionStorage: 'readonly',
+        URLSearchParams: 'readonly',
       },
     },
     rules: {
