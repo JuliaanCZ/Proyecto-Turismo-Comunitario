@@ -9,7 +9,7 @@ import { createUser } from '../helpers/factories.js';
 // ni las políticas no-store. El comportamiento del navegador (insignia sin recargar) se comprueba en
 // Chrome y queda en docs/mvp/evidencias/B1.10/.
 
-const NOTIFICATIONS = '<script type="module" src="/js/notificaciones.js"></script>';
+const NOTIFICATIONS = '<script type="module" src="/js/notificaciones.js"';
 const SOCKET_CLIENT = '<script src="/socket.io/socket.io.js"></script>';
 const BADGE = 'id="chat-badge"';
 
@@ -27,7 +27,7 @@ function setup(t) {
     displayName: 'Ana Quispe',
     sessionExpiresAt: ctx.clock.now() + 8 * 3_600_000,
   });
-  return { app: ctx.app, cookie };
+  return { app: ctx.app, cookie, token, sessionId, userId: user.id };
 }
 
 test('aviso: /panel, la portada y un 404 con sesión cargan el aviso', async (t) => {
@@ -70,4 +70,22 @@ test('aviso: la CSP no se relaja (scripts propios, conexión al mismo origen) y 
   assert.equal(csp.includes('unsafe'), false);
   assert.match(res.text, /<span id="chat-badge" class="insignia" hidden><\/span>/);
   assert.equal(res.text.includes('aria-live'), false, 'sin JavaScript no hay región viva ni insignia');
+});
+
+test('aviso: el script lleva el id numérico del usuario y no expone token ni id de sesión (contador por cuenta)', async (t) => {
+  const { app, cookie, token, sessionId, userId } = setup(t);
+  const res = await request(app).get('/panel').set('Cookie', cookie);
+  assert.ok(
+    res.text.includes(`${NOTIFICATIONS} data-user-id="${userId}"></script>`),
+    'falta data-user-id en el script del aviso',
+  );
+  assert.match(String(userId), /^\d+$/);
+  assert.equal(res.text.includes(token), false, 'la página no debe contener el token de sesión');
+  assert.equal(res.text.includes(sessionId), false, 'la página no debe contener el id de sesión');
+  // chat.js sigue borrando la clave de siempre (compatibilidad del contador).
+  const chat = await request(app).get('/js/chat.js');
+  assert.match(chat.text, /sessionStorage\.removeItem\('chatNuevos'\)/);
+  // El módulo del contador se sirve con el mismo origen (CSP script-src 'self').
+  const module = await request(app).get('/js/notificaciones-contador.js');
+  assert.equal(module.status, 200);
 });

@@ -1,0 +1,295 @@
+// Comprobación de B1.10 con REGISTRO E INGRESO REALES en dos Chrome reales (headless, perfiles distintos).
+// Sin dependencias. Uso: node comprobar-navegador-real.mjs <carpeta-de-salida> <url-base>
+// Requiere el servidor real (`node server.js` con una base temporal y APP_ORIGIN = <url-base>).
+// NO usa `scripts/demo-aviso-chat.js` ni `/simulacion/sesion`: cada navegador crea su cuenta en /registro,
+// ingresa en /ingreso y la cookie de sesión la fija el propio servidor real (HttpOnly).
+// Las contraseñas se generan al azar en cada ejecución, solo viajan por el protocolo DevTools hacia el
+// formulario y nunca se imprimen. Los valores de cookies y tokens tampoco: solo sus atributos.
+// Se guarda como `.txt` para que ESLint no lo analice; se ejecuta renombrándolo a `.mjs`.
+import { createHash as nodeHash, randomBytes } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { appendFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const [OUT, BASE] = process.argv.slice(2);
+const CHROME = process.env.CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+mkdirSync(OUT, { recursive: true });
+const LOG = join(OUT, 'navegador-ingreso-real.txt');
+writeFileSync(LOG, '');
+const say = (line) => { console.log(line); appendFileSync(LOG, `${line}\n`); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let failures = 0;
+const check = (ok, label, detail = '') => {
+  if (!ok) failures += 1;
+  say(`${ok ? 'PASA ' : 'FALLA'} · ${label}${detail ? ` — ${detail}` : ''}`);
+};
+
+const RUN = randomBytes(3).toString('hex');
+const USERS = {
+  ana: { displayName: 'Ana Real', email: `ana.${RUN}@example.test`, password: randomBytes(18).toString('base64url') },
+  luis: { displayName: 'Luis Real', email: `luis.${RUN}@example.test`, password: randomBytes(18).toString('base64url') },
+};
+
+async function launch(port, name) {
+  const profile = mkdtempSync(join(tmpdir(), `tc-b110r-${name}-`));
+  const proc = spawn(CHROME, [
+    '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
+    '--no-first-run', '--disable-gpu', '--hide-scrollbars', '--window-size=1100,430', 'about:blank',
+  ], { stdio: 'ignore' });
+  for (let i = 0; i < 60; i++) {
+    try { await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); break; } catch { await sleep(200); }
+  }
+  const version = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).Browser;
+  return { port, proc, profile, version, name };
+}
+
+async function openTab(browser) {
+  const target = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT' })).json();
+  const ws = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((r) => ws.addEventListener('open', r, { once: true }));
+  let nextId = 1;
+  const pending = new Map();
+  const listeners = [];
+  ws.addEventListener('message', (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.id && pending.has(msg.id)) {
+      const { resolve, reject } = pending.get(msg.id);
+      pending.delete(msg.id);
+      return msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
+    }
+    for (const fn of [...listeners]) fn(msg);
+    return undefined;
+  });
+  const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = nextId++;
+    pending.set(id, { resolve, reject });
+    ws.send(JSON.stringify({ id, method, params }));
+  });
+  const tab = { problems: [], documents: [], sockets: [], listeners, send };
+  const requests = new Map();
+  listeners.push((msg) => {
+    const p = msg.params;
+    if (msg.method === 'Log.entryAdded' && ['error', 'warning'].includes(p.entry.level)) tab.problems.push(`${p.entry.level}: ${p.entry.text} ${p.entry.url ?? ''}`);
+    if (msg.method === 'Runtime.exceptionThrown') tab.problems.push(`excepción: ${p.exceptionDetails.text}`);
+    if (msg.method === 'Network.responseReceived') {
+      requests.set(p.requestId, p.response.url);
+      if (p.type === 'Document') tab.documents.push({ url: p.response.url, status: p.response.status, cacheControl: p.response.headers['Cache-Control'] ?? p.response.headers['cache-control'] });
+    }
+    if (msg.method === 'Network.loadingFailed') tab.problems.push(`red falló: ${requests.get(p.requestId)} ${p.errorText}`);
+    if (msg.method === 'Network.webSocketHandshakeResponseReceived') tab.sockets.push(p.response.status);
+  });
+  for (const domain of ['Page', 'Runtime', 'Log', 'Network']) await send(`${domain}.enable`);
+  await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 430, deviceScaleFactor: 1, mobile: false });
+  tab.evaluate = async (expression) => {
+    const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) throw new Error(`${r.exceptionDetails.text} ${r.exceptionDetails.exception?.description ?? ''}`);
+    return r.result.value;
+  };
+  tab.waitLoad = () => new Promise((resolve) => {
+    const fn = (msg) => { if (msg.method === 'Page.loadEventFired') { listeners.splice(listeners.indexOf(fn), 1); resolve(); } };
+    listeners.push(fn);
+  });
+  tab.go = async (path) => {
+    const loaded = tab.waitLoad();
+    tab.sockets.length = 0;
+    await send('Page.navigate', { url: `${BASE}${path}` });
+    await loaded;
+    await sleep(300);
+  };
+  tab.url = () => tab.evaluate('location.pathname + location.search');
+  // Envía un formulario real del DOM (los valores se escriben en los campos; no se imprimen).
+  tab.submitForm = async (selector, values) => {
+    const loaded = tab.waitLoad();
+    tab.sockets.length = 0;
+    await tab.evaluate(`(() => {
+      const form = document.querySelector(${JSON.stringify(selector)});
+      for (const [name, value] of Object.entries(${JSON.stringify(values)})) form.elements.namedItem(name).value = value;
+      form.requestSubmit();
+      return true;
+    })()`);
+    await loaded;
+    await sleep(400);
+  };
+  tab.waitFor = async (expression, ms = 6000) => {
+    const end = Date.now() + ms;
+    while (Date.now() < end) {
+      if (await tab.evaluate(expression)) return true;
+      await sleep(100);
+    }
+    return false;
+  };
+  tab.shot = async (name) => {
+    const { data } = await send('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(join(OUT, name), Buffer.from(data, 'base64'));
+    say(`  captura: ${name}`);
+  };
+  tab.close = () => ws.close();
+  return tab;
+}
+
+const badge = (tab) => tab.evaluate(`(() => {
+  const b = document.getElementById('chat-badge');
+  const r = b.getBoundingClientRect();
+  return { texto: b.textContent, hidden: b.hidden, ariaLive: b.getAttribute('aria-live'), ariaAtomic: b.getAttribute('aria-atomic'),
+    recortada: b.classList.contains('sr-only'), contador: sessionStorage.getItem('chatNuevos'),
+    marca: window.__sinRecarga ?? null, foco: document.activeElement?.tagName, ancho: Math.round(r.width) };
+})()`);
+
+const sendChat = (tab, text) => tab.evaluate(`(() => {
+  document.querySelector('#chat-text').value = ${JSON.stringify(text)};
+  document.querySelector('#chat-form').requestSubmit();
+  return true;
+})()`);
+
+const createHash = (value) => nodeHash('sha256').update(value).digest('hex').slice(0, 8);
+
+// Solo atributos de la cookie de sesión; el valor jamás se devuelve ni se imprime.
+async function sessionCookieInfo(tab) {
+  const { cookies } = await tab.send('Network.getCookies', { urls: [BASE] });
+  return cookies.map((c) => ({ nombre: c.name, httpOnly: c.httpOnly, sameSite: c.sameSite, secure: c.secure, largo: c.value.length, huella: createHash(c.value) }));
+}
+
+async function registerAndLogin(tab, who) {
+  const u = USERS[who];
+  await tab.go('/registro');
+  await tab.submitForm('form[action="/registro"]', {
+    displayName: u.displayName, email: u.email, password: u.password, passwordConfirm: u.password,
+  });
+  const afterRegister = await tab.url();
+  check(afterRegister === '/ingreso?aviso=cuenta-creada', `${u.displayName}: el registro real redirige a /ingreso con el aviso «cuenta-creada»`, afterRegister);
+  check(await tab.evaluate("document.body.textContent.includes('Cuenta creada. Ya puedes iniciar sesión.')"), `${u.displayName}: /ingreso muestra «Cuenta creada»`);
+  await tab.submitForm('form[action="/ingreso"]', { email: u.email, password: u.password });
+  const afterLogin = await tab.url();
+  check(afterLogin === '/panel', `${u.displayName}: el ingreso real lleva a /panel`, afterLogin);
+  const cookies = await sessionCookieInfo(tab);
+  const session = cookies.find((c) => c.httpOnly);
+  check(Boolean(session) && session.sameSite === 'Lax' && cookies.length === 1,
+    `${u.displayName}: una sola cookie de sesión, HttpOnly y SameSite=Lax (valor oculto)`, JSON.stringify(cookies.map(({ nombre, httpOnly, sameSite, secure, largo }) => ({ nombre, httpOnly, sameSite, secure, largo }))));
+  check(await tab.evaluate("document.querySelector('h1').textContent === " + JSON.stringify(`Hola, ${u.displayName}`)), `${u.displayName}: el panel saluda con su nombre real`);
+  return session?.huella;
+}
+
+const ana = await launch(9351, 'ana');
+const luis = await launch(9352, 'luis');
+try {
+  say(`Fecha: ${new Date().toISOString().slice(0, 10)} · Windows · Node ${process.version}`);
+  say(`Navegador de Ana: ${ana.version} (perfil propio) · Navegador de Luis: ${luis.version} (perfil propio) · ${BASE}`);
+  say('Cuentas creadas por el formulario real /registro (correos ficticios @example.test, contraseñas aleatorias que no se imprimen).');
+
+  const anaChat = await openTab(ana);
+  const luisTab = await openTab(luis);
+
+  // El servidor es el real: la ruta de simulación no existe.
+  await luisTab.go('/simulacion/sesion?usuario=luis');
+  check(luisTab.documents.some((d) => d.url.includes('/simulacion/sesion') && d.status === 404), 'El servidor es el real: /simulacion/sesion responde 404 (no hay herramienta de demostración)');
+  luisTab.problems.length = 0; // el 404 anterior es la sonda deliberada, no un error de la página
+
+  // Sin sesión no hay insignia ni cliente Socket.IO, y /panel exige ingreso.
+  await luisTab.go('/panel');
+  check((await luisTab.url()).startsWith('/ingreso?next=%2Fpanel'), 'Sin sesión, /panel redirige a /ingreso?next=%2Fpanel');
+  check(await luisTab.evaluate("!document.getElementById('chat-badge') && !document.querySelector('script[src*=\"notificaciones.js\"]')"), 'Sin sesión no hay insignia ni se carga notificaciones.js');
+
+  const anaHash = await registerAndLogin(anaChat, 'ana');
+  const luisHash = await registerAndLogin(luisTab, 'luis');
+  check(anaHash && luisHash && anaHash !== luisHash, 'Los dos navegadores tienen sesiones distintas (huellas de cookie distintas; valores ocultos)', `ana ${anaHash} · luis ${luisHash}`);
+
+  // Ana: chat en una pestaña y segunda pestaña del panel (no unida a la sala).
+  await anaChat.go('/panel/chat');
+  check(await anaChat.waitFor("document.querySelector('#chat-connection').textContent.startsWith('Conectado')"), 'Ana: el chat conecta por WebSocket con su sesión real', await anaChat.evaluate("document.querySelector('#chat-connection').textContent"));
+  const anaPanel = await openTab(ana);
+  await anaPanel.go('/panel');
+  check(await anaPanel.evaluate("document.querySelector('h1').textContent === 'Hola, Ana Real'"), 'La segunda pestaña de Ana comparte su sesión (cookie del mismo navegador)');
+  await luisTab.go('/panel');
+  await sleep(1200);
+  check(luisTab.sockets.includes(101) && anaPanel.sockets.includes(101), 'Los sockets de /panel se abren por WebSocket (101 Switching Protocols)', `Luis: ${luisTab.sockets}, Ana (panel): ${anaPanel.sockets}`);
+  check(await luisTab.evaluate("!document.querySelector('script[src*=\"/js/chat.js\"]')"), 'Luis en /panel no carga chat.js (no se une a la sala)');
+
+  await luisTab.evaluate("window.__sinRecarga = 'marca-' + Math.random().toString(36).slice(2); true");
+  await anaPanel.evaluate("window.__sinRecarga = 'marca-' + Math.random().toString(36).slice(2); true");
+  let b = await badge(luisTab);
+  say(`Luis antes del mensaje: ${JSON.stringify(b)}`);
+  check(b.texto === '' && b.contador === null && b.ariaLive === 'polite' && b.recortada && !b.hidden, 'Antes: insignia vacía, región aria-live="polite", sin contador');
+  await luisTab.shot('real-00-luis-panel-antes.png');
+
+  await sendChat(anaChat, 'Hola Luis, ¿revisamos la oferta de Otavalo?');
+  check(await luisTab.waitFor("document.getElementById('chat-badge').textContent === '1 mensaje nuevo'"), 'Luis ve «1 mensaje nuevo» sin recargar');
+  b = await badge(luisTab);
+  say(`Luis tras el mensaje de Ana: ${JSON.stringify(b)}`);
+  check(b.marca?.startsWith('marca-') && b.foco === 'BODY' && b.contador === '1' && !b.recortada, 'Sin recarga (la marca de la página sigue), el foco no se movió y chatNuevos = 1');
+  await luisTab.shot('real-01-luis-insignia-1-mensaje-nuevo.png');
+  await anaChat.shot('real-02-ana-autora-en-el-chat.png');
+  await sleep(700);
+  const bAnaPanel = await badge(anaPanel);
+  check(bAnaPanel.texto === '' && bAnaPanel.contador === null && bAnaPanel.recortada, 'Ana (autora) no ve insignia en su otra pestaña del panel', JSON.stringify(bAnaPanel));
+  await anaPanel.shot('real-03-ana-autora-otra-pestana-sin-insignia.png');
+
+  await sendChat(anaChat, 'Y también la de Cotacachi.');
+  check(await luisTab.waitFor("document.getElementById('chat-badge').textContent === '2 mensajes nuevos'"), 'Luis ve «2 mensajes nuevos» (plural)');
+  await luisTab.shot('real-04-luis-insignia-2-mensajes-nuevos.png');
+  check((await badge(anaPanel)).texto === '', 'Ana sigue sin insignia tras el segundo mensaje');
+
+  // Sobrevive a la navegación, incluidas las pantallas de B1.5 ya integradas.
+  await luisTab.go('/');
+  b = await badge(luisTab);
+  check(b.texto === '2 mensajes nuevos' && b.marca === null, 'Tras navegar a la portada la insignia sigue en «2 mensajes nuevos» (sessionStorage)', JSON.stringify(b));
+  await luisTab.go('/panel/ofertas');
+  b = await badge(luisTab);
+  check((await luisTab.url()) === '/panel/ofertas' && b.texto === '2 mensajes nuevos', 'En «Mis ofertas» (pantalla de B1.5) la insignia sigue en «2 mensajes nuevos»', JSON.stringify(b));
+  check(await luisTab.evaluate("!!document.querySelector('script[src*=\"notificaciones.js\"]') && document.querySelectorAll('script[src*=\"socket.io\"]').length === 1"), '«Mis ofertas» carga notificaciones.js y un único cliente Socket.IO');
+  await luisTab.shot('real-05-luis-mis-ofertas-con-insignia.png');
+  await luisTab.go('/ofertas');
+  b = await badge(luisTab);
+  check(b.texto === '2 mensajes nuevos', 'En el catálogo público /ofertas (con sesión) la insignia sigue en «2 mensajes nuevos»', JSON.stringify(b));
+  say(`Regiones aria-live en el catálogo autenticado: ${await luisTab.evaluate("[...document.querySelectorAll('[aria-live]')].map((e) => e.id || e.tagName).join(',')")}`);
+
+  // Abrir el chat la borra y leer en vivo no suma.
+  await luisTab.go('/panel/chat');
+  check(await luisTab.evaluate("sessionStorage.getItem('chatNuevos') === null"), 'Al abrir /panel/chat, chat.js borra chatNuevos');
+  check(await luisTab.evaluate("!document.querySelector('script[src*=\"notificaciones.js\"]') && document.querySelectorAll('script[src*=\"socket.io\"]').length === 1"), '/panel/chat no carga notificaciones.js ni un segundo cliente Socket.IO');
+  check(await luisTab.waitFor("document.querySelector('#chat-connection').textContent.startsWith('Conectado')"), 'Luis conecta al chat con su sesión real');
+  check(await luisTab.evaluate("document.querySelectorAll('#chat-messages li').length === 2"), 'Luis ve en el historial los 2 mensajes guardados de Ana (chat real, base real)');
+  await sleep(500);
+  await sendChat(anaChat, 'Tercero, mientras lees el chat.');
+  check(await luisTab.waitFor("document.querySelectorAll('#chat-messages li').length >= 3"), 'En la sala, Luis recibe chat:message (la lista muestra los 3 mensajes)');
+  await luisTab.shot('real-06-luis-en-el-chat-recibe-mensaje.png');
+  check(await luisTab.evaluate("sessionStorage.getItem('chatNuevos') === null"), 'En la sala no se acumulan avisos');
+  await luisTab.go('/panel');
+  b = await badge(luisTab);
+  check(b.texto === '' && b.recortada, 'Al volver a /panel la insignia está vacía', JSON.stringify(b));
+  await luisTab.shot('real-07-luis-panel-insignia-limpia.png');
+
+  // Luis responde: ahora el aviso llega a Ana (autora anterior) y no a Luis.
+  await luisTab.go('/panel/chat');
+  check(await luisTab.waitFor("document.querySelector('#chat-connection').textContent.startsWith('Conectado')"), 'Luis vuelve al chat para responder');
+  await sendChat(luisTab, 'Respuesta de Luis desde su sesión real.');
+  check(await anaPanel.waitFor("document.getElementById('chat-badge').textContent === '1 mensaje nuevo'"), 'Al responder Luis, la pestaña del panel de Ana ve «1 mensaje nuevo» (aviso en sentido contrario)');
+  await anaPanel.shot('real-08-ana-recibe-aviso-de-luis.png');
+  await luisTab.go('/panel');
+  await sleep(500);
+  check((await badge(luisTab)).texto === '', 'Luis (autor de esa respuesta) no recibe aviso propio');
+
+  // Salir: la sesión real se revoca y el socket deja de recibir avisos.
+  await luisTab.go('/panel');
+  const loggedOut = luisTab.waitLoad();
+  await luisTab.evaluate("document.querySelector('form[action=\"/salir\"]').requestSubmit(), true");
+  await loggedOut;
+  await sleep(500);
+  check((await luisTab.url()) === '/ingreso?aviso=sesion-cerrada', 'Luis pulsa «Salir»: vuelve a /ingreso con el aviso «sesion-cerrada»');
+  await luisTab.go('/panel');
+  check((await luisTab.url()).startsWith('/ingreso?next=%2Fpanel'), 'Tras salir, /panel vuelve a exigir ingreso (la sesión real se revocó)');
+
+  for (const [name, tab] of [['Ana (chat)', anaChat], ['Ana (panel)', anaPanel], ['Luis', luisTab]]) {
+    check(tab.problems.length === 0, `${name}: sin errores de consola, CSP ni red`, tab.problems.join(' | '));
+  }
+  const panelDocs = [...anaPanel.documents, ...luisTab.documents, ...anaChat.documents].filter((d) => /\/panel(\/chat|\/ofertas)?$/.test(d.url));
+  check(panelDocs.length > 0 && panelDocs.every((d) => d.cacheControl === 'no-store'), 'Todas las páginas de /panel se sirven con Cache-Control: no-store', `${panelDocs.length} respuestas`);
+} finally {
+  for (const browser of [ana, luis]) {
+    browser.proc.kill();
+    await sleep(400);
+    try { rmSync(browser.profile, { recursive: true, force: true }); } catch { /* Windows aún libera el perfil */ }
+  }
+}
+say(failures === 0 ? 'RESULTADO: todas las comprobaciones pasan.' : `RESULTADO: ${failures} comprobación(es) fallan.`);
+process.exit(failures === 0 ? 0 : 1);
