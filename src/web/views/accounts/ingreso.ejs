@@ -21,9 +21,13 @@
       </form>
       <p class="k-signin-register">¿Aún no tienes cuenta? <a href="/registro">Créala aquí</a></p>
       <% if (locals.demoLogin) { %>
-        <aside class="k-demo-logins"><h2>Cuenta de demostración</h2>
-          <ul><li><strong><%= demoLogin.account.displayName %></strong><small><%= demoLogin.account.email %></small></li></ul>
-          <p>Contraseña: <code><%= demoLogin.password %></code></p>
+        <aside class="k-demo-logins"><h2>Cuentas de demostración</h2>
+          <ul>
+            <% for (const account of demoLogin.accounts) { %>
+              <li><strong><%= account.displayName %></strong><small><%= account.email %></small></li>
+            <% } %>
+          </ul>
+          <p>Contraseña para ambas cuentas <code><%= demoLogin.password %></code></p>
         </aside>
       <% } %>
     </div>

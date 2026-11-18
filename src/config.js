@@ -3,6 +3,7 @@ import process from 'node:process';
 import { URL } from 'node:url';
 
 export const DEMO_ACCOUNT = Object.freeze({ displayName: 'Ana Quispe', email: 'ana@demo.test' });
+export const DEMO_CHAT_ACCOUNT = Object.freeze({ displayName: 'Luis Chasipanta', email: 'luis@demo.test' });
 
 const developmentDefaults = Object.freeze({
   CSRF_SECRET: 'ejemplo-local-csrf-solo-para-desarrollo',

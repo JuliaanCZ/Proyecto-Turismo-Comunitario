@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, URL } from 'node:url';
 import sharp from 'sharp';
-import { DEMO_ACCOUNT, loadConfig } from '../src/config.js';
+import { DEMO_ACCOUNT, DEMO_CHAT_ACCOUNT, loadConfig } from '../src/config.js';
 import { createContainer } from '../src/container.js';
 import { toEcuadorLocalDateTime } from '../src/shared/time.js';
 
@@ -35,17 +35,17 @@ const OFFERS = [
   },
 ];
 
-async function ensureDemoAccount(accounts, password) {
+async function ensureDemoAccount(accounts, account, password) {
   try {
-    await accounts.registerUser({ ...DEMO_ACCOUNT, password, passwordConfirm: password });
+    await accounts.registerUser({ ...account, password, passwordConfirm: password });
   } catch (error) {
     if (error?.code !== 'EMAIL_TAKEN') throw error;
   }
   try {
-    return await accounts.authenticate(DEMO_ACCOUNT.email, password);
+    return await accounts.authenticate(account.email, password);
   } catch (error) {
     if (error?.code !== 'INVALID_CREDENTIALS') throw error;
-    throw new Error('La contraseña configurada no coincide con la cuenta existente de Ana.', { cause: error });
+    throw new Error(`La contraseña configurada no coincide con la cuenta existente ${account.email}.`, { cause: error });
   }
 }
 
@@ -61,7 +61,8 @@ async function listOwnByTitle(offers, principal) {
 export async function seedDemo({ container, password }) {
   if (!password || password.length < 10) throw new Error('SEED_DEMO_PASSWORD debe tener al menos 10 caracteres.');
   const { accounts, offers, clock } = container;
-  const principal = await ensureDemoAccount(accounts, password);
+  const principal = await ensureDemoAccount(accounts, DEMO_ACCOUNT, password);
+  await ensureDemoAccount(accounts, DEMO_CHAT_ACCOUNT, password);
   const existing = await listOwnByTitle(offers, principal);
   const now = clock.now();
   const summary = { created: 0, kept: 0, published: 0 };

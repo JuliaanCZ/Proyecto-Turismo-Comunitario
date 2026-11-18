@@ -178,8 +178,12 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
   const anaAccount = await container.accounts.authenticate('ana@demo.test', PASSWORD);
   assert.equal((await container.offers.listOffers(anaAccount)).total, 4);
   assert.deepEqual((await container.chat.getHistory()).messages, []);
-  await container.accounts.registerUser({ displayName: 'Otro operador', email: 'otro@example.test',
-    password: PASSWORD, passwordConfirm: PASSWORD });
+  const demoConfig = loadConfig({ APP_ENV: 'development', DEMO_LOGIN_ENABLED: 'true', SEED_DEMO_PASSWORD: PASSWORD });
+  const demoLogin = await request(createApp({ ...container, config: demoConfig })).get('/ingreso');
+  assert.equal(demoLogin.status, 200);
+  assert.match(demoLogin.text, /ana@demo\.test/);
+  assert.match(demoLogin.text, /luis@demo\.test/);
+  assert.match(demoLogin.text, /Clave-segura-99/);
   assert.equal((await container.offers.listPublicOffers()).total, 4);
   const home = await request(app).get('/');
   assert.equal(home.status, 200);
@@ -203,13 +207,17 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
   const ana = await connect('ana@demo.test');
   let luis;
   try {
-    luis = await connect('otro@example.test');
+    luis = await connect('luis@demo.test');
     assert.equal((await ana.timeout(1000).emitWithAck('chat:join')).ok, true);
     assert.equal((await luis.timeout(1000).emitWithAck('chat:join')).presence.count, 2);
     const message = once(luis, 'chat:message', { signal: AbortSignal.timeout(1000) });
     const ack = await ana.timeout(1000).emitWithAck('chat:send', { clientMessageId: randomUUID(), text: 'Confirmamos la caminata.' });
     assert.equal(ack.ok, true);
     assert.equal((await message)[0].text, 'Confirmamos la caminata.');
+    const reply = once(ana, 'chat:message', { signal: AbortSignal.timeout(1000) });
+    const replyAck = await luis.timeout(1000).emitWithAck('chat:send', { clientMessageId: randomUUID(), text: 'Reserva recibida.' });
+    assert.equal(replyAck.ok, true);
+    assert.equal((await reply)[0].text, 'Reserva recibida.');
   } finally {
     ana.disconnect();
     luis?.disconnect();
@@ -226,7 +234,7 @@ test('Producción desactiva la recuperación simulada y la bandeja de pruebas', 
 
   const login = await request(app).get('/ingreso');
   assert.equal(login.status, 200);
-  assert.doesNotMatch(login.text, /href="\/recuperar"|ejemplo-semilla-local/);
+  assert.doesNotMatch(login.text, /href="\/recuperar"|ejemplo-semilla-local|(?:ana|luis)@demo\.test/);
   for (const path of ['/recuperar', '/restablecer', '/dev/bandeja', '/dev/diseno']) {
     assert.equal((await request(app).get(path)).status, 404, path);
   }

@@ -1,4 +1,4 @@
-import { DEMO_ACCOUNT } from './config.js';
+import { DEMO_ACCOUNT, DEMO_CHAT_ACCOUNT } from './config.js';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import ejs from 'ejs';
@@ -55,7 +55,7 @@ export function createApp(container) {
   const { config } = container;
   const app = express();
   if (config.demoLoginEnabled && config.seedDemoPassword) {
-    app.locals.demoLogin = { account: DEMO_ACCOUNT, password: config.seedDemoPassword };
+    app.locals.demoLogin = { accounts: [DEMO_ACCOUNT, DEMO_CHAT_ACCOUNT], password: config.seedDemoPassword };
   }
 
   app.disable('x-powered-by');

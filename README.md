@@ -13,7 +13,7 @@ npm run db:migrate
 npm run dev
 ```
 
-El servidor guarda los datos en el esquema PostgreSQL `app` y sirve fotografías del bucket privado `site-imgs` tras verificar el acceso. Para cargar las cuatro ofertas de ejemplo en una instancia de desarrollo, configura `SEED_DEMO_PASSWORD` y ejecuta `npm run seed:demo`. El comando crea la cuenta `ana@demo.test`, guarda sus ofertas y fotos en Supabase y deja el historial del chat fuera del sembrado. Con `DEMO_LOGIN_ENABLED=true`, la pantalla de ingreso de desarrollo muestra las credenciales de esa cuenta.
+El servidor guarda los datos en el esquema PostgreSQL `app` y sirve fotografías del bucket privado `site-imgs` tras verificar el acceso. Para cargar las cuatro ofertas de ejemplo en una instancia de desarrollo, configura `SEED_DEMO_PASSWORD` y ejecuta `npm run seed:demo`. El comando crea las cuentas `ana@demo.test` y `luis@demo.test` con esa contraseña, guarda las ofertas y fotos de Ana en Supabase y deja el historial del chat fuera del sembrado. Con `DEMO_LOGIN_ENABLED=true`, la pantalla de ingreso de desarrollo muestra ambas cuentas y su contraseña compartida.
 
 ## Producción
 

@@ -93,10 +93,15 @@ ul.acciones { padding: 0; list-style: none; }
 /* Portada */
 .k-home { --rail: clamp(6rem, 7.4vw, 9rem); }
 .k-home .principal { width: 100%; padding: 0; }
+.k-home .k-header { position: absolute; z-index: 4; inset: 1.25rem 0 auto; border: 0; color: white; }
+.k-home .k-header .nav, .k-home .k-header :is(.k-login,.k-account .btn) { border: 1px solid #ffffff55; border-radius: 99rem; background: #242424a3; color: white; }
+.k-home .k-header .nav a[aria-current=page] { background: #ffffff26; }
+.k-home .k-header .nav a:hover { background: #ffffff35; color: white; }
+.k-home .k-header :is(.k-login,.k-account .btn):hover { background: #242424db; color: white; }
 .k-public .cabecera__interior, .k-home .cabecera__interior { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); }
 .k-public .k-header nav, .k-home .k-header nav { grid-column: 2; }
 .k-public .k-header :is(.k-login,.k-account), .k-home .k-header :is(.k-login,.k-account) { grid-column: 3; justify-self: end; }
-.k-hero { position: relative; min-height: max(37rem, calc(100svh - 4.5rem)); isolation: isolate; color: white; background: var(--ink); }
+.k-hero { position: relative; min-height: max(37rem, 100svh); isolation: isolate; color: white; background: var(--ink); }
 .k-hero-rail, .k-signin-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; width: var(--rail); display: grid; justify-items: center; grid-template-rows: auto 1fr auto; padding: 1.55rem .4rem; background: var(--ink); }
 .k-hero-rail .k-mark { width: clamp(3rem, 3.2vw, 4rem); background: var(--orange); color: var(--ink); }
 .k-hero-rail .k-mark:hover, .k-rail-next:hover { background: var(--hover); color: var(--ink); }
@@ -120,8 +125,8 @@ ul.acciones { padding: 0; list-style: none; }
 .k-carousel button { display: grid; place-items: center; width: 2.65rem; aspect-ratio: 1; border: 1px solid #ffffff58; border-radius: 50%; background: transparent; color: white; font-size: 1.25rem; }
 .k-carousel [data-play] { background: var(--cream); color: var(--ink); }
 .k-carousel button:hover { background: var(--hover); color: var(--ink); }
-.k-hero-next { right: 1.3rem; max-width: 51%; gap: .85rem; background: var(--cream); color: var(--ink); }
-.k-hero-next-copy { min-width: 0; display: grid; }
+.k-hero-next { right: 1.3rem; max-width: 51%; gap: .85rem; padding-block: 1rem; background: var(--cream); color: var(--ink); }
+.k-hero-next-copy { min-width: 0; display: grid; gap: .22rem; }
 .k-hero-next-copy strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .k-hero-next small { color: var(--muted); }
 .k-hero-next .k-eyebrow { color: var(--accent); }
@@ -327,17 +332,18 @@ ul.acciones { padding: 0; list-style: none; }
 }
 @media (max-width: 760px) {
   .k-home { --rail: 0rem; }
-  .k-home .cabecera__interior { grid-template-columns: minmax(0,1fr) auto; }
+  .k-home .k-header { inset: .65rem .65rem auto 3.6rem; }
+  .k-home .cabecera__interior { width: 100%; min-height: 2.5rem; padding: 0; grid-template-columns: minmax(0,1fr) auto; }
   .k-home .k-header nav { grid-column: 1; justify-self: center; }
   .k-home .k-header :is(.k-login,.k-account) { grid-column: 2; }
   .k-home .nav a, .k-home .k-login { padding: .45rem .55rem; font-size: .86rem; }
-  .k-hero { min-height: max(34rem,calc(100svh - 4.5rem)); }
+  .k-hero { min-height: max(34rem,100svh); }
   .k-hero-rail { inset: .65rem auto auto .65rem; width: auto; padding: 0; background: none; }
   .k-hero-rail .k-mark { width: 2.5rem; }
   .k-rail-label, .k-rail-next { display: none; }
   .k-slide-content { left: 6%; top: 31%; }
   .k-slide-content :is(h1,h2) { font-size: clamp(2.8rem,12vw,5.4rem); }
-  .k-hero-next { bottom: 5rem; left: .85rem; right: .85rem; max-width: none; gap: .55rem; }
+  .k-hero-next { bottom: 5rem; left: .85rem; right: .85rem; max-width: none; gap: .55rem; padding-block: .85rem; }
   .k-hero-next .btn { margin-left: auto; font-size: .81rem; }
   .k-hero-next-copy { flex: 1; font-size: .85rem; }
   .k-hero-next-copy strong { max-width: none; }
