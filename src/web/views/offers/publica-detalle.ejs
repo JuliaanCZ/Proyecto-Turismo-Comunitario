@@ -15,15 +15,16 @@
     <section class="k-date-panel"><h2>Fecha de salida</h2><p><%= formatEcuadorDateTime(offer.startsAt) %></p><small>Hora de Ecuador continental</small></section>
     <section class="k-paper"><dl><dt>Punto de encuentro</dt><dd><%= offer.locationText %></dd><dt>Cupo referencial</dt><dd><%= offer.capacity %> personas</dd></dl>
     <h2>Contacto</h2>
-    <% const demo = offer.contactEmail?.endsWith('@demo.test'); %>
-    <% if (demo) { %><p>Datos ficticios para demostración.</p><% } %>
-    <% if (offer.contactPhone) { %><p><%= offer.contactPhone %></p><% } %>
-    <% if (offer.contactEmail) { %><p><%= offer.contactEmail %></p><% } %>
-    <div class="acciones">
-      <% if (whatsappUrl) { %><a class="btn" href="<%= whatsappUrl %>" rel="noopener noreferrer">Consultar por WhatsApp</a><% } %>
-      <% if (offer.contactEmail && !demo) { %><a class="btn btn--secundario" href="mailto:<%= encodeURIComponent(offer.contactEmail).replace('%40', '@') %>">Escribir por correo</a><% } %>
-    </div>
-    <% if (!offer.contactPhone && !offer.contactEmail) { %><p>Contacto aún no disponible.</p><% } %>
+    <% if (contact.whatsappUrl || contact.gmailUrl) { %>
+      <ul class="acciones">
+        <% if (contact.whatsappUrl) { %>
+          <li><a class="btn" href="<%= contact.whatsappUrl %>" rel="noreferrer">WhatsApp · <%= contact.phone %></a></li>
+        <% } %>
+        <% if (contact.gmailUrl) { %>
+          <li><a class="btn btn--secundario" href="<%= contact.gmailUrl %>" rel="noreferrer">Gmail · <%= contact.email %></a></li>
+        <% } %>
+      </ul>
+    <% } else { %><p>Contacto aún no disponible.</p><% } %>
     </section>
   </aside>
 </div>

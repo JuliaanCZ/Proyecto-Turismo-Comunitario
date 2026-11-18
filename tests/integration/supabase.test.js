@@ -163,7 +163,7 @@ test('Galería HTTP permite publicar, editar y conservar la versión anterior si
   const updated = await request(app).get(detail);
   assert.match(updated.text, /Visita actualizada/);
   assert.ok(updated.text.includes('wa.me/12025550121'));
-  assert.match(updated.text, /nuevo@example\.test/);
+  assert.match(updated.text, /href="https:\/\/mail\.google\.com\/mail\/\?[^"]*to=nuevo%40example\.test/);
   assert.equal((await request(app).get(detail + '/foto/2')).status, 404);
   assert.equal(files.size, 1);
 });
@@ -184,7 +184,23 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
   assert.match(demoLogin.text, /ana@demo\.test/);
   assert.match(demoLogin.text, /luis@demo\.test/);
   assert.match(demoLogin.text, /Clave-segura-99/);
-  assert.equal((await container.offers.listPublicOffers()).total, 4);
+  const catalog = await container.offers.listPublicOffers();
+  assert.equal(catalog.total, 4);
+  const demoOffer = catalog.items[0];
+  const detail = await request(app).get('/ofertas/' + demoOffer.id).expect(200);
+  assert.match(detail.text, /WhatsApp · \+593 99 716 2041/);
+  assert.match(detail.text, /Gmail · juliancamacho897@gmail\.com/);
+  assert.doesNotMatch(detail.text, /ana@demo\.test/);
+
+  const whatsapp = new URL(/href="(https:\/\/wa\.me\/[^"]+)"/.exec(detail.text)[1]);
+  const gmail = new URL(/href="(https:\/\/mail\.google\.com\/[^"]+)"/.exec(detail.text)[1].replaceAll('&amp;', '&'));
+  const message = whatsapp.searchParams.get('text');
+  assert.equal(whatsapp.pathname, '/593997162041');
+  assert.ok(message.startsWith('Hola, quiero consultar una reserva para ' + demoOffer.title + ' el '));
+  assert.equal(gmail.searchParams.get('view'), 'cm');
+  assert.equal(gmail.searchParams.get('to'), 'juliancamacho897@gmail.com');
+  assert.equal(gmail.searchParams.get('su'), 'Consulta de reserva: ' + demoOffer.title);
+  assert.equal(gmail.searchParams.get('body'), message);
   const home = await request(app).get('/');
   assert.equal(home.status, 200);
   assert.equal((home.text.match(/class="k-card"/g) ?? []).length, 3);

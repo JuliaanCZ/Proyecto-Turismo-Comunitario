@@ -12,6 +12,7 @@ const AVISOS = Object.freeze({
   eliminada: 'La oferta fue eliminada.',
 });
 const FORM_FIELDS = [...Object.keys(offerSchema), 'isPublished'];
+const DEMO_CONTACT = Object.freeze({ phone: '+593 99 716 2041', email: 'juliancamacho897@gmail.com' });
 
 function valuesFrom(input = {}) {
   return Object.fromEntries(FORM_FIELDS.map((field) => [field, input[field] ?? '']));
@@ -39,11 +40,19 @@ function photoResponse(res, photo) {
   res.set('Cache-Control', 'no-store');
   res.send(photo.imageBytes);
 }
-function whatsappLink(offer) {
-  if (!offer.contactPhone || offer.contactEmail?.endsWith('@demo.test')) return null;
+function publicContact(offer) {
+  const { phone, email } = offer.contactEmail?.endsWith('@demo.test')
+    ? DEMO_CONTACT
+    : { phone: offer.contactPhone, email: offer.contactEmail };
   const message = 'Hola, quiero consultar una reserva para ' + offer.title +
     ' el ' + formatEcuadorDateTime(offer.startsAt) + '.';
-  return 'https://wa.me/' + offer.contactPhone.slice(1) + '?text=' + encodeURIComponent(message);
+  const whatsappUrl = phone
+    ? 'https://wa.me/' + phone.replace(/\D/g, '') + '?text=' + encodeURIComponent(message)
+    : null;
+  const gmailUrl = email ? 'https://mail.google.com/mail/?' + new URLSearchParams({
+    view: 'cm', fs: '1', to: email, su: 'Consulta de reserva: ' + offer.title, body: message,
+  }) : null;
+  return { phone, email, whatsappUrl, gmailUrl };
 }
 
 export function createOffersRouter(container) {
@@ -161,7 +170,7 @@ export function createOffersRouter(container) {
     const offer = await offers.getPublicOffer(req.params.id);
     res.renderPage('offers/publica-detalle', {
       title: offer.title, offer, formatEcuadorDateTime,
-      whatsappUrl: whatsappLink(offer),
+      contact: publicContact(offer),
       gallery: await offers.publicGallery(offer.id),
     });
   });
