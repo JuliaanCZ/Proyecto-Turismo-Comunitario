@@ -1,0 +1,9 @@
+Primer intento: npm run lint
+Resultado: NO EJECUTÓ ESLint. PowerShell bloqueó el envoltorio npm.ps1 por su política de ejecución.
+
+Comando efectivo: npm.cmd run lint
+Fecha: 2026-11-17
+Resultado: PASÓ (código 0)
+
+> turismo-comunitario@0.1.0 lint
+> eslint .
