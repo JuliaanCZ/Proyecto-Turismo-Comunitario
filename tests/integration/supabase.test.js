@@ -189,8 +189,9 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
   assert.equal(catalog.total, 4);
   const demoOffer = catalog.items[0];
   const detail = await request(app).get('/ofertas/' + demoOffer.id).expect(200);
-  assert.match(detail.text, /WhatsApp · \+593 99 716 2041/);
-  assert.match(detail.text, /Gmail · juliancamacho897@gmail\.com/);
+  assert.match(detail.text, /class="k-date-panel"[\s\S]*?class="k-date-tile"/);
+  assert.match(detail.text, /<dd><a href="https:\/\/wa\.me\/[^"]+" rel="noreferrer">\+593 99 716 2041<\/a><\/dd>/);
+  assert.match(detail.text, /<dd><a href="https:\/\/mail\.google\.com\/[^"]+" rel="noreferrer">juliancamacho897@gmail\.com<\/a><\/dd>/);
   assert.doesNotMatch(detail.text, /ana@demo\.test/);
 
   const whatsapp = new URL(/href="(https:\/\/wa\.me\/[^"]+)"/.exec(detail.text)[1]);

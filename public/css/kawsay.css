@@ -174,6 +174,9 @@ ul.acciones { padding: 0; list-style: none; }
 .k-region-galapagos { --region: #26758c; }
 .k-card-image .k-chip { position: absolute; top: .85rem; left: .9rem; }
 .k-card-image .k-date-tile { position: absolute; right: .9rem; bottom: .85rem; }
+.k-catalog .k-date-tile, .k-date-panel .k-date-tile { background: var(--orange); color: var(--ink); }
+.k-catalog .k-date-tile strong, .k-date-panel .k-date-tile strong { color: var(--ink); }
+.k-catalog .k-date-tile strong { font-size: 1.75rem; }
 .k-card-body { padding: clamp(1rem,1.4vw,1.55rem); }
 .k-card-body h3 { font: 400 clamp(1.18rem,1.4vw,1.7rem)/1.25 var(--serif); margin: .35rem 0 1rem; }
 .k-card-place, .k-card-meta, .k-card-meta span { display: flex; align-items: center; gap: .45rem; font-size: .92rem; color: var(--muted); min-width: 0; }
@@ -181,12 +184,24 @@ ul.acciones { padding: 0; list-style: none; }
 .k-card-meta { gap: .85rem; flex-wrap: wrap; margin-top: .38rem; }
 .k-back { margin-bottom: 1rem; }
 .k-detail-hero { align-items: end; min-height: clamp(18rem,39vw,32rem); }
-.k-detail { display: grid; grid-template-columns: minmax(0,2.2fr) minmax(14rem,1fr); align-items: start; gap: 1.25rem; margin-top: 1.4rem; }
+.k-detail { display: grid; grid-template-columns: minmax(0,1fr) minmax(19rem,min(38%,28.125rem)); align-items: start; gap: 1.25rem; margin-top: 1.4rem; }
 .k-detail-aside { display: grid; gap: 1rem; overflow-wrap: anywhere; }
-.k-date-panel { color: white; background: var(--ink); }
-.k-paper h2, .k-date-panel h2 { margin-bottom: .55rem; font-size: 1.05rem; }
+.k-date-panel { display: flex; align-items: center; gap: clamp(.9rem,2vw,1.55rem); color: white; background: var(--ink); border-color: var(--ink); }
+.k-date-panel .k-date-tile { width: clamp(3.6rem,7vw,5.35rem); height: auto; aspect-ratio: 1; border-radius: 1.25rem; font-size: .78rem; letter-spacing: .08em; }
+.k-date-panel .k-date-tile strong { font-size: clamp(1.9rem,4vw,2.55rem); letter-spacing: normal; }
+.k-date-panel h2 { color: #ddd6ce; font-size: .95rem; font-weight: 500; }
+.k-date-panel time:not(.k-date-tile) { display: block; font-size: clamp(1rem,1.35vw,1.25rem); font-weight: 700; }
+.k-date-panel small { display: block; color: #ddd6ce; }
+.k-paper h2 { margin-bottom: .55rem; font-size: 1.05rem; }
 .k-paper dt { color: var(--muted); font-size: .88rem; }
 .k-paper dd { font-weight: 650; margin-bottom: .85rem; }
+.k-offer-facts { display: grid; gap: 1rem; }
+.k-offer-fact { position: relative; min-height: 3rem; display: grid; align-content: center; padding-inline-start: 4.15rem; }
+.k-offer-fact dd { margin: 0; }
+.k-fact-icon { position: absolute; inset-inline-start: 0; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: var(--cream); color: var(--ink); font-size: 1rem; }
+.k-offer-contact { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.k-offer-contact h2 { margin-bottom: .9rem; }
+.k-offer-contact a { color: var(--accent); }
 .k-description { white-space: pre-wrap; margin-bottom: 1rem; }
 .k-organizer { padding-top: .95rem; border-top: 1px solid var(--line); margin-bottom: 1rem; }
 .k-gallery { display: grid; grid-template-columns: repeat(auto-fit,minmax(8rem,1fr)); gap: .65rem; list-style: none; padding: 0; }
