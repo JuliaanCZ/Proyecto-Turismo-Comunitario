@@ -1,9 +1,9 @@
 $ node --test tests/integration/sesion-http-ws.test.js
-✔ TM-INT-01: tras POST /salir se cierra el socket de esa sesión y la cookie no abre panel, chat ni historial (205.5923ms)
-✔ TM-INT-02: restablecer la clave cierra todos los sockets del usuario y sus cookies pierden acceso (73.6131ms)
-✔ TM-INT-03: reconectar con la cookie de una sesión revocada da connect_error UNAUTHENTICATED (35.6028ms)
-✔ TM-INT-04: con la sesión revocada solo en la base, chat:send da UNAUTHENTICATED y no guarda filas (24.5092ms)
-✔ TM-INT-05: con la sesión vencida (8 h) el socket se cierra solo y /panel redirige (119.8406ms)
+✔ TM-INT-01: tras POST /salir se cierra el socket de esa sesión y la cookie no abre panel, chat ni historial (186.2678ms)
+✔ TM-INT-02: restablecer la clave cierra todos los sockets del usuario y sus cookies pierden acceso (60.8142ms)
+✔ TM-INT-03: reconectar con la cookie de una sesión revocada da connect_error UNAUTHENTICATED (28.5971ms)
+✔ TM-INT-04: con la sesión revocada solo en la base, chat:send da UNAUTHENTICATED y no guarda filas (20.1214ms)
+✔ TM-INT-05: con la sesión vencida (8 h) el socket se cierra solo y /panel redirige (126.0292ms)
 ℹ tests 5
 ℹ suites 0
 ℹ pass 5
@@ -11,5 +11,5 @@ $ node --test tests/integration/sesion-http-ws.test.js
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1360.555
+ℹ duration_ms 1178.9228
 (exit 0)
