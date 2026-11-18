@@ -2,6 +2,8 @@ import { isIP } from 'node:net';
 import process from 'node:process';
 import { URL } from 'node:url';
 
+export const DEMO_ACCOUNT = Object.freeze({ displayName: 'Ana Quispe', email: 'ana@demo.test' });
+
 const developmentDefaults = Object.freeze({
   CSRF_SECRET: 'ejemplo-local-csrf-solo-para-desarrollo',
   DEMO_MAILBOX_PASSWORD: 'ejemplo-bandeja-local',
@@ -102,6 +104,7 @@ export function loadConfig(env = process.env) {
     argon2MemoryKib,
     argon2TimeCost: integer(env, 'ARGON2_TIME_COST', 2, 1),
     argon2Parallelism,
+    demoLoginEnabled: appEnv === 'development' && boolean(env, 'DEMO_LOGIN_ENABLED', false),
     demoMailboxEnabled,
     demoMailboxPassword: demoMailboxEnabled ? secret(env, 'DEMO_MAILBOX_PASSWORD', developmentDefaults.DEMO_MAILBOX_PASSWORD, {
       production, required: true, minLength: 8,

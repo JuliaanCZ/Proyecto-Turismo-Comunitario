@@ -2,14 +2,14 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { URL } from 'node:url';
 import { DataType, newDb } from 'pg-mem';
-import { createPg } from '../src/shared/pg.js';
+import { createPg } from '../../src/shared/pg.js';
 
 export function createDemoBackend() {
   const memory = newDb();
   memory.public.registerFunction({ name: 'char_length', args: [DataType.text],
     returns: DataType.integer, implementation: (value) => value.length });
   // pg-mem carece del operador de regex de PostgreSQL; el esquema real conserva estos CHECK.
-  const sql = readFileSync(new URL('../db/postgres/001_initial.sql', import.meta.url), 'utf8')
+  const sql = readFileSync(new URL('../../db/postgres/001_initial.sql', import.meta.url), 'utf8')
     .replaceAll(/CHECK \(token_hash ~ '[^']+'\)/g, 'CHECK (TRUE)')
     .replaceAll('CHECK ((revoked_at IS NULL) = (revoke_reason IS NULL))', 'CHECK (TRUE)')
     .replaceAll('CHECK (expires_at > created_at)', 'CHECK (TRUE)')

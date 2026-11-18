@@ -1,3 +1,4 @@
+import { DEMO_ACCOUNT } from './config.js';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import ejs from 'ejs';
@@ -53,6 +54,9 @@ function securityHeaders(config) {
 export function createApp(container) {
   const { config } = container;
   const app = express();
+  if (config.demoLoginEnabled && config.seedDemoPassword) {
+    app.locals.demoLogin = { account: DEMO_ACCOUNT, password: config.seedDemoPassword };
+  }
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);

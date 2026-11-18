@@ -153,11 +153,11 @@ export function createOffersService({ db, clock, storage, logger }) {
         throw error;
       }
     },
-    async createOffer(principal, input, { featuredKey = null } = {}) {
+    async createOffer(principal, input) {
       const owner = ownerId(principal);
       const now = clock.now();
       const values = parseInput(input, now);
-      const id = await repo.create(owner, values, now, featuredKey);
+      const id = await repo.create(owner, values, now);
       return dto(await repo.own(id, owner));
     },
     async listOffers(principal, { provincia, pagina } = {}) {
@@ -237,10 +237,6 @@ export function createOffersService({ db, clock, storage, logger }) {
     async nextOwnOffer(principal) {
       const row = await repo.nextOwn(ownerId(principal), clock.now());
       return row ? dto(row) : null;
-    },
-    async featured(keys) {
-      const rows = await Promise.all(keys.map((key) => repo.featured(clock.now(), key)));
-      return rows.filter(Boolean).map(dto);
     },
     async listPublicOffers(query = {}) {
       const filters = catalogFilters(query);

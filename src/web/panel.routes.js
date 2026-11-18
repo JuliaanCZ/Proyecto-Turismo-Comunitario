@@ -34,7 +34,8 @@ export function createPanelRouter(container) {
   const router = Router();
 
   router.get('/', async (_req, res) => {
-    const featured = container.offers.featured ? await container.offers.featured(REGIONS.slice(0, 3).map((region) => region.key)) : [];
+    const { items } = await container.offers.listPublicOffers();
+    const featured = items.slice(0, 3);
     res.renderPage('portada', { title: 'Inicio', regions: REGIONS, featured, formatEcuadorDateTime });
   });
 

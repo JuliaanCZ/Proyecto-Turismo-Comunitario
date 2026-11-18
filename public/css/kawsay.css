@@ -93,13 +93,10 @@ ul.acciones { padding: 0; list-style: none; }
 /* Portada */
 .k-home { --rail: clamp(6rem, 7.4vw, 9rem); }
 .k-home .principal { width: 100%; padding: 0; }
-.k-home .k-header { position: absolute; z-index: 4; inset: 1.25rem 2.1vw auto var(--rail); border: 0; }
-.k-home .cabecera__interior { margin: 0 0 0 auto; padding: .3rem; width: fit-content; min-height: 0; border: 1px solid #ffffff55; border-radius: 99rem; color: white; background: #24242482; }
-.k-home .nav { border: 0; padding: 0; background: transparent; }
-.k-home .nav a[aria-current=page] { background: #ffffff24; }
-.k-home .nav a:hover, .k-home .k-login:hover, .k-home .k-account .btn:hover { background: #ffffff30; color: white; }
-.k-home .k-login, .k-home .k-account .btn { border: 0; background: transparent; color: white; }
-.k-hero { position: relative; min-height: max(37rem, 100svh); isolation: isolate; color: white; background: var(--ink); }
+.k-public .cabecera__interior, .k-home .cabecera__interior { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); }
+.k-public .k-header nav, .k-home .k-header nav { grid-column: 2; }
+.k-public .k-header :is(.k-login,.k-account), .k-home .k-header :is(.k-login,.k-account) { grid-column: 3; justify-self: end; }
+.k-hero { position: relative; min-height: max(37rem, calc(100svh - 4.5rem)); isolation: isolate; color: white; background: var(--ink); }
 .k-hero-rail, .k-signin-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; width: var(--rail); display: grid; justify-items: center; grid-template-rows: auto 1fr auto; padding: 1.55rem .4rem; background: var(--ink); }
 .k-hero-rail .k-mark { width: clamp(3rem, 3.2vw, 4rem); background: var(--orange); color: var(--ink); }
 .k-hero-rail .k-mark:hover, .k-rail-next:hover { background: var(--hover); color: var(--ink); }
@@ -217,7 +214,7 @@ ul.acciones { padding: 0; list-style: none; }
 .k-signin-register a { color: var(--accent); font-weight: 650; }
 .k-demo-logins { padding: clamp(.85rem,1.2vw,1.45rem); border: 1px solid var(--line); background: var(--cream); }
 .k-demo-logins h2 { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .15em; }
-.k-demo-logins ul { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .5rem; margin: .85rem 0; list-style: none; padding: 0; }
+.k-demo-logins ul { margin: .85rem 0; list-style: none; padding: 0; }
 .k-demo-logins li { display: grid; background: white; border: 1px solid var(--line); padding: .45rem .6rem; overflow-wrap: anywhere; }
 .k-demo-logins small, .k-demo-logins p { font-size: .82rem; }
 
@@ -330,10 +327,11 @@ ul.acciones { padding: 0; list-style: none; }
 }
 @media (max-width: 760px) {
   .k-home { --rail: 0rem; }
-  .k-home .k-header { inset: .75rem .65rem auto 3.7rem; }
-  .k-home .cabecera__interior { width: auto; flex-wrap: wrap; justify-content: end; }
-  .k-home .nav a, .k-home .k-login { padding: .45rem .55rem; font-size: .82rem; }
-  .k-hero { min-height: max(34rem,100svh); }
+  .k-home .cabecera__interior { grid-template-columns: minmax(0,1fr) auto; }
+  .k-home .k-header nav { grid-column: 1; justify-self: center; }
+  .k-home .k-header :is(.k-login,.k-account) { grid-column: 2; }
+  .k-home .nav a, .k-home .k-login { padding: .45rem .55rem; font-size: .86rem; }
+  .k-hero { min-height: max(34rem,calc(100svh - 4.5rem)); }
   .k-hero-rail { inset: .65rem auto auto .65rem; width: auto; padding: 0; background: none; }
   .k-hero-rail .k-mark { width: 2.5rem; }
   .k-rail-label, .k-rail-next { display: none; }
@@ -347,7 +345,9 @@ ul.acciones { padding: 0; list-style: none; }
   .k-carousel button { width: 2.3rem; }
   .k-about-grid, .k-detail, .k-catalog, .k-chat-layout { grid-template-columns: minmax(0,1fr); }
   .k-header .cabecera__interior { flex-wrap: wrap; padding-block: .6rem; }
-  .k-public .k-header nav { order: 3; width: 100%; }
+  .k-public .cabecera__interior { grid-template-columns: minmax(0,1fr) auto; }
+  .k-public .k-header nav { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
+  .k-public .k-header :is(.k-login,.k-account) { grid-column: 2; grid-row: 1; }
   .k-cards, .k-catalog .k-cards { grid-template-columns: repeat(auto-fit,minmax(min(100%,13rem),1fr)); }
   .k-signin { --rail: 0rem; grid-template-columns: minmax(0,1fr); }
   .k-signin-rail { display: none; }

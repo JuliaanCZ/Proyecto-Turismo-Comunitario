@@ -13,7 +13,7 @@ import { createHttpServer } from '../../src/server.js';
 import { createApp } from '../../src/app.js';
 import { loadConfig } from '../../src/config.js';
 import { createContainer } from '../../src/container.js';
-import { createDemoBackend } from '../../scripts/demo-backend.js';
+import { createDemoBackend } from '../helpers/demo-backend.js';
 import { createCsrfToken } from '../../src/shared/http/csrf.js';
 import { toEcuadorLocalDateTime } from '../../src/shared/time.js';
 
@@ -172,13 +172,18 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
   const { container, app } = await setup(t);
   const first = await seedDemo({ container, password: PASSWORD });
   const second = await seedDemo({ container, password: PASSWORD });
-  assert.equal(first.offers.created, 4);
-  assert.equal(second.offers.created, 0);
-  assert.equal(second.offers.kept, 4);
-  assert.equal(second.messages.created, 0);
+  assert.equal(first.created, 4);
+  assert.equal(second.created, 0);
+  assert.equal(second.kept, 4);
+  const anaAccount = await container.accounts.authenticate('ana@demo.test', PASSWORD);
+  assert.equal((await container.offers.listOffers(anaAccount)).total, 4);
+  assert.deepEqual((await container.chat.getHistory()).messages, []);
+  await container.accounts.registerUser({ displayName: 'Otro operador', email: 'otro@example.test',
+    password: PASSWORD, passwordConfirm: PASSWORD });
   assert.equal((await container.offers.listPublicOffers()).total, 4);
-  assert.deepEqual((await container.offers.featured(['sierra', 'costa', 'amazonia'])).map((offer) => offer.region.key),
-    ['sierra', 'costa', 'amazonia']);
+  const home = await request(app).get('/');
+  assert.equal(home.status, 200);
+  assert.equal((home.text.match(/class="k-card"/g) ?? []).length, 3);
 
   const { httpServer, io } = createHttpServer(app, container);
   await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
@@ -198,7 +203,7 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
   const ana = await connect('ana@demo.test');
   let luis;
   try {
-    luis = await connect('luis@demo.test');
+    luis = await connect('otro@example.test');
     assert.equal((await ana.timeout(1000).emitWithAck('chat:join')).ok, true);
     assert.equal((await luis.timeout(1000).emitWithAck('chat:join')).presence.count, 2);
     const message = once(luis, 'chat:message', { signal: AbortSignal.timeout(1000) });
@@ -215,7 +220,7 @@ test('Producción desactiva la recuperación simulada y la bandeja de pruebas', 
   const { container } = await setup(t);
   const config = loadConfig({ APP_ENV: 'production', APP_ORIGIN: 'https://example.test',
     CSRF_SECRET: 'una-clave-larga-para-esta-prueba-produccion',
-    DEMO_MAILBOX_ENABLED: 'true', DEMO_MAILBOX_PASSWORD: 'ejemplo-bandeja-local',
+    DEMO_LOGIN_ENABLED: 'true', DEMO_MAILBOX_ENABLED: 'true', DEMO_MAILBOX_PASSWORD: 'ejemplo-bandeja-local',
     SEED_DEMO_PASSWORD: 'ejemplo-semilla-local' });
   const app = createApp({ ...container, config });
 

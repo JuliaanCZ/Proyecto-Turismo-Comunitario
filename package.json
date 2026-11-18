@@ -13,8 +13,7 @@
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate.js",
     "seed:demo": "node --env-file-if-exists=.env scripts/seed-demo.js",
     "test": "node --test",
-    "lint": "eslint .",
-    "dev:demo": "node scripts/preview-demo.js"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

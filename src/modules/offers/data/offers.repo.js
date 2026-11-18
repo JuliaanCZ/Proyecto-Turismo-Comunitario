@@ -43,12 +43,12 @@ export function createOffersRepo(db) {
       await db.query('DELETE FROM offer_photos WHERE offer_id=$1', [id]);
     },
     transaction: (fn) => db.transaction(fn),
-    async create(ownerId, v, now, featuredKey = null) {
+    async create(ownerId, v, now) {
       const result = await db.query(`INSERT INTO offers
         (owner_id, title, description, province, location_text, starts_at,
-         capacity, is_published, created_at, updated_at, contact_phone, contact_email, featured_key)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,false,$8,$8,$9,$10,$11) RETURNING id`,
-      [ownerId, v.title, v.description, v.province, v.locationText, v.startsAt, v.capacity, now, v.contactPhone, v.contactEmail, featuredKey]);
+         capacity, is_published, created_at, updated_at, contact_phone, contact_email)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,false,$8,$8,$9,$10) RETURNING id`,
+      [ownerId, v.title, v.description, v.province, v.locationText, v.startsAt, v.capacity, now, v.contactPhone, v.contactEmail]);
       return Number(result.rows[0].id);
     },
     async own(id, ownerId) {
@@ -65,12 +65,6 @@ export function createOffersRepo(db) {
       const sql = province ? 'SELECT count(*) AS total FROM offers WHERE owner_id = $1 AND province = $2'
         : 'SELECT count(*) AS total FROM offers WHERE owner_id = $1';
       return Number((await db.query(sql, province ? [ownerId, province] : [ownerId])).rows[0].total);
-    },
-    async featured(now, key) {
-      const result = await db.query(`SELECT ${PUBLIC} FROM offers o
-        JOIN offer_photos p ON p.offer_id=o.id AND p.position=1
-        WHERE ${VISIBLE} AND o.featured_key=$2`, [now, key]);
-      return result.rows[0] ?? null;
     },
     async publicCount(now, filters) {
       const { args, where } = publicFilter(now, filters);

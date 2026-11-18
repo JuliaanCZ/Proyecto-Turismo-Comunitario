@@ -4,14 +4,7 @@ Catálogo de turismo comunitario de Ecuador. Las comunidades publican experienci
 
 ## Desarrollo
 
-Requiere **Node.js 24** y npm. La demostración usa datos en memoria y carga cuatro experiencias ficticias. Al reiniciarla se restauran esos datos.
-
-```sh
-npm ci
-npm run dev:demo
-```
-
-Abre [la demo local](http://127.0.0.1:3100). Las cuentas de prueba están en la pantalla de ingreso.
+Requiere **Node.js 24** y npm. Instala las dependencias con `npm ci`.
 
 Para trabajar con un proyecto **Supabase de desarrollo**, copia `.env.example` a `.env` y complétalo. Define `DATABASE_URL` con la conexión directa o con Session pooler por el puerto 5432. Configura `SUPABASE_URL`, la clave privada de servidor `SUPABASE_SERVICE_ROLE_KEY` y, si corresponde, la ruta local a la CA en `DATABASE_SSL_CA_FILE`. [Conexión y TLS en Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
@@ -20,7 +13,7 @@ npm run db:migrate
 npm run dev
 ```
 
-El servidor guarda los datos en el esquema PostgreSQL `app` y sirve fotografías del bucket privado `site-imgs` tras verificar el acceso. Para sembrar una instancia de desarrollo con Supabase, configura `SEED_DEMO_PASSWORD` y ejecuta `npm run seed:demo`.
+El servidor guarda los datos en el esquema PostgreSQL `app` y sirve fotografías del bucket privado `site-imgs` tras verificar el acceso. Para cargar las cuatro ofertas de ejemplo en una instancia de desarrollo, configura `SEED_DEMO_PASSWORD` y ejecuta `npm run seed:demo`. El comando crea la cuenta `ana@demo.test`, guarda sus ofertas y fotos en Supabase y deja el historial del chat fuera del sembrado. Con `DEMO_LOGIN_ENABLED=true`, la pantalla de ingreso de desarrollo muestra las credenciales de esa cuenta.
 
 ## Producción
 
