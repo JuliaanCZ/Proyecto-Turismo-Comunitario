@@ -1,26 +1,28 @@
 # Historias de usuario del MVP del primer bimestre
 
-Borrador de B0.7 para revisión del Integrante 3. Las quince historias son obligatorias. La prioridad ordena la implementación y el tiempo de demostración según el peso de la rúbrica. Las pruebas TM indicadas son previstas. B3.2 completará la columna Estado con evidencia de la implementación.
+Historias de B0.7, con el estado final registrado en B3.2. Las quince historias son obligatorias. La prioridad ordena la implementación y el tiempo de demostración según el peso de la rúbrica.
+
+El estado sale del código de `main` en `4ac9c4f` y de la ejecución real de `npm test` del 17-11-2026 (202 pruebas, 202 pasan; [salida literal](evidencias/B3.2/npm-test.txt)). Todas las pruebas automatizadas citadas existen y pasan. TM-DEP-02 es una verificación manual del despliegue. La matriz completa está en [pruebas.md](pruebas.md).
 
 Referencias: [Plan del MVP, §1, §2.3 y §5.1](../../mvp-primer-bimestre/PLAN-MVP.md) y [casos de uso del plan general, §4](../planificacion/01-alcance-y-trazabilidad.md).
 
-| Historia | Prioridad y motivo | Bloque previsto | Pruebas previstas | Estado |
+| Historia | Prioridad y motivo | Bloque | Pruebas | Estado |
 |---|---|---|---|---|
-| HU-01 Registro | Media · Registro y recuperación, R4 (2,0 puntos) | B1.1 | TM-CTA-01 a TM-CTA-05 | |
-| HU-02 Ingreso | Media · Sesión y seguridad, R5 (2,0 puntos) | B1.2 | TM-CTA-06, TM-CTA-07, TM-CTA-11, TM-CTA-12 | |
-| HU-03 Recuperar clave | Media · Registro y recuperación, R4 (2,0 puntos) | B1.3, B2.1 | TM-CTA-13 a TM-CTA-19, TM-INT-02 | |
-| HU-04 Salir | Media · Sesión y seguridad, R5 (2,0 puntos) | B1.2, B1.6, B2.1 | TM-CTA-09, TM-WS-05, TM-INT-01 | |
-| HU-05 Panel principal | Alta · Pantalla principal del CRUD, R6 (3,0 puntos) | B0.1, B1.9, B2.2 | TM-BASE-01, TM-NAV-01 a TM-NAV-06 | |
-| HU-06 Crear oferta | Alta · Alta del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-01, TM-OFE-02, TM-OFE-08a, TM-OFE-09, TM-OFE-10 | |
-| HU-07 Listar con filtro por provincia y paginación | Alta · Listado del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-03, TM-OFE-04, TM-OFE-08, TM-OFE-14, TM-OFE-17 | |
-| HU-08 Ver detalle por ID | Alta · Consulta del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-09, TM-OFE-11 a TM-OFE-13, TM-OFE-17 | |
-| HU-09 Editar | Alta · Edición del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-05, TM-OFE-08a, TM-OFE-09, TM-OFE-10, TM-OFE-12, TM-OFE-16 | |
-| HU-10 Eliminar con confirmación | Alta · Baja del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-06, TM-OFE-08a, TM-OFE-09, TM-OFE-12, TM-OFE-15 | |
-| HU-11 Enviar y recibir mensajes | Alta · Mensajería del chat, R7 (2,5 puntos) | B1.7 | TM-CHAT-01 a TM-CHAT-03, TM-CHAT-07, TM-CHAT-09 | |
-| HU-12 Ver historial | Alta · Persistencia y recuperación del chat, R7 (2,5 puntos) | B1.7 | TM-CHAT-04 a TM-CHAT-06, TM-CHAT-08 | |
-| HU-13 Ver usuarios conectados | Alta · Presencia del chat, R7 (2,5 puntos) | B1.8 | TM-CHAT-10 a TM-CHAT-14 | |
-| HU-14 Aviso de nuevo mensaje en el panel | Alta · Aviso adicional del chat, R7 (2,5 puntos) | B1.10, B2.2 | TM-NOT-01 a TM-NOT-05 | |
-| HU-15 Conexión WebSocket autenticada | Alta · Acceso al chat, R7 (2,5 puntos) | B1.6, B1.11, B2.1 | TM-WS-01 a TM-WS-07, TM-DEP-02, TM-INT-03 a TM-INT-05 | |
+| HU-01 Registro | Media · Registro y recuperación, R4 (2,0 puntos) | B1.1 | TM-CTA-01 a TM-CTA-05 | Implementada |
+| HU-02 Ingreso | Media · Sesión y seguridad, R5 (2,0 puntos) | B1.2 | TM-CTA-06, TM-CTA-07, TM-CTA-11, TM-CTA-12 | Implementada |
+| HU-03 Recuperar clave | Media · Registro y recuperación, R4 (2,0 puntos) | B1.3, B2.1 | TM-CTA-13 a TM-CTA-19, TM-INT-02 | Implementada. También probada a mano con dos navegadores ([B2.1](evidencias/B2.1/LEEME.md)) |
+| HU-04 Salir | Media · Sesión y seguridad, R5 (2,0 puntos) | B1.2, B1.6, B2.1 | TM-CTA-09, TM-WS-05, TM-INT-01 | Implementada. También probada a mano con dos navegadores ([B2.1](evidencias/B2.1/LEEME.md)) |
+| HU-05 Panel principal | Alta · Pantalla principal del CRUD, R6 (3,0 puntos) | B0.1, B1.9, B2.2 | TM-BASE-01, TM-NAV-01 a TM-NAV-06 | Implementada |
+| HU-06 Crear oferta | Alta · Alta del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-01, TM-OFE-02, TM-OFE-08a, TM-OFE-09, TM-OFE-10 | Implementada |
+| HU-07 Listar con filtro por provincia y paginación | Alta · Listado del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-03, TM-OFE-04, TM-OFE-08, TM-OFE-14, TM-OFE-17 | Implementada |
+| HU-08 Ver detalle por ID | Alta · Consulta del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-09, TM-OFE-11 a TM-OFE-13, TM-OFE-17 | Implementada |
+| HU-09 Editar | Alta · Edición del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-05, TM-OFE-08a, TM-OFE-09, TM-OFE-10, TM-OFE-12, TM-OFE-16 | Implementada |
+| HU-10 Eliminar con confirmación | Alta · Baja del CRUD, R6 (3,0 puntos) | B1.4, B1.5 | TM-OFE-06, TM-OFE-08a, TM-OFE-09, TM-OFE-12, TM-OFE-15 | Implementada |
+| HU-11 Enviar y recibir mensajes | Alta · Mensajería del chat, R7 (2,5 puntos) | B1.7 | TM-CHAT-01 a TM-CHAT-03, TM-CHAT-07, TM-CHAT-09 | Implementada |
+| HU-12 Ver historial | Alta · Persistencia y recuperación del chat, R7 (2,5 puntos) | B1.7 | TM-CHAT-04 a TM-CHAT-06, TM-CHAT-08 | Implementada |
+| HU-13 Ver usuarios conectados | Alta · Presencia del chat, R7 (2,5 puntos) | B1.8 | TM-CHAT-10 a TM-CHAT-14 | Implementada |
+| HU-14 Aviso de nuevo mensaje en el panel | Alta · Aviso adicional del chat, R7 (2,5 puntos) | B1.10, B2.2 | TM-NOT-01 a TM-NOT-05 | Implementada |
+| HU-15 Conexión WebSocket autenticada | Alta · Acceso al chat, R7 (2,5 puntos) | B1.6, B1.11, B2.1 | TM-WS-01 a TM-WS-07, TM-DEP-02, TM-INT-03 a TM-INT-05 | Implementada. WSS y respuesta 101 verificados solo en local con Caddy ([despliegue](despliegue.md)). El despliegue público y la captura de DevTools con sesión están pendientes (PM-03) |
 
 ## Criterios de aceptación
 
