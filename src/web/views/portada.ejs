@@ -1,29 +1,48 @@
-<%#
-  Portada pública (B1.9). Sin sesión ofrece ver ofertas, ingresar y crear cuenta;
-  con sesión añade «Ir a mi panel». No muestra datos de ninguna cuenta.
-%>
-<section class="portada" aria-labelledby="t-portada">
-  <h1 id="t-portada">Turismo comunitario</h1>
-  <p class="portada__lead">Aquí las personas que coordinan experiencias de turismo comunitario publican sus ofertas y conversan con su equipo.</p>
-  <div class="acciones acciones--bloque">
-    <% if (locals.principal) { %>
-    <a class="btn" href="/panel">Ir a mi panel</a>
-    <a class="btn btn--secundario" href="/ofertas">Ver ofertas</a>
-    <% } else { %>
-    <a class="btn" href="/ofertas">Ver ofertas</a>
-    <a class="btn btn--secundario" href="/ingreso">Ingresar</a>
-    <a class="btn btn--secundario" href="/registro">Crear cuenta</a>
-    <% } %>
+<section class="k-hero" data-destination-carousel aria-label="Destinos de Ecuador">
+  <aside class="k-hero-rail">
+    <a class="k-mark" href="/" aria-label="Kawsay Ñan · Inicio"><%- include('partials/icon', { name: 'mark' }) %></a>
+    <span class="k-rail-label" data-rail-label>Ecuador · Región interandina</span>
+    <a class="k-rail-next" href="#somos" aria-label="Conoce Kawsay Ñan">⌄</a>
+  </aside>
+  <% for (const [index, region] of regions.entries()) { %>
+    <article class="k-slide" data-slide data-region-label="<%= ['Región interandina', 'Región litoral', 'Región oriental', 'Región insular'][index] %>" <%= index ? 'hidden' : '' %>>
+      <img src="/img/<%= region.key %>.jpg" alt="" <%= index ? 'loading=lazy' : 'fetchpriority=high' %>>
+      <div class="k-shade"></div>
+      <div class="k-slide-content">
+        <p class="k-eyebrow k-lined"><%= index ? region.name : 'Laguna de' %></p>
+        <% if (!index) { %><h1><%= region.place %></h1><% } else { %><h2><%= region.place %></h2><% } %>
+        <a class="k-pill" href="/ofertas?region=<%= region.key %>">Ver ofertas en <%= region.name %> <span aria-hidden="true">→</span></a>
+      </div>
+    </article>
+  <% } %>
+  <div class="k-carousel">
+    <span data-slide-count>01 / 04</span>
+    <div class="k-carousel-progress" aria-hidden="true"><% for (const [index] of regions.entries()) { %><span class="<%= index ? '' : 'k-active' %>"></span><% } %></div>
+    <button type="button" data-prev aria-label="Destino anterior">‹</button>
+    <button type="button" data-play aria-label="Pausar carrusel">Ⅱ</button>
+    <button type="button" data-next aria-label="Siguiente destino">›</button>
+  </div>
+  <% if (featured.length) { %>
+    <% const next = [...featured].sort((a, b) => a.startsAt - b.startsAt)[0]; %>
+    <aside class="k-hero-next">
+      <%- include('partials/date-tile', { offer: next }) %>
+      <div class="k-hero-next-copy"><span class="k-eyebrow">Próxima salida</span><strong><%= next.title %></strong><small><%= next.provinceLabel %> · <%= next.capacity %> cupos</small></div>
+      <a class="btn" href="/ofertas/<%= next.id %>">Ver experiencia <span aria-hidden="true">→</span></a>
+    </aside>
+  <% } %>
+</section>
+<section class="k-about" id="somos">
+  <div class="k-wrap k-about-grid">
+    <div><p class="k-eyebrow k-lined">Turismo comunitario</p><h2>Somos Kawsay Ñan</h2></div>
+    <div><p>Conectamos a viajeros con las comunidades de Ecuador. Cada experiencia nace de quienes viven en el territorio y quieren compartir sus paisajes, saberes y tradiciones.</p>
+    <p>Encuentra una experiencia y coordina tu visita directamente con la comunidad, sin intermediarios.</p>
+    <a href="/ofertas">Explorar experiencias <span aria-hidden="true">→</span></a></div>
   </div>
 </section>
-
-<section class="rutas" aria-label="Qué puedes hacer aquí">
-  <div class="ruta">
-    <h2>Conocer las ofertas</h2>
-    <p>Cada oferta muestra su lugar y su fecha para que las encuentres de un vistazo.</p>
+<% if (featured.length) { %><section class="k-featured">
+  <div class="k-wrap">
+    <div class="k-section-heading"><h2>Ofertas destacadas</h2><a href="/ofertas">Ver todas <span aria-hidden="true">→</span></a></div>
+    <ul class="k-cards"><% for (const offer of featured) { %><%- include('offers/tarjeta', { offer }) %><% } %></ul>
   </div>
-  <div class="ruta">
-    <h2>Gestionar las tuyas</h2>
-    <p>Con una cuenta creas y editas tus ofertas y conversas con el equipo en el chat.</p>
-  </div>
-</section>
+</section><% } %>
+<script type="module" src="/js/kawsay-home.js"></script>

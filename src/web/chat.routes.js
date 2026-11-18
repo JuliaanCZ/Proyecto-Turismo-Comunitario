@@ -16,9 +16,9 @@ function viewMessage(message) {
 export function createChatRouter(container) {
   const router = Router();
 
-  router.get('/panel/chat', (req, res, next) => {
+  router.get('/panel/chat', async (req, res, next) => {
     try {
-      const history = container.chat.getHistory({ limit: 30 });
+      const history = await container.chat.getHistory({ limit: 30 });
       const messages = history.messages.map(viewMessage);
       res.renderPage('chat/sala', {
         title: 'Chat',
@@ -32,9 +32,9 @@ export function createChatRouter(container) {
     }
   });
 
-  router.get('/api/chat/mensajes', (req, res, next) => {
+  router.get('/api/chat/mensajes', async (req, res, next) => {
     try {
-      res.json(container.chat.getHistory(req.query));
+      res.json(await container.chat.getHistory(req.query));
     } catch (error) {
       next(error);
     }

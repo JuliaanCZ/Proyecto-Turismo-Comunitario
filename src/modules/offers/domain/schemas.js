@@ -7,4 +7,6 @@ export const offerSchema = Object.freeze({
   locationText: { type: 'string', label: 'ubicación', required: true, min: 5, max: 200 },
   startsAt: { type: 'localDateTime', label: 'fecha y hora', required: true },
   capacity: { type: 'int', label: 'cupo', required: true, min: 1, max: 1000 },
+  contactPhone: { type: 'string', label: 'teléfono', max: 30, pattern: '^(?:\\+|0)[0-9 ()-]+$' },
+  contactEmail: { type: 'email', label: 'correo', max: 254 },
 });

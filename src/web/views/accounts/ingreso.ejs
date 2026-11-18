@@ -1,46 +1,35 @@
-<%#
-  Inicio de sesión (B1.2). Con sesión previa: incluye _csrf para que el reingreso no falle en CSRF.
-  La contraseña nunca se reimprime tras un error.
-%>
-<div class="pila">
-  <div>
-    <h1>Ingresar</h1>
-    <p>Accede a tu panel para gestionar ofertas y conversar con la comunidad.</p>
+<div class="k-signin">
+  <aside class="k-signin-rail"><a class="k-mark" href="/" aria-label="Kawsay Ñan · Inicio"><%- include('../partials/icon', { name: 'mark' }) %></a><span>Ecuador · Turismo comunitario</span></aside>
+  <div class="k-signin-landscape">
+    <img src="/img/sierra.jpg" alt="">
+    <div><p class="k-eyebrow">Kawsay Ñan</p><p class="k-signin-tagline">Camino de vida</p></div>
   </div>
-
-  <% if (notice) { %>
-  <p class="mensaje mensaje--exito" role="status"><strong>Listo:</strong> <%= notice %></p>
-  <% } %>
-
-  <% if (formError) { %>
-  <p class="mensaje mensaje--error" role="alert"><strong>Error:</strong> <%= formError %></p>
-  <% } %>
-
-  <form class="formulario" method="post" action="/ingreso" data-schema="<%= JSON.stringify(schema) %>" autocomplete="on">
-    <% if (locals.principal) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% } %>
-    <% if (next) { %><input type="hidden" name="next" value="<%= next %>"><% } %>
-    <%- include('../partials/form-field', {
-      name: 'email',
-      label: 'Correo',
-      type: 'email',
-      required: true,
-      autocomplete: 'email',
-      value: values.email,
-      errors: errors.email,
-    }) %>
-    <%- include('../partials/form-field', {
-      name: 'password',
-      label: 'Contraseña',
-      type: 'password',
-      required: true,
-      autocomplete: 'current-password',
-      value: '',
-      errors: errors.password,
-    }) %>
-    <div class="acciones">
-      <button class="btn" type="submit">Ingresar</button>
-      <a class="btn btn--secundario" href="/registro">Crear cuenta</a>
-      <a class="btn btn--secundario" href="/recuperar">Olvidé mi contraseña</a>
+  <section class="k-signin-panel" aria-labelledby="ingreso-title">
+    <a class="k-signin-back" href="/">← Inicio</a>
+    <div class="k-signin-content">
+      <p class="k-eyebrow k-lined">Operadores</p>
+      <h1 id="ingreso-title">Iniciar sesión</h1>
+      <% if (notice) { %><p class="mensaje mensaje--exito" role="status"><%= notice %></p><% } %>
+      <% if (formError) { %><p class="mensaje mensaje--error" role="alert"><%= formError %></p><% } %>
+      <form class="formulario" method="post" action="/ingreso" data-schema="<%= JSON.stringify(schema) %>" autocomplete="on">
+        <% if (locals.principal) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% } %>
+        <% if (next) { %><input type="hidden" name="next" value="<%= next %>"><% } %>
+        <%- include('../partials/form-field', { name: 'email', label: 'Correo', type: 'email', required: true, autocomplete: 'email', value: values.email, errors: errors.email }) %>
+        <%- include('../partials/form-field', { name: 'password', label: 'Contraseña', type: 'password', required: true, autocomplete: 'current-password', errors: errors.password }) %>
+        <% if (locals.recoveryEnabled) { %><a class="k-signin-recover" href="/recuperar">¿La olvidaste?</a><% } %>
+        <button class="btn" type="submit">Ingresar</button>
+      </form>
+      <p class="k-signin-register">¿Aún no tienes cuenta? <a href="/registro">Créala aquí</a></p>
+      <% if (locals.demoLogin) { %>
+        <aside class="k-demo-logins"><h2>Cuentas de demostración</h2>
+          <ul>
+            <% for (const account of demoLogin.accounts) { %>
+              <li><strong><%= account.displayName %></strong><small><%= account.email %></small></li>
+            <% } %>
+          </ul>
+          <p>Contraseña para ambas cuentas <code><%= demoLogin.password %></code></p>
+        </aside>
+      <% } %>
     </div>
-  </form>
+  </section>
 </div>

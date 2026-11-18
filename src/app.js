@@ -1,3 +1,4 @@
+import { DEMO_ACCOUNT, DEMO_CHAT_ACCOUNT } from './config.js';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import ejs from 'ejs';
@@ -9,7 +10,6 @@ import { errorHandler, notFoundHandler } from './shared/http/error-handler.js';
 import { originGuard } from './shared/http/origin.js';
 import { createAccountsRouter } from './web/accounts.routes.js';
 import { createChatRouter } from './web/chat.routes.js';
-import { createDesignRouter } from './web/design.routes.js';
 import { createOffersRouter } from './web/offers.routes.js';
 import { createPanelRouter } from './web/panel.routes.js';
 import { pageLocals, renderPage } from './web/render-page.js';
@@ -28,7 +28,7 @@ function securityHeaders(config) {
         scriptSrc: ["'self'"],
         styleSrc: ["'self'"],
         connectSrc: ["'self'", websocketOrigin],
-        imgSrc: ["'self'"],
+        imgSrc: ['blob:', "'self'"],
         fontSrc: ["'self'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -49,11 +49,14 @@ function securityHeaders(config) {
  * Monta Express con el contenedor ya compuesto (C-HTTP). Orden: cabeceras de seguridad →
  * estáticos → `no-store` de `/panel` y `/api` → origen → cuerpos (16 kB) → sesión (con `no-store` si la hay) → datos de página
  * → CSRF → `requireAuth` en `/panel` y `/api` → routers de módulos → 404 → manejador de errores. El gateway Socket.IO se adjunta
- * al `http.Server` en `server.js`, en el mismo puerto.
+ * al `http.Server` en `src/start.js`, en el mismo puerto.
  */
 export function createApp(container) {
   const { config } = container;
   const app = express();
+  if (config.demoLoginEnabled && config.seedDemoPassword) {
+    app.locals.demoLogin = { accounts: [DEMO_ACCOUNT, DEMO_CHAT_ACCOUNT], password: config.seedDemoPassword };
+  }
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
@@ -71,6 +74,7 @@ export function createApp(container) {
   // El navegador descarga el MISMO validate.js que importa el servidor (C-VAL, DM-08).
   app.use('/js/shared', express.static(join(ROOT, 'src/shared/validation'), { index: false }));
   app.use('/js', express.static(join(ROOT, 'public/js'), { index: false }));
+  app.use('/img', express.static(join(ROOT, 'public/img'), { index: false }));
   app.use('/css', express.static(join(ROOT, 'public/css'), { index: false }));
 
   // `no-store` en `/panel` y `/api` desde la entrada: así también lo llevan los rechazos que ocurren antes
@@ -96,7 +100,6 @@ export function createApp(container) {
   app.use(createAccountsRouter(container));
   app.use(createOffersRouter(container));
   app.use(createChatRouter(container));
-  if (config.appEnv !== 'production') app.use(createDesignRouter(container));
 
   app.use(notFoundHandler);
   app.use(errorHandler({ logger: container.logger }));

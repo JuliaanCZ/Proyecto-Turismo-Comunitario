@@ -9,11 +9,11 @@ const LINK_RE = /https?:\/\/\S+/;
 export function createMailer({ db, clock }) {
   const mailbox = createMailboxRepo(db);
   return {
-    send({ to, subject, body }) {
-      mailbox.insertMail({ toEmail: to, subject, body, createdAt: clock.now() });
+    async send({ to, subject, body }) {
+      await mailbox.insertMail({ toEmail: to, subject, body, createdAt: clock.now() });
     },
-    listMailbox(limit = 20) {
-      return mailbox.listRecent(limit).map((row) => ({
+    async listMailbox(limit = 20) {
+      return (await mailbox.listRecent(limit)).map((row) => ({
         id: row.id,
         toEmail: row.to_email,
         subject: row.subject,

@@ -62,10 +62,10 @@ export function createChatService({ db, clock }) {
   const repo = createMessagesRepo(db);
 
   return {
-    postMessage(principal, input) {
+    async postMessage(principal, input) {
       const authorId = userId(principal);
       const values = normalizeInput(input);
-      const stored = repo.insertOrGet(
+      const stored = await repo.insertOrGet(
         authorId,
         principal.displayName,
         values.clientMessageId,
@@ -75,7 +75,7 @@ export function createChatService({ db, clock }) {
       return { message: messageDto(stored.row), duplicated: stored.duplicated };
     },
 
-    getHistory(query = {}) {
+    async getHistory(query = {}) {
       const hasBefore = Object.hasOwn(query, 'before') && query.before !== undefined;
       const hasAfter = Object.hasOwn(query, 'after') && query.after !== undefined;
       if (hasBefore && hasAfter) {
@@ -89,15 +89,15 @@ export function createChatService({ db, clock }) {
       let rows;
       if (hasAfter) {
         const after = parseInteger(query.after, 'after', { min: 0 });
-        rows = repo.listAfter(after, limit + 1);
+        rows = await repo.listAfter(after, limit + 1);
         const hasMore = rows.length > limit;
         return { messages: rows.slice(0, limit).map(messageDto), hasMore };
       }
 
       const before = hasBefore
         ? parseInteger(query.before, 'before', { min: 1 })
-        : repo.lastId() + 1;
-      rows = repo.listBefore(before, limit + 1);
+        : (await repo.lastId()) + 1;
+      rows = await repo.listBefore(before, limit + 1);
       const hasMore = rows.length > limit;
       return {
         messages: rows.slice(0, limit).reverse().map(messageDto),
@@ -105,7 +105,7 @@ export function createChatService({ db, clock }) {
       };
     },
 
-    lastMessageId() {
+    async lastMessageId() {
       return repo.lastId();
     },
   };

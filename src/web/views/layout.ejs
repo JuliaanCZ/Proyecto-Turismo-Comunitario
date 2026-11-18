@@ -3,21 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= locals.title ? `${title} · Turismo comunitario` : 'Turismo comunitario' %></title>
-  <link rel="stylesheet" href="/css/app.css">
+  <title><%= locals.title ? `${title} · Kawsay Ñan` : 'Kawsay Ñan' %></title>
+  <link rel="stylesheet" href="/css/kawsay.css">
   <script type="module" src="/js/form-validate.js"></script>
 </head>
-<body>
+<body class="<%= (locals.currentPath ?? '').startsWith('/panel') ? 'k-panel' : locals.currentPath === '/' ? 'k-home' : locals.currentPath === '/ingreso' ? 'k-login-page' : 'k-public' %>">
   <a class="saltar" href="#contenido">Saltar al contenido</a>
-  <%- include('partials/header') %>
+  <% if (locals.currentPath !== '/ingreso') { %><%- include('partials/header') %><% } %>
   <main id="contenido" class="contenedor principal" tabindex="-1">
 <%- body %>
   </main>
-  <footer class="pie">
-    <div class="contenedor">
-      <p>Proyecto académico de Aplicaciones Web Avanzadas. Los datos de ejemplo son ficticios.</p>
-    </div>
-  </footer>
+  <% if (locals.currentPath !== '/ingreso') { %><%- include('partials/footer') %><% } %>
   <%# Aviso de nuevo mensaje (B1.10): con sesión y fuera de /panel/chat, donde ya hay un socket unido a la sala.
      `data-user-id` es el id numérico del usuario (no secreto; nunca el token ni el id de sesión): asocia el contador a la cuenta. %>
   <% if (locals.principal && (locals.currentPath ?? '').toLowerCase().replace(/\/+$/, '') !== '/panel/chat') { %>

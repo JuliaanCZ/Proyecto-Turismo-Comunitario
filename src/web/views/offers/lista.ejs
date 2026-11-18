@@ -1,8 +1,6 @@
-<h1>Mis ofertas</h1>
-<p>Gestiona tus experiencias y publica las que tengan una foto y fecha futura.</p>
-<p><a class="btn" href="/panel/ofertas/nueva">Nueva oferta</a></p>
-<form method="get" action="/panel/ofertas" class="campo">
-  <label class="campo__etiqueta" for="provincia">Provincia</label>
+<div class="k-list-title"><div><p class="k-eyebrow k-lined">Catálogo propio</p><h1>Mis ofertas</h1></div><a class="btn" href="/panel/ofertas/nueva">＋ Nueva oferta</a></div>
+<form method="get" action="/panel/ofertas" class="campo k-own-filter">
+  <div class="k-own-filter-control"><label class="campo__etiqueta" for="provincia">Provincia</label>
   <select id="provincia" name="provincia">
     <option value="">Todas las provincias</option>
     <% for (const province of provinces) { %>
@@ -11,20 +9,20 @@
   </select>
   <button class="btn btn--secundario" type="submit">Filtrar</button>
   <% if (result.provincia) { %><a href="/panel/ofertas">Quitar filtro</a><% } %>
+</div><small class="k-own-count"><%= result.total ? 'Mostrando ' + ((result.page - 1) * result.pageSize + 1) + '–' + ((result.page - 1) * result.pageSize + result.items.length) + ' de ' + result.total : '0 ofertas' %></small>
 </form>
 <% if (aviso) { %><p class="mensaje mensaje--exito" role="status">Listo: <%= aviso %></p><% } %>
 <% if (!result.items.length) { %>
 <section class="vacio"><h2>No hay ofertas en esta lista</h2>
 <p>Prueba otra provincia o crea una nueva oferta.</p><a href="/panel/ofertas/nueva">Nueva oferta</a></section>
 <% } else { %>
-<ul class="ofertas">
+<ul class="k-own-list">
   <% for (const offer of result.items) { %>
-  <li class="oferta">
-    <h2 class="oferta__nombre"><a href="/panel/ofertas/<%= offer.id %>"><%= offer.title %></a></h2>
-    <p><%= offer.isPublished ? 'Publicada' : 'Borrador' %><%= offer.hasPhoto ? ' · Con foto' : ' · Sin foto' %></p>
-    <dl class="oferta__datos"><dt>Provincia</dt><dd><%= offer.provinceLabel %></dd>
-      <dt>Fecha</dt><dd class="oferta__fecha"><%= formatEcuadorDateTime(offer.startsAt) %></dd>
-      <dt>Cupo referencial</dt><dd><%= offer.capacity %></dd></dl>
+  <li>
+    <%- include('../partials/date-tile', { offer }) %>
+    <div><h2><a href="/panel/ofertas/<%= offer.id %>"><%= offer.title %></a></h2>
+    <p class="k-own-meta"><span class="k-eyebrow"><%= offer.provinceLabel %></span><span><%- include('../partials/icon', { name: 'pin' }) %><%= offer.locationText %></span><span><%- include('../partials/icon', { name: 'clock' }) %><%= formatEcuadorDateTime(offer.startsAt) %></span><span><%- include('../partials/icon', { name: 'people' }) %>Cupo <%= offer.capacity %></span><span><%= offer.isPublished ? 'Publicada' : 'Borrador' %></span></p></div>
+    <div class="acciones"><a href="/panel/ofertas/<%= offer.id %>/editar" aria-label="Editar <%= offer.title %>" title="Editar"><%- include('../partials/icon', { name: 'edit' }) %></a><a href="/panel/ofertas/<%= offer.id %>/eliminar" aria-label="Eliminar <%= offer.title %>" title="Eliminar"><%- include('../partials/icon', { name: 'trash' }) %></a></div>
   </li>
   <% } %>
 </ul>

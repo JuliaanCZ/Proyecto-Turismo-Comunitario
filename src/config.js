@@ -2,6 +2,9 @@ import { isIP } from 'node:net';
 import process from 'node:process';
 import { URL } from 'node:url';
 
+export const DEMO_ACCOUNT = Object.freeze({ displayName: 'Ana Quispe', email: 'ana@demo.test' });
+export const DEMO_CHAT_ACCOUNT = Object.freeze({ displayName: 'Luis Chasipanta', email: 'luis@demo.test' });
+
 const developmentDefaults = Object.freeze({
   CSRF_SECRET: 'ejemplo-local-csrf-solo-para-desarrollo',
   DEMO_MAILBOX_PASSWORD: 'ejemplo-bandeja-local',
@@ -64,19 +67,19 @@ export function loadConfig(env = process.env) {
   const bindHost = env.BIND_HOST?.trim() || undefined;
   if (bindHost && !isIP(bindHost)) invalid('BIND_HOST', 'debe ser una dirección IPv4 o IPv6');
   const origin = appOrigin(env.APP_ORIGIN ?? (production ? '' : `http://localhost:${port}`), production);
-  const databaseFile = env.DATABASE_FILE ?? './data/app.sqlite';
-  if (!databaseFile.trim() || /[\x00-\x1f]/.test(databaseFile) || (production && databaseFile === ':memory:')) {
-    invalid('DATABASE_FILE', 'debe identificar un archivo válido');
+  const databaseUrl = env.DATABASE_URL ?? '';
+  if (databaseUrl && !/^postgres(?:ql)?:\/\//.test(databaseUrl)) {
+    invalid('DATABASE_URL', 'debe ser una URL PostgreSQL válida');
   }
-
-  const whatsappBookingNumber = env.WHATSAPP_BOOKING_NUMBER ?? '';
-  if (whatsappBookingNumber && !/^[1-9]\d{7,14}$/.test(whatsappBookingNumber)) {
-    invalid('WHATSAPP_BOOKING_NUMBER', 'debe contener entre 8 y 15 dígitos en formato internacional');
+  const supabaseUrl = env.SUPABASE_URL ?? '';
+  if (supabaseUrl && !/^https:\/\/[^/]+$/.test(supabaseUrl)) {
+    invalid('SUPABASE_URL', 'debe ser un origen HTTPS sin ruta');
   }
+  const supabaseServiceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
   const cookieSecure = boolean(env, 'COOKIE_SECURE', production);
   if (production && !cookieSecure) invalid('COOKIE_SECURE', 'debe ser true en producción');
-  const demoMailboxEnabled = boolean(env, 'DEMO_MAILBOX_ENABLED', !production);
+  const demoMailboxEnabled = !production && boolean(env, 'DEMO_MAILBOX_ENABLED', true);
 
   const argon2Parallelism = integer(env, 'ARGON2_PARALLELISM', 1, 1);
   const argon2MemoryKib = integer(env, 'ARGON2_MEMORY_KIB', 19456, 8);
@@ -89,8 +92,10 @@ export function loadConfig(env = process.env) {
     port,
     bindHost,
     appOrigin: origin,
-    databaseFile,
-    whatsappBookingNumber: whatsappBookingNumber || null,
+    databaseUrl,
+    supabaseUrl,
+    supabaseServiceRoleKey,
+    supabaseBucket: 'site-imgs',
     sessionTtlHours: integer(env, 'SESSION_TTL_HOURS', 8, 1),
     cookieSecure,
     trustProxy: integer(env, 'TRUST_PROXY', 0, 0),
@@ -100,12 +105,13 @@ export function loadConfig(env = process.env) {
     argon2MemoryKib,
     argon2TimeCost: integer(env, 'ARGON2_TIME_COST', 2, 1),
     argon2Parallelism,
+    demoLoginEnabled: appEnv === 'development' && boolean(env, 'DEMO_LOGIN_ENABLED', false),
     demoMailboxEnabled,
-    demoMailboxPassword: secret(env, 'DEMO_MAILBOX_PASSWORD', developmentDefaults.DEMO_MAILBOX_PASSWORD, {
-      production, required: demoMailboxEnabled, minLength: 8,
-    }),
-    seedDemoPassword: secret(env, 'SEED_DEMO_PASSWORD', developmentDefaults.SEED_DEMO_PASSWORD, {
+    demoMailboxPassword: demoMailboxEnabled ? secret(env, 'DEMO_MAILBOX_PASSWORD', developmentDefaults.DEMO_MAILBOX_PASSWORD, {
+      production, required: true, minLength: 8,
+    }) : null,
+    seedDemoPassword: !production ? secret(env, 'SEED_DEMO_PASSWORD', developmentDefaults.SEED_DEMO_PASSWORD, {
       production, required: false, minLength: 8,
-    }),
+    }) : null,
   });
 }

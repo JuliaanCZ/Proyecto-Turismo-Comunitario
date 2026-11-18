@@ -1,47 +1,46 @@
 import console from 'node:console';
 import { EventEmitter } from 'node:events';
-import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
 import { createAccountsService } from './modules/accounts/index.js';
 import { createChatService } from './modules/chat/index.js';
 import { createOffersService } from './modules/offers/index.js';
 import { systemClock } from './shared/clock.js';
-import { openDb } from './shared/db.js';
-import { migrate } from './shared/migrate.js';
+import { createPg } from './shared/pg.js';
+import { migrate } from './shared/pg-migrate.js';
+import { createPhotoStorage } from './shared/storage.js';
 
 /**
  * Único punto de composición (§2.2): crea `db`, `clock`, `sessionEvents` y los servicios.
  *
- * - Sin `overrides.db` abre `config.databaseFile` y es dueño de la conexión (`close()` la cierra).
- *   Con `overrides.db` (p. ej. `:memory:` de las pruebas) usa esa y no la cierra.
- * - Aplica las migraciones pendientes de B0.2; es idempotente y falla si una migración integrada cambió.
+ * - Sin `overrides.db` abre PostgreSQL y es dueño de la conexión (`close()` la cierra).
+ *   Con `overrides.db` usa esa y no la cierra.
+ * - Aplica las migraciones pendientes; es idempotente y falla si una migración integrada cambió.
  * - `overrides` puede reemplazar `db`, `clock`, `logger`, `sessionEvents` y los servicios
  *   `accounts`, `offers` y `chat` (servicios falsos en pruebas).
  *
  * Un bloque nuevo se registra editando solo su servicio, su router y sus vistas, más una línea aquí.
  */
-export function createContainer(config, overrides = {}) {
+export async function createContainer(config, overrides = {}) {
   const clock = overrides.clock ?? systemClock;
   const logger = overrides.logger ?? console;
   const sessionEvents = overrides.sessionEvents ?? new EventEmitter();
   const ownsDb = overrides.db === undefined;
 
-  if (ownsDb && config.databaseFile !== ':memory:') {
-    mkdirSync(dirname(config.databaseFile), { recursive: true });
-  }
-  const db = overrides.db ?? openDb(config.databaseFile);
+  const db = overrides.db ?? createPg(config.databaseUrl);
 
   let accounts;
   let offers;
   let chat;
+  let storage;
   try {
-    migrate(db, { now: () => clock.now() });
-    const deps = { db, clock, config, sessionEvents, logger };
+    storage = overrides.storage ?? createPhotoStorage(config);
+    if (!overrides.skipMigrate) await migrate(db);
+    if (!overrides.storage) await storage.ensureBucket();
+    const deps = { db, clock, config, sessionEvents, logger, storage };
     accounts = overrides.accounts ?? createAccountsService(deps);
     offers = overrides.offers ?? createOffersService(deps);
     chat = overrides.chat ?? createChatService(deps);
   } catch (error) {
-    if (ownsDb) db.close();
+    if (ownsDb) await db.close();
     throw error;
   }
 
@@ -55,12 +54,13 @@ export function createContainer(config, overrides = {}) {
     accounts,
     offers,
     chat,
+    storage,
     /** Libera la base (si es propia) y los oyentes; se puede llamar más de una vez. */
-    close() {
+    async close() {
       if (closed) return;
       closed = true;
       sessionEvents.removeAllListeners();
-      if (ownsDb) db.close();
+      if (ownsDb) await db.close();
     },
   };
 }

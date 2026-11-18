@@ -1,0 +1,23 @@
+# R2 · Historias de usuario
+
+Las historias conservan los identificadores del [plan del MVP](../PLAN-MVP.md). La prioridad alta identifica las historias que sostienen el recorrido principal y el acceso a la aplicación. La prioridad media identifica flujos complementarios que también forman parte de la evaluación, como recuperación y notificaciones. La suite ejecutada contiene **34 pruebas aprobadas** y usa PostgreSQL emulado y Storage en memoria.
+
+| ID | Prioridad | Historia | Criterio de aceptación | Estado y verificación |
+| --- | --- | --- | --- | --- |
+| HU-01 | Alta | Como visitante, quiero registrarme para acceder al panel. | El formulario valida los datos y el servidor rechaza entradas inválidas. La clave se guarda como hash Argon2id. | Implementada. Prueba de registro y `TM-CTA-03`. |
+| HU-02 | Alta | Como usuario, quiero ingresar para gestionar mis ofertas. | Las credenciales válidas crean una sesión y el panel exige una cookie válida. | Implementada. Prueba de ingreso y sesión. |
+| HU-03 | Media | Como usuario, quiero recuperar mi contraseña para volver a entrar. | Se entrega un enlace de un solo uso válido por 30 minutos. Al cambiar la clave se revocan las sesiones anteriores. La bandeja simula el envío en desarrollo y Brevo es el proveedor previsto en producción. | Disponible en desarrollo y pruebas. `TM-INT-02` cubre la revocación. Producción mantiene el flujo desactivado hasta integrar Brevo. |
+| HU-04 | Alta | Como usuario, quiero cerrar sesión para proteger mi cuenta. | La cookie pierde acceso y el socket de esa sesión se cierra. Otras sesiones siguen activas. | Implementada y probada con `TM-INT-01`. |
+| HU-05 | Alta | Como usuario, quiero un panel para llegar al CRUD y al chat. | El panel exige sesión y el menú ofrece Inicio, Mis ofertas, Chat y Salir. | Implementada. La suite comprueba el acceso al panel. |
+| HU-06 | Alta | Como usuario, quiero crear una oferta para publicarla en el catálogo. | Se valida el formulario, el borrador es privado y la publicación requiere fecha futura, datos de contacto y al menos una foto. | Implementada. Pruebas de CRUD, carga HTTP y galería. |
+| HU-07 | Alta | Como usuario, quiero filtrar mis ofertas por provincia y paginar los resultados. | El listado muestra ofertas propias, admite filtro y presenta hasta diez por página. | Implementada. La suite cubre el filtro. La lógica de paginación se revisó en código. |
+| HU-08 | Media | Como usuario, quiero abrir una oferta por ID para ver su detalle. | La ruta privada exige propiedad. El detalle público se sirve para una oferta visible y presenta los contactos habilitados. | Implementada. Las pruebas de carga HTTP y galería comprueban visibilidad y detalle público. |
+| HU-09 | Alta | Como usuario, quiero editar mi oferta y actualizar sus fotos. | Se valida la edición y se conserva la versión anterior si falla una nueva foto. | Implementada y probada en la galería HTTP. |
+| HU-10 | Alta | Como usuario, quiero eliminar una oferta con confirmación. | El formulario solicita confirmación y, al borrar, se retira la oferta con sus fotos. | Implementada. La suite prueba el borrado confirmado en el servicio. |
+| HU-11 | Alta | Como usuario, quiero enviar y recibir mensajes en la sala general. | Dos cuentas autenticadas intercambian mensajes al instante sin recargar. | Implementada y probada con dos clientes WebSocket. |
+| HU-12 | Alta | Como usuario, quiero recuperar el historial del chat. | PostgreSQL conserva los mensajes y el cliente recupera el tramo pendiente tras reconectarse. | Implementada. Prueba de historial y `TM-CHAT-05` del cliente. |
+| HU-13 | Media | Como usuario, quiero ver quién está conectado al chat. | Al entrar se muestra la presencia de los usuarios de la sala. | Implementada. La prueba con dos clientes comprueba el conteo. |
+| HU-14 | Media | Como usuario, quiero un aviso de mensaje nuevo mientras estoy en el panel. | El aviso aparece fuera de la sala cuando escribe otra cuenta y se limpia al abrir el chat. | Implementada. La integración y una comprobación en dos sesiones de navegador verificaron el aviso fuera de la sala. |
+| HU-15 | Alta | Como usuario, quiero que solo una sesión válida abra el chat. | El gateway comprueba origen y cookie, y rechaza una sesión revocada o vencida. El despliegue usa WSS. | Pruebas `TM-INT-03` a `TM-INT-05` y WSS autenticado con estado 101 detrás de TLS local. Falta confirmar WSS en Azure. |
+
+Evidencia actual en [integración de Supabase](../../../tests/integration/supabase.test.js), [sesiones HTTP y WebSocket](../../../tests/integration/sesion-http-ws.test.js) y [pruebas unitarias](../../../tests/unit/).

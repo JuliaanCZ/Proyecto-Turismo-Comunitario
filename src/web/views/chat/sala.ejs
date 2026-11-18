@@ -1,18 +1,8 @@
-<h1>Chat del equipo</h1>
-<p class="texto-suave">Sala general para coordinar las ofertas. Los mensajes se guardan antes de enviarse.</p>
-
-<p id="chat-connection" class="chat__conexion" role="status" aria-live="polite">Conectando por WebSocket…</p>
-
-<section class="chat__presencia" aria-labelledby="chat-presence-title" aria-live="polite" aria-atomic="true">
-  <h2 id="chat-presence-title">Conectados (<span id="chat-presence-count">0</span>)</h2>
-  <ul id="chat-presence-users" class="chat__presencia-lista">
-    <li class="texto-suave">Cargando presencia…</li>
-  </ul>
-</section>
-
+<p class="k-eyebrow k-lined">Sala general</p><h1>Chat del equipo</h1>
+<div class="k-chat-layout"><div>
 <section class="chat" aria-labelledby="chat-history-title">
   <div class="chat__cabecera">
-    <h2 id="chat-history-title">Mensajes</h2>
+    <h2 id="chat-history-title" class="sr-only">Mensajes</h2>
     <button id="chat-load-before" class="btn btn--secundario" type="button"<%= hasMore ? '' : ' hidden' %>>Cargar anteriores</button>
   </div>
 
@@ -42,13 +32,19 @@
 
 <form id="chat-form" class="formulario chat__formulario">
   <div class="campo">
-    <label class="campo__etiqueta" for="chat-text">Mensaje <span class="campo__obligatorio" aria-hidden="true">*</span></label>
-    <textarea id="chat-text" name="text" rows="3" required aria-describedby="chat-count chat-error"></textarea>
+    <label class="sr-only" for="chat-text">Mensaje <span class="campo__obligatorio" aria-hidden="true">*</span></label>
+    <textarea id="chat-text" name="text" rows="2" placeholder="Escribe un mensaje…" required aria-describedby="chat-count chat-error"></textarea>
     <p id="chat-count" class="campo__ayuda">0 de 500 caracteres</p>
     <p id="chat-error" class="campo__error" role="alert"></p>
   </div>
-  <button id="chat-submit" class="btn" type="submit">Enviar mensaje</button>
+  <button id="chat-submit" class="btn" type="submit" aria-label="Enviar mensaje" title="Enviar mensaje"><%- include('../partials/icon', { name: 'send' }) %></button>
 </form>
 
+</div><aside><section class="chat__presencia" aria-labelledby="chat-presence-title" aria-live="polite" aria-atomic="true">
+  <h2 id="chat-presence-title">Conectados (<span id="chat-presence-count">0</span>)</h2>
+  <ul id="chat-presence-users" class="chat__presencia-lista">
+    <li class="texto-suave">Cargando presencia…</li>
+  </ul>
+</section><section class="k-chat-connection"><h2>Conexión</h2><p id="chat-connection" class="chat__conexion" role="status" aria-live="polite">Conectando por WebSocket…</p></section></aside></div>
 <script src="/socket.io/socket.io.js"></script>
 <script type="module" src="/js/chat.js"></script>

@@ -1,11 +1,36 @@
 node_modules/
+coverage/
+npm-debug.log*
+*.log
+
+# Configuración privada, certificados locales y claves
 .env
 .env.*
 !.env.example
+/certs/
+/secrets/
+*.crt
+*.cer
+*.pem
+*.key
+*.p12
+
+# Datos locales, exportaciones y restos de SQLite
 /data/
-*.sqlite*
+/backups/
+*.dump
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
 *.db
 *.db-wal
 *.db-shm
-coverage/
-npm-debug.log*
+
+# Archivos temporales del sistema y de Office
+.DS_Store
+Thumbs.db
+~$*
+
+# Copia de trabajo local del Excel que estaba abierto durante la reorganización
+/mvp-primer-bimestre/Reparto-y-secuencia-MVP.xlsx

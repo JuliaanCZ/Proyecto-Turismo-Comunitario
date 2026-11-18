@@ -24,7 +24,7 @@ export function registerChatHandlers(io, gateway, container) {
       await socket.join('chat:general');
       acknowledge?.({
         ok: true,
-        lastMessageId: container.chat.lastMessageId(),
+        lastMessageId: await container.chat.lastMessageId(),
         presence: presence.join(socket),
       });
     }));

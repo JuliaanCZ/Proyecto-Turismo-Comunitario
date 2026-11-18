@@ -1,11 +1,30 @@
-<h1><%= offer.title %></h1>
-<img src="/ofertas/<%= offer.id %>/foto" alt="<%= photoAltText %>" class="oferta__imagen" width="640">
-<p><%= offer.description %></p>
-<dl class="oferta__datos"><dt>Provincia</dt><dd><%= offer.provinceLabel %></dd>
-<dt>Ubicación</dt><dd><%= offer.locationText %></dd>
-<dt>Fecha</dt><dd><%= formatEcuadorDateTime(offer.startsAt) %></dd>
-<dt>Cupo referencial</dt><dd><%= offer.capacity %></dd></dl>
-<p>Se abre una conversación por WhatsApp. La PYME confirma la disponibilidad y el cupo por ese canal.</p>
-<% if (whatsappUrl) { %><p><a class="btn" href="<%= whatsappUrl %>" rel="noopener noreferrer">Consultar reserva por WhatsApp</a></p><% } else { %>
-<p class="mensaje mensaje--aviso" role="status">Contacto por WhatsApp no disponible</p><% } %>
-<p><a href="/ofertas">Volver al catálogo</a></p>
+<p class="k-back"><a href="/ofertas?region=<%= offer.region.key %>">← Volver a <%= offer.region.name %></a></p>
+<header class="k-banner k-detail-hero">
+  <img src="/ofertas/<%= offer.id %>/foto" alt="<%= gallery[0]?.altText ?? '' %>">
+  <div class="k-shade"></div>
+  <div class="k-banner-content"><span class="k-chip"><%= offer.region.name %> · <%= offer.provinceLabel %></span><h1><%= offer.title %></h1></div>
+</header>
+<div class="k-detail">
+  <article class="k-paper"><h2 class="k-eyebrow">La experiencia</h2><p class="k-description"><%= offer.description %></p>
+    <p class="k-organizer">Organiza <strong><%= offer.organizerName %></strong></p>
+    <% if (gallery.length > 1) { %><h2>Fotos del lugar</h2><ul class="k-gallery"><% for (const photo of gallery) { %>
+      <li><a href="/ofertas/<%= offer.id %>/foto/<%= photo.position %>"><img src="/ofertas/<%= offer.id %>/foto/<%= photo.position %>" alt="<%= photo.altText %>" loading="lazy"></a></li>
+    <% } %></ul><% } %>
+  </article>
+  <aside class="k-detail-aside">
+    <section class="k-date-panel"><h2>Fecha de salida</h2><p><%= formatEcuadorDateTime(offer.startsAt) %></p><small>Hora de Ecuador continental</small></section>
+    <section class="k-paper"><dl><dt>Punto de encuentro</dt><dd><%= offer.locationText %></dd><dt>Cupo referencial</dt><dd><%= offer.capacity %> personas</dd></dl>
+    <h2>Contacto</h2>
+    <% if (contact.whatsappUrl || contact.gmailUrl) { %>
+      <ul class="acciones">
+        <% if (contact.whatsappUrl) { %>
+          <li><a class="btn" href="<%= contact.whatsappUrl %>" rel="noreferrer">WhatsApp · <%= contact.phone %></a></li>
+        <% } %>
+        <% if (contact.gmailUrl) { %>
+          <li><a class="btn btn--secundario" href="<%= contact.gmailUrl %>" rel="noreferrer">Gmail · <%= contact.email %></a></li>
+        <% } %>
+      </ul>
+    <% } else { %><p>Contacto aún no disponible.</p><% } %>
+    </section>
+  </aside>
+</div>

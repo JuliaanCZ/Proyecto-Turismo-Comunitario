@@ -1,0 +1,105 @@
+name: Desplegar Kawsay Nan en Azure
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: kawsay-nan-production
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GHCR_USERNAME: Matein0411
+  IMAGE_REPOSITORY: ghcr.io/matein0411/kawsay-nan
+  AZURE_RESOURCE_GROUP: kawsay-nan_group
+  AZURE_WEBAPP_NAME: kawsay-nan
+  AZURE_CONTAINER_NAME: main
+
+jobs:
+  publish:
+    name: Probar y publicar la imagen
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      image: ${{ steps.publish.outputs.image }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - name: Compilar la imagen Linux
+        run: docker build --platform linux/amd64 --tag "$IMAGE_REPOSITORY:$GITHUB_SHA" .
+      - name: Publicar en GHCR
+        id: publish
+        env:
+          GHCR_WRITE_TOKEN: ${{ secrets.GHCR_WRITE_TOKEN }}
+        run: |
+          : "${GHCR_WRITE_TOKEN:?Configura el secreto GHCR_WRITE_TOKEN en GitHub Actions}"
+          printf '%s' "$GHCR_WRITE_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+          image="$IMAGE_REPOSITORY:$GITHUB_SHA"
+          docker push --platform linux/amd64 "$image"
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Actualizar el contenedor en Azure
+    needs: publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+    env:
+      AZURE_CORE_OUTPUT: none
+    steps:
+      - uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Aplicar la imagen al contenedor principal
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+          IMAGE: ${{ needs.publish.outputs.image }}
+        run: |
+          : "${GHCR_READ_TOKEN:?Configura el secreto GHCR_READ_TOKEN en GitHub Actions}"
+          printf '%s' "$GHCR_READ_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+          docker buildx imagetools inspect "$IMAGE" > /dev/null
+
+          resource="/subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/$AZURE_RESOURCE_GROUP/providers/Microsoft.Web/sites/$AZURE_WEBAPP_NAME/sitecontainers/$AZURE_CONTAINER_NAME"
+          config=$(az rest --method get --uri "https://management.azure.com${resource}?api-version=2025-03-01" \
+            --query properties --output json)
+          # Azure CLI puede borrar estos dos campos si se omiten en la actualización.
+          port=$(jq -er '.targetPort | select(. != null and . != "")' <<< "$config")
+          startup=$(jq -er '.startUpCommand | strings | select(length > 0)' <<< "$config")
+          az webapp sitecontainers update \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --container-name "$AZURE_CONTAINER_NAME" \
+            --image "$IMAGE" \
+            --target-port "$port" \
+            --startup-cmd "$startup" \
+            --registry-username "$GHCR_USERNAME" \
+            --registry-password "$GHCR_READ_TOKEN" \
+            --output none
+      - name: Comprobar la respuesta de la aplicación
+        run: |
+          hostname=$(az webapp show --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" --query defaultHostName --output tsv)
+          test -n "$hostname"
+          curl --fail --silent --show-error --max-time 15 --retry 18 --retry-delay 10 \
+            --retry-max-time 180 --retry-all-errors "https://$hostname/salud" |
+            jq -e '.status == "ok"' > /dev/null

@@ -1,14 +1,36 @@
-<h1>Ofertas comunitarias</h1>
-<p>Consulta las experiencias disponibles. La PYME confirma el cupo por WhatsApp.</p>
-<% if (!result.items.length) { %><section class="vacio"><h2>No hay ofertas disponibles</h2><p>Vuelve más tarde para ver nuevas experiencias.</p></section><% } else { %>
-<ul class="ofertas"><% for (const offer of result.items) { %>
-<li class="oferta"><h2 class="oferta__nombre"><a href="/ofertas/<%= offer.id %>"><%= offer.title %></a></h2>
-<img src="/ofertas/<%= offer.id %>/foto" alt="Foto de <%= offer.title %>" class="oferta__imagen" width="640">
-<dl class="oferta__datos"><dt>Provincia</dt><dd><%= offer.provinceLabel %></dd>
-<dt>Ubicación</dt><dd><%= offer.locationText %></dd>
-<dt>Fecha</dt><dd class="oferta__fecha"><%= formatEcuadorDateTime(offer.startsAt) %></dd>
-<dt>Cupo referencial</dt><dd><%= offer.capacity %></dd></dl></li><% } %></ul><% } %>
-<% if (result.totalPages > 1) { %><nav aria-label="Páginas del catálogo"><ul class="acciones">
-<% for (let page = 1; page <= result.totalPages; page += 1) { %>
-<li><a href="/ofertas?pagina=<%= page %>"<% if (page === result.page) { %> aria-current="page"<% } %>><%= page %></a></li>
-<% } %></ul></nav><% } %>
+<% const { filters } = result; %>
+<section class="k-banner">
+  <img src="/img/<%= filters.region?.key ?? 'sierra' %>.jpg" alt="">
+  <div class="k-shade"></div>
+  <div class="k-banner-content"><p class="k-eyebrow"><%= filters.region?.name ?? 'Ecuador' %></p><h1><%= filters.region ? 'Explora ' + (filters.region.key === 'galapagos' ? '' : 'la ') + filters.region.name : 'Explora Ecuador' %></h1>
+    <p><%= filters.region?.intro ?? 'Experiencias de turismo comunitario organizadas en las cuatro regiones del país.' %></p>
+  </div>
+</section>
+<nav class="k-regions" aria-label="Regiones">
+  <a href="/ofertas"<% if (!filters.region) { %> aria-current="page"<% } %>>Todas</a>
+  <% for (const region of regions) { %><a href="/ofertas?region=<%= region.key %>"<% if (filters.region?.key === region.key) { %> aria-current="page"<% } %>><%= region.name %></a><% } %>
+</nav>
+<div class="k-catalog">
+  <form class="k-filters" action="/ofertas">
+    <% if (filters.region) { %><input type="hidden" name="region" value="<%= filters.region.key %>"><% } %>
+    <label>Buscar<input name="q" type="search" value="<%= filters.q %>" placeholder="Kayak, cacao, volcán…" maxlength="100"></label>
+    <label>Provincia<select name="provincia"><option value="">Todas las provincias</option>
+      <% for (const province of filters.provinces) { %><option value="<%= province.code %>" <%= filters.provincia === province.code ? 'selected' : '' %>><%= province.label %></option><% } %>
+    </select></label>
+    <div class="k-filter-dates">
+      <label>Desde<input type="date" name="desde" value="<%= filters.desde %>"></label>
+      <label>Hasta<input type="date" name="hasta" value="<%= filters.hasta %>"></label>
+    </div>
+    <label>Cupo mínimo<input name="cupo" type="number" min="1" max="1000" value="<%= filters.cupo %>"></label>
+    <label>Ordenar por<select name="orden"><option value="">Fecha</option><option value="cupo" <%= filters.orden ? 'selected' : '' %>>Mayor cupo</option></select></label>
+    <button class="btn">Aplicar filtros</button>
+  </form>
+  <section aria-label="Resultados">
+    <p class="k-result-count"><strong><%= result.total %></strong> <%= result.total === 1 ? 'experiencia disponible' : 'experiencias disponibles' %></p>
+    <% if (result.items.length) { %><ul class="k-cards"><% for (const offer of result.items) { %><%- include('tarjeta', { offer, formatEcuadorDateTime }) %><% } %></ul>
+    <% } else { %><p class="vacio">No hay ofertas para estos filtros.</p><% } %>
+    <% if (result.totalPages > 1) { %><nav class="k-regions" aria-label="Páginas del catálogo">
+      <% for (let page = 1; page <= result.totalPages; page++) { %><a href="<%= catalogPage(page) %>"<% if (page === result.page) { %> aria-current="page"<% } %>><%= page %></a><% } %>
+    </nav><% } %>
+  </section>
+</div>

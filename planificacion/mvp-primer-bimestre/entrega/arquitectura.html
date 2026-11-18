@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arquitectura del monolito · Kawsay Ñan</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 24px; background: #f3f0eb; color: #2d2d2d; font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 960px; margin: auto; }
+  .eyebrow { margin: 0 0 4px; color: #a4460b; font-size: 13px; font-weight: 700; }
+  h1 { margin: 0 0 16px; font: 400 clamp(30px, 4vw, 48px)/1.12 Georgia, serif; }
+  .diagram-container { width: 100%; overflow-x: auto; }
+  svg { display: block; width: 100%; min-width: 960px; }
+  svg text { fill: #2d2d2d; font-family: system-ui, sans-serif; }
+  svg .name { font-size: 20px; font-weight: 700; }
+  svg .body { font-size: 16px; }
+  svg .sub { font-size: 14px; fill: #68635e; }
+  svg .tag, svg .field { font-family: Consolas, ui-monospace, monospace; }
+  svg .tag { font-size: 13px; font-weight: 700; }
+  svg .field { font-size: 15px; }
+  @media print {
+    body { padding: 0; }
+    .diagram-container { overflow: visible; }
+    svg { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Kawsay Ñan</p>
+  <h1>Arquitectura del monolito</h1>
+  <div class="diagram-container">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="arquitectura-title arquitectura-desc">
+      <title id="arquitectura-title">Arquitectura del monolito</title>
+      <desc id="arquitectura-desc">El monolito Node.js en Azure atiende al navegador, usa Supabase para persistencia, recibe imágenes de GHCR y prevé integrar Brevo para correo de recuperación.</desc>
+      <defs>
+        <marker id="arch-arrow" viewBox="0 0 8 8" markerWidth="7" markerHeight="7" refX="8" refY="4" orient="auto">
+          <path d="M0 0 L8 4 L0 8 Z" fill="#68635e"/>
+        </marker>
+      </defs>
+      <rect x="0" y="0" width="960" height="600" rx="0" fill="#f3f0eb"/>
+      <rect x="312" y="192" width="316" height="292" rx="8" fill="#eee9e2" stroke="#bcb4ab"/>
+      <text x="330" y="217" class="tag" text-anchor="start">AZURE APP SERVICE</text>
+      <rect x="716" y="192" width="224" height="292" rx="8" fill="#eee9e2" stroke="#bcb4ab"/>
+      <text x="734" y="217" class="tag" text-anchor="start">SUPABASE</text>
+      <line x1="224" y1="102" x2="332" y2="102" stroke="#68635e" stroke-width="1.5" marker-end="url(#arch-arrow)"/>
+      <line x1="470" y1="144" x2="470" y2="192" stroke="#68635e" stroke-width="1.5" marker-end="url(#arch-arrow)"/>
+      <line x1="224" y1="332" x2="332" y2="332" stroke="#68635e" stroke-width="1.5" marker-end="url(#arch-arrow)"/>
+      <line x1="608" y1="280" x2="736" y2="280" stroke="#68635e" stroke-width="1.5" marker-end="url(#arch-arrow)"/>
+      <line x1="608" y1="408" x2="736" y2="408" stroke="#68635e" stroke-width="1.5" marker-end="url(#arch-arrow)"/>
+      <line x1="332" y1="436" x2="224" y2="436" stroke="#68635e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arch-arrow)"/>
+      <rect x="244" y="71" width="68" height="20" rx="2" fill="#f3f0eb"/><text x="278" y="86" class="tag" text-anchor="middle">PUBLICA</text>
+      <rect x="482" y="152" width="104" height="20" rx="2" fill="#f3f0eb"/><text x="534" y="167" class="tag" text-anchor="middle">DESPLIEGA</text>
+      <rect x="231" y="301" width="94" height="20" rx="2" fill="#f3f0eb"/><text x="278" y="316" class="tag" text-anchor="middle">HTTPS / WSS</text>
+      <rect x="625" y="249" width="94" height="20" rx="2" fill="#f3f0eb"/><text x="672" y="264" class="tag" text-anchor="middle">SQL / TLS</text>
+      <rect x="638" y="377" width="68" height="20" rx="2" fill="#f3f0eb"/><text x="672" y="392" class="tag" text-anchor="middle">HTTPS</text>
+      <rect x="232" y="405" width="92" height="20" rx="2" fill="#f3f0eb"/><text x="278" y="420" class="tag" text-anchor="middle">API HTTPS</text>
+      <rect x="24" y="60" width="200" height="84" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="40" y="89" class="name" text-anchor="start">GitHub Actions</text>
+      <text x="40" y="111" class="sub" text-anchor="start">Pruebas · crea la imagen</text>
+      <rect x="332" y="60" width="276" height="84" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="348" y="89" class="name" text-anchor="start">GitHub Container Registry</text>
+      <text x="348" y="111" class="sub" text-anchor="start">Imagen Linux · etiqueta por SHA</text>
+      <rect x="24" y="292" width="200" height="80" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="40" y="321" class="name" text-anchor="start">Navegador</text>
+      <text x="40" y="343" class="sub" text-anchor="start">HTML, CSS y JavaScript</text>
+      <rect x="24" y="396" width="200" height="80" rx="8" fill="#fffdfa" stroke="#bcb4ab" stroke-dasharray="5 4"/>
+      <text x="40" y="425" class="name" text-anchor="start">Brevo</text>
+      <text x="40" y="447" class="sub" text-anchor="start">Correo de recuperación</text>
+      <rect x="332" y="232" width="276" height="224" rx="8" fill="#f8e9db" stroke="#a4460b"/>
+      <text x="352" y="266" class="name" text-anchor="start">Monolito Node.js</text>
+      <text x="352" y="289" class="sub" text-anchor="start">Un proceso · un servidor HTTP</text>
+      <line x1="352" y1="308" x2="588" y2="308" stroke="#bcb4ab"/>
+      <text x="352" y="337" class="name" text-anchor="start">Express + EJS</text>
+      <text x="352" y="360" class="sub" text-anchor="start">Cuentas, panel y ofertas</text>
+      <text x="352" y="395" class="name" text-anchor="start">Socket.IO</text>
+      <text x="352" y="418" class="sub" text-anchor="start">Sesión, chat, presencia y avisos</text>
+      <rect x="736" y="244" width="184" height="80" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="752" y="273" class="name" text-anchor="start">PostgreSQL</text>
+      <text x="752" y="295" class="sub" text-anchor="start">Esquema app</text>
+      <rect x="736" y="368" width="184" height="80" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="752" y="397" class="name" text-anchor="start">Storage</text>
+      <text x="752" y="419" class="sub" text-anchor="start">Bucket privado site-imgs</text>
+      <line x1="24" y1="516" x2="940" y2="516" stroke="#bcb4ab"/>
+      <line x1="24" y1="548" x2="56" y2="548" stroke="#68635e" stroke-width="1.5" marker-end="url(#arch-arrow)"/>
+      <text x="70" y="553" class="sub" text-anchor="start">Conexión entre componentes</text>
+      <rect x="332" y="540" width="24" height="16" rx="4" fill="#eee9e2" stroke="#bcb4ab"/>
+      <text x="370" y="553" class="sub" text-anchor="start">Límite de servicio</text>
+      <line x1="572" y1="548" x2="604" y2="548" stroke="#68635e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arch-arrow)"/>
+      <text x="618" y="553" class="sub" text-anchor="start">Integración prevista</text>
+    </svg>
+  </div>
+</main>
+</body>
+</html>
