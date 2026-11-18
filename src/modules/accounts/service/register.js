@@ -4,7 +4,7 @@ import { checkPasswordPolicy } from '../domain/password-policy.js';
 import { registerSchema } from '../domain/schemas.js';
 
 function isUniqueEmailViolation(error) {
-  return error?.code === 'SQLITE_CONSTRAINT_UNIQUE'
+  return error?.code === '23505'
     || (typeof error?.message === 'string' && /UNIQUE/i.test(error.message));
 }
 
@@ -28,7 +28,7 @@ export function createRegister({ clock, hasher, users }) {
 
       const passwordHash = await hasher.hash(password);
       try {
-        const userId = users.insertUser(email, displayName, passwordHash, clock.now());
+        const userId = await users.insertUser(email, displayName, passwordHash, clock.now());
         return { userId };
       } catch (error) {
         if (isUniqueEmailViolation(error)) {

@@ -1,30 +1,21 @@
 export function createUsersRepo(db) {
-  const insert = db.prepare(`
-    INSERT INTO users (email, display_name, password_hash, created_at)
-    VALUES (?, ?, ?, ?)
-  `);
-  const byEmail = db.prepare(`
-    SELECT id, email, display_name, password_hash, created_at
-    FROM users WHERE email = ?
-  `);
-  const byId = db.prepare(`
-    SELECT id, email, display_name, password_hash, created_at
-    FROM users WHERE id = ?
-  `);
-  const setPassword = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?');
-
   return {
-    insertUser(email, displayName, passwordHash, createdAt) {
-      return Number(insert.run(email, displayName, passwordHash, createdAt).lastInsertRowid);
+    async insertUser(email, displayName, passwordHash, createdAt) {
+      const result = await db.query(`INSERT INTO users (email, display_name, password_hash, created_at)
+        VALUES ($1,$2,$3,$4) RETURNING id`, [email, displayName, passwordHash, createdAt]);
+      return Number(result.rows[0].id);
     },
-    findByEmail(email) {
-      return byEmail.get(email) ?? null;
+    async findByEmail(email) {
+      const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+      return result.rows[0] ?? null;
     },
-    findById(id) {
-      return byId.get(id) ?? null;
+    async findById(id) {
+      const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+      return result.rows[0] ?? null;
     },
-    updatePasswordHash(id, passwordHash) {
-      return setPassword.run(passwordHash, id).changes;
+    async updatePasswordHash(id, hash) {
+      const result = await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, id]);
+      return result.rowCount;
     },
   };
 }

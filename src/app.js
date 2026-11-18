@@ -28,7 +28,7 @@ function securityHeaders(config) {
         scriptSrc: ["'self'"],
         styleSrc: ["'self'"],
         connectSrc: ["'self'", websocketOrigin],
-        imgSrc: ["'self'"],
+        imgSrc: ['blob:', "'self'"],
         fontSrc: ["'self'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -71,6 +71,7 @@ export function createApp(container) {
   // El navegador descarga el MISMO validate.js que importa el servidor (C-VAL, DM-08).
   app.use('/js/shared', express.static(join(ROOT, 'src/shared/validation'), { index: false }));
   app.use('/js', express.static(join(ROOT, 'public/js'), { index: false }));
+  app.use('/img', express.static(join(ROOT, 'public/img'), { index: false }));
   app.use('/css', express.static(join(ROOT, 'public/css'), { index: false }));
 
   // `no-store` en `/panel` y `/api` desde la entrada: así también lo llevan los rechazos que ocurren antes

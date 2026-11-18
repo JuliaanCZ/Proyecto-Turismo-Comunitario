@@ -1,39 +1,25 @@
-<%#
-  Menú único (B1.9): se escribe aquí una sola vez y lo comparten todas las pantallas.
-  - Con sesión: Inicio, Mis ofertas, Chat, nombre y «Salir» (formulario POST con CSRF).
-  - Sin sesión: Ofertas, Ingresar y Crear cuenta.
-  Contrato con B1.10: `#chat-badge` es el contenedor (oculto) de la insignia de mensajes nuevos;
-  B1.10 lo llena desde `public/js/notificaciones.js`, sin tocar esta plantilla.
-  La página actual se marca con `aria-current="page"` según `currentPath`. Todo dato del usuario
-  se imprime escapado; lo único sin escapar es un literal fijo de este archivo (nunca un dato).
-%>
 <%
   const ruta = locals.currentPath ?? '';
-  const enRuta = (base, exacta = false) => (exacta ? ruta === base : ruta === base || ruta.startsWith(`${base}/`));
-  const actual = (base, exacta = false) => (enRuta(base, exacta) ? ' aria-current="page"' : '');
+  const panel = ruta.startsWith('/panel');
+  const actual = (base) => (ruta === base || (base !== '/' && base !== '/panel' && ruta.startsWith(base + '/'))) ? ' aria-current="page"' : '';
 %>
-<header class="cabecera">
+<header class="cabecera k-header">
   <div class="contenedor cabecera__interior">
-    <a class="marca" href="/">Turismo comunitario</a>
-    <nav aria-label="Principal">
-      <ul class="nav">
-        <% if (locals.principal) { %>
-        <li><a href="/panel"<%- actual('/panel', true) %>>Inicio</a></li>
-        <li><a href="/panel/ofertas"<%- actual('/panel/ofertas') %>>Mis ofertas</a></li>
-        <li><a href="/panel/chat"<%- actual('/panel/chat') %>>Chat<span id="chat-badge" class="insignia" hidden></span></a></li>
-        <li class="nav__usuario"><span class="sr-only">Sesión de </span><%= principal.displayName %></li>
-        <li>
-          <form method="post" action="/salir">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn btn--secundario" type="submit">Salir</button>
-          </form>
-        </li>
-        <% } else { %>
-        <li><a href="/ofertas"<%- actual('/ofertas') %>>Ofertas</a></li>
-        <li><a href="/ingreso"<%- actual('/ingreso', true) %>>Ingresar</a></li>
-        <li><a href="/registro"<%- actual('/registro', true) %>>Crear cuenta</a></li>
-        <% } %>
-      </ul>
-    </nav>
+    <% if (ruta !== '/') { %>
+      <a class="k-brand" href="/"><span class="k-mark"><%- include('icon', { name: 'mark' }) %></span><span>Kawsay Ñan<% if (panel) { %><small>Turismo comunitario</small><% } %></span></a>
+    <% } %>
+    <nav aria-label="Principal"><ul class="nav">
+      <li><a href="<%= panel ? '/panel' : '/' %>"<%- actual(panel ? '/panel' : '/') %>><% if (panel) { %><%- include('icon', { name: 'home' }) %><% } %>Inicio</a></li>
+      <% if (!panel) { %><li><a href="/ofertas"<%- actual('/ofertas') %>>Explorar</a></li><% } %>
+      <% if (locals.principal) { %>
+        <li><a href="/panel/ofertas"<%- actual('/panel/ofertas') %>><% if (panel) { %><%- include('icon', { name: 'ticket' }) %><% } %>Mis ofertas</a></li>
+        <li><a href="/panel/chat"<%- actual('/panel/chat') %>><% if (panel) { %><%- include('icon', { name: 'chat' }) %><% } %>Chat<span id="chat-badge" class="insignia" hidden></span></a></li>
+      <% } %>
+    </ul></nav>
+    <% if (panel) { %><span class="k-panel-rail-label" aria-hidden="true">Ecuador · Panel de gestión</span><% } %>
+    <% if (locals.principal) { %><div class="k-account">
+      <% if (panel) { %><div class="k-account-name"><span aria-hidden="true"><%= principal.displayName.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join('') %></span><strong><%= principal.displayName %></strong></div><% } %>
+      <form method="post" action="/salir"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secundario">Salir</button></form>
+    </div><% } else { %><a class="k-login" href="/ingreso">Iniciar sesión</a><% } %>
   </div>
 </header>

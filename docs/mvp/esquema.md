@@ -1,3 +1,5 @@
+> **Actualización Supabase (noviembre de 2026):** la persistencia vigente usa PostgreSQL y Storage de Supabase. Consulta [la configuración actual](supabase.md). Las referencias a SQLite y sus evidencias en esta página describen la implementación anterior.
+
 # Esquema de la base de datos (B0.2)
 
 Base SQLite (`node:sqlite`, `DatabaseSync`; DM-03) con **siete tablas del MVP más `schema_migrations`**. El DDL vive en `db/migrations/`; este documento lo describe y es la referencia de campos para los bloques que escriben `modules/*/data`. Si el DDL y este documento difieren, manda el DDL y se corrige el documento.

@@ -1,3 +1,5 @@
+> **Actualización Supabase (noviembre de 2026):** la persistencia vigente usa PostgreSQL y Storage de Supabase. Consulta [la configuración actual](supabase.md). Las referencias a SQLite y sus evidencias en esta página describen la implementación anterior.
+
 # Arquitectura del monolito (B3.1)
 
 Aplicación web monolítica de turismo comunitario: **un solo proceso Node.js** con Express para las rutas y las vistas EJS, Socket.IO en el mismo `http.Server` y SQLite en un archivo. Este documento describe lo que el código tiene hoy; cada carpeta y archivo nombrado se comprueba con `test -e` (TM-ARQ-01, [evidencias](evidencias/B3.1/LEEME.md)).

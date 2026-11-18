@@ -1,0 +1,17 @@
+<li class="k-card">
+  <a href="/ofertas/<%= offer.id %>">
+    <div class="k-card-image">
+      <img src="/ofertas/<%= offer.id %>/foto" alt="" loading="lazy">
+      <span class="k-chip k-region-<%= offer.region.key %>"><%= offer.region.name %></span>
+      <%- include('../partials/date-tile', { offer }) %>
+    </div>
+    <div class="k-card-body">
+      <p class="k-eyebrow"><%= offer.provinceLabel %></p><h3><%= offer.title %></h3>
+      <p class="k-card-place"><%- include('../partials/icon', { name: 'pin' }) %><span><%= offer.locationText %></span></p>
+      <div class="k-card-meta">
+        <span><%- include('../partials/icon', { name: 'calendar' }) %><%= new Intl.DateTimeFormat('es-EC', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Guayaquil' }).format(offer.startsAt) %></span>
+        <span><%- include('../partials/icon', { name: 'people' }) %><%= offer.capacity %> cupos</span>
+      </div>
+    </div>
+  </a>
+</li>

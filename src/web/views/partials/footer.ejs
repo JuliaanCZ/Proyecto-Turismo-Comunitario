@@ -1,0 +1,11 @@
+<footer class="k-footer">
+  <div class="k-footer-inner">
+    <a class="k-brand" href="/"><span class="k-mark"><%- include('icon', { name: 'mark' }) %></span><span>Kawsay Ñan<small>Turismo comunitario · Ecuador</small></span></a>
+    <a class="k-credits" href="/img/creditos.html">Créditos de fotografía</a>
+    <ul class="k-social" aria-label="Redes de ejemplo">
+      <% for (const [name, label] of [['instagram', 'Instagram'], ['facebook', 'Facebook'], ['whatsapp', 'WhatsApp']]) { %>
+        <li title="<%= label %> · ejemplo"><%- include('icon', { name }) %><span class="sr-only"><%= label %></span></li>
+      <% } %>
+    </ul>
+  </div>
+</footer>

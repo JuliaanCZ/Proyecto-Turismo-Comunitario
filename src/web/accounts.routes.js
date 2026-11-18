@@ -234,7 +234,7 @@ export function createAccountsRouter(container) {
     }
   });
 
-  router.get('/dev/bandeja', (req, res, next) => {
+  router.get('/dev/bandeja', async (req, res, next) => {
     if (!config.demoMailboxEnabled) return next();
     res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
     if (!mailboxAuthorized(req, config.demoMailboxPassword)) {
@@ -246,7 +246,7 @@ export function createAccountsRouter(container) {
           message: 'La bandeja de pruebas necesita su clave.',
         });
     }
-    const messages = container.accounts.listMailbox().map((mail) => ({
+    const messages = (await container.accounts.listMailbox()).map((mail) => ({
       ...mail,
       createdAtText: formatEcuadorDateTime(mail.createdAt),
     }));

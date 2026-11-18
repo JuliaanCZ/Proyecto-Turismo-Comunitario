@@ -1,53 +1,29 @@
-const MESSAGE_COLUMNS = `id, author_id, author_name, text, client_message_id, created_at`;
+const COLUMNS = 'id, author_id, author_name, text, client_message_id, created_at';
 
 export function createMessagesRepo(db) {
-  const insert = db.prepare(`
-    INSERT INTO chat_messages (
-      room, author_id, author_name, text, client_message_id, created_at
-    ) VALUES ('general', ?, ?, ?, ?, ?)
-    ON CONFLICT(author_id, client_message_id) DO NOTHING
-  `);
-  const byClientId = db.prepare(`
-    SELECT ${MESSAGE_COLUMNS}
-    FROM chat_messages
-    WHERE author_id = ? AND client_message_id = ?
-  `);
-  const before = db.prepare(`
-    SELECT ${MESSAGE_COLUMNS}
-    FROM chat_messages
-    WHERE room = 'general' AND id < ?
-    ORDER BY id DESC
-    LIMIT ?
-  `);
-  const after = db.prepare(`
-    SELECT ${MESSAGE_COLUMNS}
-    FROM chat_messages
-    WHERE room = 'general' AND id > ?
-    ORDER BY id ASC
-    LIMIT ?
-  `);
-  const last = db.prepare(`
-    SELECT COALESCE(MAX(id), 0) AS id
-    FROM chat_messages
-    WHERE room = 'general'
-  `);
-
   return {
-    insertOrGet(authorId, authorName, clientMessageId, text, now) {
-      const result = insert.run(authorId, authorName, text, clientMessageId, now);
-      return {
-        row: byClientId.get(authorId, clientMessageId),
-        duplicated: result.changes === 0,
-      };
+    async insertOrGet(authorId, authorName, clientMessageId, text, now) {
+      const inserted = await db.query(`INSERT INTO chat_messages
+        (room, author_id, author_name, text, client_message_id, created_at)
+        VALUES ('general',$1,$2,$3,$4,$5)
+        ON CONFLICT (author_id, client_message_id) DO NOTHING RETURNING ${COLUMNS}`,
+      [authorId, authorName, text, clientMessageId, now]);
+      if (inserted.rows[0]) return { row: inserted.rows[0], duplicated: false };
+      const existing = await db.query(`SELECT ${COLUMNS} FROM chat_messages
+        WHERE author_id = $1 AND client_message_id = $2`, [authorId, clientMessageId]);
+      return { row: existing.rows[0], duplicated: true };
     },
-    listBefore(id, limit) {
-      return before.all(id, limit);
+    async listBefore(id, limit) {
+      return (await db.query(`SELECT ${COLUMNS} FROM chat_messages
+        WHERE room = 'general' AND id < $1 ORDER BY id DESC LIMIT $2`, [id, limit])).rows;
     },
-    listAfter(id, limit) {
-      return after.all(id, limit);
+    async listAfter(id, limit) {
+      return (await db.query(`SELECT ${COLUMNS} FROM chat_messages
+        WHERE room = 'general' AND id > $1 ORDER BY id ASC LIMIT $2`, [id, limit])).rows;
     },
-    lastId() {
-      return Number(last.get().id);
+    async lastId() {
+      const result = await db.query("SELECT COALESCE(MAX(id),0) AS id FROM chat_messages WHERE room = 'general'");
+      return Number(result.rows[0].id);
     },
   };
 }

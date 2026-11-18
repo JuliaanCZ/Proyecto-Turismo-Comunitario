@@ -12,23 +12,25 @@
     "dev": "node --watch --env-file=.env server.js",
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate.js",
     "seed:demo": "node --env-file-if-exists=.env scripts/seed-demo.js",
-    "perf:seed": "node --env-file-if-exists=.env scripts/perf-seed.js",
-    "perf:catalog": "node --env-file-if-exists=.env scripts/perf-catalog.js",
-    "test": "node --test",
-    "lint": "eslint ."
+    "test": "node --test tests/integration/supabase.test.js tests/unit/chat-cliente.test.js tests/unit/cuentas-politica.test.js tests/unit/notificaciones-contador.test.js tests/unit/ofertas-validacion.test.js tests/unit/time.test.js tests/unit/validate.test.js",
+    "lint": "eslint .",
+    "dev:demo": "node scripts/preview-demo.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "argon2": "0.45.2",
     "busboy": "^1.6.0",
     "cookie": "2.0.2",
     "ejs": "7.0.2",
     "express": "5.3.0",
     "helmet": "8.3.0",
+    "pg": "^8.23.1",
     "sharp": "^0.35.5",
     "socket.io": "4.8.4"
   },
   "devDependencies": {
     "eslint": "10.15.0",
+    "pg-mem": "^3.0.14",
     "socket.io-client": "4.8.4",
     "supertest": "7.3.2"
   }

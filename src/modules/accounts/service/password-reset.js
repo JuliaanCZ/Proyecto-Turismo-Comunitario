@@ -1,5 +1,4 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { withTransaction } from '../../../shared/db.js';
 import { AppError } from '../../../shared/errors.js';
 import { validate } from '../../../shared/validation/validate.js';
 import { revokeAllInTx } from '../data/sessions.repo.js';
@@ -33,15 +32,15 @@ export function createPasswordReset({ db, clock, config, sessionEvents, hasher, 
       const check = validate(recoverSchema, { email });
       if (!check.ok) throw validationError(check.errors);
 
-      const user = users.findByEmail(check.values.email);
+      const user = await users.findByEmail(check.values.email);
       if (user) {
         const token = randomBytes(32).toString('base64url');
         const now = clock.now();
         // El enlace sale de APP_ORIGIN, nunca de la cabecera Host.
         const link = `${config.appOrigin}/restablecer?token=${token}`;
-        withTransaction(db, () => {
-          tokens.upsertToken({ userId: user.id, tokenHash: hashToken(token), createdAt: now, expiresAt: now + TOKEN_TTL_MS });
-          mailer.send({
+        await db.transaction(async () => {
+          await tokens.upsertToken({ userId: user.id, tokenHash: hashToken(token), createdAt: now, expiresAt: now + TOKEN_TTL_MS });
+          await mailer.send({
             to: user.email,
             subject: 'Recupera tu contraseña',
             body: `Hola, ${user.display_name}:\n\nRecibimos una solicitud para cambiar tu contraseña. `
@@ -55,7 +54,7 @@ export function createPasswordReset({ db, clock, config, sessionEvents, hasher, 
     async resetPassword({ token, newPassword, newPasswordConfirm } = {}) {
       if (typeof token !== 'string' || !TOKEN_RE.test(token)) throw tokenInvalid();
       const tokenHash = hashToken(token);
-      const pending = tokens.findValid(tokenHash, clock.now());
+      const pending = await tokens.findValid(tokenHash, clock.now());
       if (!pending) throw tokenInvalid();
 
       const check = validate(resetSchema, { newPassword, newPasswordConfirm });
@@ -63,14 +62,14 @@ export function createPasswordReset({ db, clock, config, sessionEvents, hasher, 
       const policy = checkPasswordPolicy(check.values.newPassword, pending.email);
       if (!policy.ok) throw validationError({ newPassword: [policy.message] });
 
-      // Argon2id es asíncrono: se calcula antes de abrir la transacción síncrona.
+      // Argon2id se calcula antes de abrir la transacción.
       const passwordHash = await hasher.hash(check.values.newPassword);
       const now = clock.now();
-      const userId = withTransaction(db, () => {
-        const owner = tokens.consume(tokenHash, now);
+      const userId = await db.transaction(async () => {
+        const owner = await tokens.consume(tokenHash, now);
         if (owner === null) return null;
-        users.updatePasswordHash(owner, passwordHash);
-        revokeAllInTx(db, owner, 'PASSWORD_RESET', now);
+        await users.updatePasswordHash(owner, passwordHash);
+        await revokeAllInTx(db, owner, 'PASSWORD_RESET', now);
         return owner;
       });
       if (userId === null) throw tokenInvalid();

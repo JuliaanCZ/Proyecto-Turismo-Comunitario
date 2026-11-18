@@ -35,7 +35,7 @@ export function createLogin({ hasher, users }) {
       }
 
       const { email, password } = parsed.values;
-      const user = users.findByEmail(email);
+      const user = await users.findByEmail(email);
       if (!user) {
         await hasher.verify(await getDummyHash(), password);
         throw invalidCredentials();

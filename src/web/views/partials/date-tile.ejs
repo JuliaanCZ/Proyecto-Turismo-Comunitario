@@ -1,0 +1,4 @@
+<time class="k-date-tile" datetime="<%= offer.startsAtLocal %>" aria-label="<%= new Intl.DateTimeFormat('es-EC', { dateStyle: 'long', timeZone: 'America/Guayaquil' }).format(offer.startsAt) %>">
+  <strong><%= offer.startsAtLocal.slice(8, 10) %></strong>
+  <span><%= new Intl.DateTimeFormat('es-EC', { month: 'short', timeZone: 'America/Guayaquil' }).format(offer.startsAt).replace('.', '') %></span>
+</time>

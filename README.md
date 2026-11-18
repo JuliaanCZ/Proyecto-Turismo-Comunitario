@@ -1,36 +1,41 @@
 # Turismo comunitario
 
-Proyecto académico para una PYME que coordina experiencias de turismo comunitario. La entrega del primer bimestre es un monolito con cuentas, gestión de ofertas turísticas con foto, catálogo con contacto por WhatsApp y chat en tiempo real. El MVP se planificó con Node.js, Express, EJS, JavaScript, Socket.IO y SQLite.
+MVP del primer bimestre: cuentas, ofertas con galería, catálogo con contacto por WhatsApp y correo y chat en tiempo real. La aplicación usa Node.js, Express, EJS, Socket.IO, PostgreSQL de Supabase y Supabase Storage.
 
-## Primer bimestre
+## Demostración local
 
-- [Plan del MVP](mvp-primer-bimestre/PLAN-MVP.md). Alcance, rúbrica, arquitectura y reparto del trabajo.
-- [Prompts de implementación](mvp-primer-bimestre/PLAN-PROMPTS.md). Un prompt por bloque, con dependencias, responsable, revisor y pruebas.
-- [Reparto y secuencia en Excel](mvp-primer-bimestre/Reparto-y-secuencia-MVP.xlsx). Vista por integrante y orden de arranque.
-- [Encargo de planificación](mvp-primer-bimestre/PROMPT-MVP.md). Instrucciones usadas para preparar el plan y los prompts.
+Ejecuta `npm ci` y luego `npm run dev:demo`. Abre `http://127.0.0.1:3100`. El servidor de demostración usa una base y fotos en memoria, empieza con cuatro ofertas y no se conecta a Supabase. Las dos cuentas y la contraseña aparecen en la consola. Los cambios se reinician al cerrar el proceso.
 
-## Ejecutar la base del monolito
+## Preparación con Supabase
 
-Usa la versión de Node.js indicada en `.nvmrc` (rama 24 LTS) y npm. Desde la raíz del repositorio:
+Usa Node.js 24 (ver `.nvmrc`). Desde la raíz:
 
 ```powershell
 npm ci
-if (-not (Test-Path -LiteralPath '.env')) {
-    Copy-Item -LiteralPath '.env.example' -Destination '.env'
-}
+Copy-Item .env.example .env
+```
+
+Configura en `.env`:
+
+- `DATABASE_URL`: cadena del pooler de Supabase en modo sesión (puerto 5432), con la contraseña real en lugar de `[YOUR-DATABASE-PASSWORD]`. Codifica los caracteres especiales de la contraseña para URL.
+- `SUPABASE_URL`: URL HTTPS del proyecto.
+- `SUPABASE_SERVICE_ROLE_KEY`: clave secreta de servidor del proyecto. Nunca se envía al navegador ni se sube a Git.
+
+El bucket `site-imgs` se crea o actualiza al arrancar como privado, limitado a 50 MB por archivo y a JPEG, PNG y WebP. Revisa también que el límite global de Storage en Supabase admita 50 MB. El servidor sirve las fotos tras comprobar la visibilidad de la oferta.
+
+```powershell
+npm run db:migrate
 npm start
 ```
 
-En Bash, el paso equivalente para crear `.env` es `test -f .env || cp .env.example .env`. El ejemplo contiene valores ficticios para desarrollo. Configura secretos propios y HTTPS antes del despliegue. Si aún no tienes un número comercial autorizado para la demo, deja `WHATSAPP_BOOKING_NUMBER` vacío.
+Abre `http://localhost:3000/salud` para comprobar el proceso. `npm run seed:demo` prepara usuarios, ofertas y mensajes en el destino Supabase configurado para desarrollo. Usa `npm run dev:demo` para revisar el prototipo con datos aislados. `npm test` ejecuta las pruebas automatizadas compatibles con PostgreSQL y `npm run lint` revisa el código. Las pruebas automatizadas usan un PostgreSQL simulado y Storage falso; la verificación contra el proyecto real requiere configurar las tres variables anteriores.
 
-Con el servidor en marcha, abre `http://localhost:3000/salud`. Debe responder `{"status":"ok"}`. En otra terminal, comprueba el transporte del mismo servidor con `node scripts/check-ws.js http://localhost:3000`. Ajusta ambas URLs si cambias el puerto.
+## Alcance y planificación
 
-SQLite se usa mediante `node:sqlite`, integrado en Node, así que `npm ci` no compila nada para la base de datos. Comprueba SQLite en memoria y Argon2 con `node scripts/check-sqlite-argon2.js`.
+- [Plan del MVP](mvp-primer-bimestre/PLAN-MVP.md)
+- [Prompts por bloque](mvp-primer-bimestre/PLAN-PROMPTS.md)
+- [Reparto del trabajo](mvp-primer-bimestre/Reparto-y-secuencia-MVP.xlsx)
+- [Configuración de Supabase](docs/mvp/supabase.md)
+- [Plan general de referencia](docs/planificacion/00-indice-y-control.md)
 
-`npm start` ahora monta la aplicación completa (`createContainer` y `createApp`): abre `./data/app.sqlite`, aplica las migraciones pendientes y sirve la portada en `http://localhost:3000/`, con Socket.IO en el mismo puerto. Fuera de producción, `http://localhost:3000/dev/diseno` muestra los componentes de la [guía visual](docs/mvp/diseno-visual.md). `node scripts/check-contraste.js` verifica el contraste de la paleta. Las cuentas, las ofertas y el chat se implementan en sus propios bloques; sus servicios lanzan `NOT_IMPLEMENTED` hasta entonces y Socket.IO aún no autentica (B1.6).
-
-Ejecuta `npm test` para las pruebas automatizadas y `npm run lint` para revisar el JavaScript. La [evidencia de B0.1](docs/mvp/evidencias/B0.1/) guarda los resultados de la comprobación. Los siguientes bloques se toman en el orden de sus dependencias y se integran mediante PR.
-
-## Plan general de referencia
-
-El [índice de la planificación anterior](docs/planificacion/00-indice-y-control.md) reúne los 13 documentos del diseño ampliado. Los [archivos de referencia](docs/planificacion/referencias/) incluyen el [plan original](docs/planificacion/referencias/PLAN.md), sus prompts y las notas sobre PayPal. Sirven para orientar la evolución posterior del producto. Para implementar el primer bimestre, usa los bloques del plan del MVP.
+La planificación original y sus evidencias de SQLite documentan la entrega anterior. La configuración vigente de persistencia se describe aquí y en `docs/mvp/supabase.md`. Los pagos y las reservas internas siguen fuera del MVP.

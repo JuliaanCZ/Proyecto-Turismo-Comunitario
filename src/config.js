@@ -64,10 +64,15 @@ export function loadConfig(env = process.env) {
   const bindHost = env.BIND_HOST?.trim() || undefined;
   if (bindHost && !isIP(bindHost)) invalid('BIND_HOST', 'debe ser una dirección IPv4 o IPv6');
   const origin = appOrigin(env.APP_ORIGIN ?? (production ? '' : `http://localhost:${port}`), production);
-  const databaseFile = env.DATABASE_FILE ?? './data/app.sqlite';
-  if (!databaseFile.trim() || /[\x00-\x1f]/.test(databaseFile) || (production && databaseFile === ':memory:')) {
-    invalid('DATABASE_FILE', 'debe identificar un archivo válido');
+  const databaseUrl = env.DATABASE_URL ?? '';
+  if (databaseUrl && !/^postgres(?:ql)?:\/\//.test(databaseUrl)) {
+    invalid('DATABASE_URL', 'debe ser una URL PostgreSQL válida');
   }
+  const supabaseUrl = env.SUPABASE_URL ?? '';
+  if (supabaseUrl && !/^https:\/\/[^/]+$/.test(supabaseUrl)) {
+    invalid('SUPABASE_URL', 'debe ser un origen HTTPS sin ruta');
+  }
+  const supabaseServiceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
   const whatsappBookingNumber = env.WHATSAPP_BOOKING_NUMBER ?? '';
   if (whatsappBookingNumber && !/^[1-9]\d{7,14}$/.test(whatsappBookingNumber)) {
@@ -89,7 +94,10 @@ export function loadConfig(env = process.env) {
     port,
     bindHost,
     appOrigin: origin,
-    databaseFile,
+    databaseUrl,
+    supabaseUrl,
+    supabaseServiceRoleKey,
+    supabaseBucket: 'site-imgs',
     whatsappBookingNumber: whatsappBookingNumber || null,
     sessionTtlHours: integer(env, 'SESSION_TTL_HOURS', 8, 1),
     cookieSecure,

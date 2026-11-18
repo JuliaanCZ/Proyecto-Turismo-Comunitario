@@ -1,30 +1,21 @@
-<%#
-  Panel principal (B1.9). `resumen` = { available, total? }: si `available` es falso no se imprime
-  ninguna cifra (el servicio de ofertas aún no responde). El nombre se imprime siempre escapado.
-%>
-<h1>Hola, <%= principal.displayName %></h1>
-<p class="texto-suave">Este es tu panel: desde aquí llegas a tus ofertas y al chat del equipo.</p>
-
-<section class="resumen" aria-labelledby="t-resumen">
-  <h2 id="t-resumen">Resumen</h2>
-  <% if (resumen.available) { %>
-  <p class="resumen__dato">
-    <span class="resumen__numero"><%= resumen.total %></span>
-    <span><%= resumen.total === 1 ? 'oferta propia' : 'ofertas propias' %></span>
-  </p>
-  <% if (resumen.total === 0) { %>
-  <p>Aún no tienes ofertas. Crea la primera para verla aquí con su lugar y su fecha.</p>
-  <% } %>
-  <% } else { %>
-  <p class="mensaje mensaje--aviso" role="status"><strong>Atención:</strong> el resumen de tus ofertas no está disponible por ahora. Los accesos de abajo siguen funcionando.</p>
-  <% } %>
-</section>
-
-<section aria-labelledby="t-accesos">
-  <h2 id="t-accesos">Accesos</h2>
-  <div class="acciones acciones--bloque">
-    <a class="btn" href="/panel/ofertas/nueva">Crear una oferta</a>
-    <a class="btn btn--secundario" href="/panel/ofertas">Ver mis ofertas</a>
-    <a class="btn btn--secundario" href="/panel/chat">Ir al chat</a>
-  </div>
-</section>
+<p class="k-eyebrow k-lined">Pantalla principal</p>
+<h1>Hola, <%= principal.displayName.trim().split(/\s+/)[0] %></h1>
+<div class="k-dashboard">
+  <section class="k-dashboard-offers">
+    <h2>Mis ofertas</h2>
+    <% if (resumen.available) { %><p class="k-dashboard-number"><%= resumen.total %></p><p class="k-dashboard-label">Ofertas propias</p><% } else { %><p>Resumen no disponible.</p><% } %>
+    <a href="/panel/ofertas">Ver listado <span aria-hidden="true">→</span></a>
+  </section>
+  <a class="k-dashboard-add" href="/panel/ofertas/nueva"><strong>Nueva oferta</strong><span>Publica una experiencia</span><span class="k-dashboard-plus" aria-hidden="true">＋</span></a>
+  <section class="k-dashboard-next"><h2>Próxima salida</h2>
+    <% if (resumen.next) { %><a href="/panel/ofertas/<%= resumen.next.id %>">
+      <%- include('../partials/date-tile', { offer: resumen.next }) %>
+      <span><strong><%= resumen.next.title %></strong><small><%= resumen.next.provinceLabel %></small></span>
+    </a><% } else { %><p>Aún no tienes salidas próximas.</p><% } %>
+  </section>
+  <section class="k-dashboard-chat">
+    <h2>Chat · Sala general <%- include('../partials/icon', { name: 'chat' }) %></h2>
+    <% if (latest) { %><small><%= latest.author.displayName %> · <%= formatEcuadorDateTime(latest.createdAt) %></small><p><%= latest.text %></p><% } else { %><p>Coordina las próximas experiencias con tu equipo.</p><% } %>
+    <a href="/panel/chat">Abrir chat <span aria-hidden="true">→</span></a>
+  </section>
+</div>

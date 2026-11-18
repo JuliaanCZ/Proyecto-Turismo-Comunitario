@@ -3,8 +3,8 @@ import Busboy from 'busboy';
 import sharp from 'sharp';
 import { AppError } from '../shared/errors.js';
 
-const MAX_BYTES = 2 * 1024 * 1024;
-const MAX_PIXELS = 12_000_000;
+const MAX_BYTES = 50_000_000;
+const MAX_PIXELS = 50_000_000;
 const MIME = new Map([['jpeg', 'image/jpeg'], ['png', 'image/png'], ['webp', 'image/webp']]);
 
 function invalid(field, message) {
@@ -50,7 +50,7 @@ function readMultipart(req) {
         size += chunk.length;
         if (size <= MAX_BYTES) chunks.push(chunk);
       });
-      stream.on('limit', () => { problem = invalid('imageBytes', 'La foto no puede superar 2 MiB.'); });
+      stream.on('limit', () => { problem = invalid('imageBytes', 'La foto no puede superar 50 MB.'); });
       stream.on('end', () => {
         ended = true;
         file = { bytes: Buffer.concat(chunks), mimeType: info.mimeType };
@@ -76,7 +76,10 @@ function readMultipart(req) {
 }
 
 export async function validatedOfferPhoto(req) {
-  const { bytes, mimeType, altText } = await readMultipart(req);
+  return processOfferPhoto(await readMultipart(req));
+}
+
+export async function processOfferPhoto({ bytes, mimeType, altText }) {
   if (![...MIME.values()].includes(mimeType)) {
     throw invalid('imageBytes', 'La foto debe ser JPEG, PNG o WebP.');
   }
@@ -84,7 +87,7 @@ export async function validatedOfferPhoto(req) {
   try {
     metadata = await sharp(bytes, { limitInputPixels: MAX_PIXELS, failOn: 'error' }).metadata();
   } catch {
-    throw invalid('imageBytes', 'La foto está dañada o supera 12 megapíxeles.');
+    throw invalid('imageBytes', 'La foto está dañada o supera 50 megapíxeles.');
   }
   const contentType = MIME.get(metadata.format);
   if (!contentType || contentType !== mimeType || (metadata.pages ?? 1) !== 1 ||
@@ -100,6 +103,6 @@ export async function validatedOfferPhoto(req) {
   } catch {
     throw invalid('imageBytes', 'No pudimos procesar la foto.');
   }
-  if (imageBytes.length > MAX_BYTES) throw invalid('imageBytes', 'La foto procesada supera 2 MiB.');
+  if (imageBytes.length > MAX_BYTES) throw invalid('imageBytes', 'La foto procesada supera 50 MB.');
   return { contentType, imageBytes, altText };
 }

@@ -6,16 +6,16 @@ import { createContainer } from './src/container.js';
 import { createHttpServer } from './src/server.js';
 
 // config → base y migraciones (dentro del contenedor) → app → servidor HTTP + Socket.IO.
-function start() {
+async function start() {
   const config = loadConfig();
-  const container = createContainer(config);
+  const container = await createContainer(config);
   const { httpServer, io } = createHttpServer(createApp(container), container);
 
   let closing = false;
   function close() {
     if (closing) return;
     closing = true;
-    io.close(() => container.close());
+    io.close(() => { void container.close(); });
   }
 
   httpServer.once('error', (error) => {
@@ -32,9 +32,7 @@ function start() {
   process.once('SIGTERM', close);
 }
 
-try {
-  start();
-} catch (error) {
+start().catch((error) => {
   console.error(error.message);
   process.exitCode = 1;
-}
+});

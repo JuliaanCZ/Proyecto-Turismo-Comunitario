@@ -1,3 +1,5 @@
+> **Actualización Supabase (noviembre de 2026):** la persistencia vigente usa PostgreSQL y Storage de Supabase. Consulta [la configuración actual](supabase.md). Las referencias a SQLite y sus evidencias en esta página describen la implementación anterior.
+
 # Seguridad del MVP
 
 ## Alcance y resultado
