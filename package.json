@@ -11,6 +11,8 @@
     "start": "node --env-file=.env server.js",
     "dev": "node --watch --env-file=.env server.js",
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate.js",
+    "perf:seed": "node --env-file-if-exists=.env scripts/perf-seed.js",
+    "perf:catalog": "node --env-file-if-exists=.env scripts/perf-catalog.js",
     "test": "node --test",
     "lint": "eslint ."
   },

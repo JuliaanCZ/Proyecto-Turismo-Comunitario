@@ -1,0 +1,18 @@
+$ node --test tests/integration/rendimiento-datos.test.js
+✔ TM-PERF-01: perf:seed crea 20 ofertas en 20 provincias y nunca toca otra base
+✔ TM-PERF-02: EXPLAIN QUERY PLAN usa idx_offers_owner_province_starts
+✔ TM-PERF-03: el informe tiene resultados ejecutados y no conserva celdas pendientes
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+(exit 0)
+
+$ npm test
+ℹ tests 168
+ℹ pass 168
+ℹ fail 0
+(exit 0)
+
+$ npm run lint
+> eslint .
+(exit 0)

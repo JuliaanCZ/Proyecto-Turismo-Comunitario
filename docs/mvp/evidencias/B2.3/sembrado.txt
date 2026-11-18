@@ -1,0 +1,29 @@
+$ npm run perf:seed
+
+> turismo-comunitario@0.1.0 perf:seed
+> node --env-file-if-exists=.env scripts/perf-seed.js
+
+Base de rendimiento: C:\Users\Alexisis\Documents\Proyecto-Turismo-Comunitario\data\perf.sqlite
+Ofertas creadas: 20
+Provincias con datos: 20 de 24
+- AZUAY: 1
+- BOLIVAR: 1
+- CANAR: 1
+- CARCHI: 1
+- CHIMBORAZO: 1
+- COTOPAXI: 1
+- EL_ORO: 1
+- ESMERALDAS: 1
+- GALAPAGOS: 1
+- GUAYAS: 1
+- IMBABURA: 1
+- LOJA: 1
+- LOS_RIOS: 1
+- MANABI: 1
+- MORONA_SANTIAGO: 1
+- NAPO: 1
+- ORELLANA: 1
+- PASTAZA: 1
+- PICHINCHA: 1
+- SANTA_ELENA: 1
+(exit 0)
