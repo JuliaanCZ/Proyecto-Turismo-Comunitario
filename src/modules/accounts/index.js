@@ -1,36 +1,34 @@
-import { notImplementedService } from '../../shared/not-implemented.js';
 import { createUsersRepo } from './data/users.repo.js';
 import { createHasher } from './service/hasher.js';
 import { createLogin } from './service/login.js';
+import { createMailer } from './service/mailer.js';
+import { createPasswordReset } from './service/password-reset.js';
 import { createRegister } from './service/register.js';
 import { createSessions, revokeAllInTx } from './service/sessions.js';
 
 /**
- * Módulo `accounts`. B1.1 + B1.2 implementan registro, ingreso y sesión;
- * B1.3 completa recuperación y bandeja.
+ * Módulo `accounts`: registro (B1.1), ingreso y sesión (B1.2), recuperación y bandeja (B1.3).
  * `deps` = { db, clock, config, sessionEvents, logger }.
  */
-const PENDING = [
-  'requestPasswordReset',
-  'resetPassword',
-  'listMailbox',
-];
-
-export { loginSchema, registerSchema } from './domain/schemas.js';
+export { loginSchema, recoverSchema, registerSchema, resetSchema } from './domain/schemas.js';
 export { checkPasswordPolicy, COMMON_PASSWORDS } from './domain/password-policy.js';
+export { TOKEN_INVALID_MESSAGE } from './service/password-reset.js';
 export { revokeAllInTx };
 
 export function createAccountsService(deps) {
   const hasher = createHasher(deps.config);
   const users = createUsersRepo(deps.db);
+  const mailer = createMailer(deps);
   const { registerUser } = createRegister({ ...deps, hasher, users });
   const { authenticate } = createLogin({ hasher, users });
-  const sessions = createSessions(deps);
+  const { requestPasswordReset, resetPassword } = createPasswordReset({ ...deps, hasher, users, mailer });
 
   return {
-    ...notImplementedService('accounts', PENDING),
     registerUser,
     authenticate,
-    ...sessions,
+    ...createSessions(deps),
+    requestPasswordReset,
+    resetPassword,
+    listMailbox: mailer.listMailbox,
   };
 }

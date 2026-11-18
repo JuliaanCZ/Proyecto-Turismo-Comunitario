@@ -1,0 +1,26 @@
+<%#
+  Bandeja de pruebas (B1.3, DM-15): simula el correo sin SMTP. Solo con DEMO_MAILBOX_ENABLED y clave.
+%>
+<div class="pila">
+  <div>
+    <h1>Bandeja de pruebas</h1>
+    <p class="texto-suave">Mensajes recientes que la aplicación habría enviado por correo. Solo para la demostración.</p>
+  </div>
+
+  <% if (messages.length === 0) { %>
+  <p class="mensaje" role="status">Todavía no hay mensajes.</p>
+  <% } else { %>
+  <ul class="pila">
+    <% for (const mail of messages) { %>
+    <li>
+      <p><strong>Para:</strong> <%= mail.toEmail %></p>
+      <p><strong>Asunto:</strong> <%= mail.subject %></p>
+      <p class="texto-suave"><%= mail.createdAtText %></p>
+      <% if (mail.link) { %>
+      <p><a href="<%= mail.link %>">Abrir enlace</a></p>
+      <% } %>
+    </li>
+    <% } %>
+  </ul>
+  <% } %>
+</div>

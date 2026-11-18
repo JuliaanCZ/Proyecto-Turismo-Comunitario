@@ -77,7 +77,7 @@ export function createApp(container) {
   // de `requireAuth` (origen, cuerpo mal formado, CSRF, 401 y redirecciones).
   app.use(['/panel', '/api'], noStore);
   app.use(renderPage);
-  app.use(originGuard(config.appOrigin));
+  app.use(originGuard(config.appOrigin, { nullOriginPaths: ['/restablecer'] }));
   app.use(express.urlencoded({ extended: false, limit: BODY_LIMIT }));
   app.use(express.json({ limit: BODY_LIMIT }));
   app.use(attachPrincipal(

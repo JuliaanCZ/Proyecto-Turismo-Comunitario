@@ -1,0 +1,47 @@
+<%#
+  Nueva contraseña con el token del enlace (B1.3). Abrir la página no consume el token;
+  sin token válido solo se ofrece pedir otro enlace. Las contraseñas no se reimprimen.
+%>
+<div class="pila">
+  <div>
+    <h1>Nueva contraseña</h1>
+    <p>Elige una contraseña nueva. Al guardarla se cerrarán todas tus sesiones abiertas.</p>
+  </div>
+
+  <% if (formError) { %>
+  <p class="mensaje mensaje--error" role="alert"><strong>Error:</strong> <%= formError %></p>
+  <% } %>
+
+  <% if (token) { %>
+  <form class="formulario" method="post" action="/restablecer" data-schema="<%= JSON.stringify(schema) %>">
+    <% if (locals.principal) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% } %>
+    <input type="hidden" name="token" value="<%= token %>">
+    <%- include('../partials/form-field', {
+      name: 'newPassword',
+      label: 'Contraseña nueva',
+      type: 'password',
+      required: true,
+      autocomplete: 'new-password',
+      hint: 'Entre 10 y 128 caracteres. No uses el correo ni una clave muy común.',
+      value: '',
+      errors: errors.newPassword,
+    }) %>
+    <%- include('../partials/form-field', {
+      name: 'newPasswordConfirm',
+      label: 'Confirmar contraseña nueva',
+      type: 'password',
+      required: true,
+      autocomplete: 'new-password',
+      value: '',
+      errors: errors.newPasswordConfirm,
+    }) %>
+    <div class="acciones">
+      <button class="btn" type="submit">Guardar contraseña</button>
+    </div>
+  </form>
+  <% } else { %>
+  <div class="acciones">
+    <a class="btn" href="/recuperar">Pedir un enlace nuevo</a>
+  </div>
+  <% } %>
+</div>

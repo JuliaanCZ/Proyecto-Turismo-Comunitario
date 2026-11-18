@@ -412,23 +412,17 @@ test('createContainer: overrides inyectan servicios, reloj y base; la base inyec
   assert.equal(db.prepare('SELECT 1 AS uno').get().uno, 1);
 });
 
-test('esqueleto C-MOD: el módulo de cuentas pendiente lanza NOT_IMPLEMENTED (501)', (t) => {
+test('C-MOD: cuentas expone exactamente las funciones de §5.1 y ninguna queda como esqueleto', async (t) => {
   const { container } = build(t, { overrides: { accounts: undefined } });
-  // B1.1 + B1.2 ya implementan registro, ingreso y sesión; B1.3 completa recuperación y bandeja.
-  const implementadas = ['registerUser', 'authenticate', 'createSession', 'resolveSession',
-    'revokeSession', 'revokeAllSessions'];
-  for (const nombre of implementadas) {
+  // B1.1 registro, B1.2 ingreso y sesión, B1.3 recuperación y bandeja.
+  const contrato = ['registerUser', 'authenticate', 'createSession', 'resolveSession', 'revokeSession',
+    'revokeAllSessions', 'requestPasswordReset', 'resetPassword', 'listMailbox'];
+  assert.deepEqual(Object.keys(container.accounts).sort(), [...contrato].sort());
+  for (const nombre of contrato) {
     assert.equal(typeof container.accounts[nombre], 'function', `accounts.${nombre}`);
   }
-  const pendientes = ['requestPasswordReset', 'resetPassword', 'listMailbox'];
-  assert.deepEqual(Object.keys(container.accounts).sort(), [...implementadas, ...pendientes].sort());
-  for (const nombre of pendientes) {
-    assert.throws(
-      () => container.accounts[nombre](),
-      (error) => error instanceof AppError && error.code === 'NOT_IMPLEMENTED' && error.status === 501,
-      `accounts.${nombre}`,
-    );
-  }
+  assert.deepEqual(await container.accounts.requestPasswordReset('nadie@example.test'), { accepted: true });
+  assert.deepEqual(container.accounts.listMailbox(), []);
 });
 
 test('sesión real en contenedor: una cookie desconocida se ignora (null) y la portada abre', async (t) => {
