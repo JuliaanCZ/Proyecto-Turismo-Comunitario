@@ -3,7 +3,7 @@
 | Archivo | Qué evidencia |
 |---|---|
 | `pruebas-bloque.txt` | Salida de `node --test tests/integration/sesion-http-ws.test.js` (`TM-INT-01` a `TM-INT-05`) con cuentas, chat, gateway y `sessionEvents` reales, servidor en puerto efímero y cookies obtenidas por `POST /ingreso`. |
-| `npm-test.txt` · `npm-lint.txt` | Suite completa y `eslint .` sobre la rama creada desde `main` (incluye B1.2, B1.3, B1.6, B1.7, B1.8 y B1.10). |
+| `npm-test.txt` · `npm-lint.txt` | Suite completa y `eslint .` sobre la rama creada desde `main` (incluye B1.2, B1.3, B1.6, B1.7, B1.8, B1.10 y B2.3). |
 
 **Cableado.** No hizo falta tocar `src/container.js` ni `src/server.js`: el contenedor ya entrega `accounts` real y un único `sessionEvents`, y `createHttpServer` pasa ese contenedor a `attachGateway`. El bloque solo añade la prueba y estas evidencias.
 
