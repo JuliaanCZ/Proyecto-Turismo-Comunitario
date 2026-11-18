@@ -9,7 +9,7 @@
 | Rama | `bloque/B2.3-medicion` |
 | Base medida | `77c8bc9e777c173ab207413088f7b2e9ada1f70a` más los cambios B2.3 todavía sin commit |
 | Persona que ejecutó | Alexis, Integrante 3, en cobertura temporal del Integrante 2 |
-| Repetición por otra persona | Pendiente del revisor (Integrante 4) |
+| Repetición por otra persona | Completada por el Integrante 4; resultados registrados abajo |
 
 ## Decisión de volumen
 
@@ -71,6 +71,17 @@ Este volumen permite demostrar que el procedimiento es reproducible, que la ruta
 
 Las seis repeticiones de cada variante terminaron sin errores. Con 20 filas, las diferencias HTTP son pequeñas y no muestran una ventaja estable del índice; corresponden al ruido normal de una medición local.
 
+## Repetición del revisor
+
+El Integrante 4 repitió la medición en su equipo con las 20 ofertas acordadas. Confirmó 168 pruebas superadas, ESLint correcto y ambas variantes sin errores. Para el listado filtrado de Pichincha obtuvo estos p95:
+
+| Variante | Repetición 1 (ms) | Repetición 2 (ms) | Repetición 3 (ms) |
+|---|---:|---:|---:|
+| Con `idx_offers_owner_province_starts` | 23.18 | 23.04 | 21.27 |
+| Sin el índice compuesto | 22.51 | 21.57 | 25.35 |
+
+Los valores conservan el mismo orden de magnitud y respaldan la conclusión original: con solo 20 filas no aparece una ventaja estable del índice en el tiempo HTTP, aunque el plan de consulta sí cambia correctamente.
+
 ## Consulta SQL y plan
 
 | Variante | Mediana ms | p95 ms | Mín. ms | Máx. ms | Plan principal |
@@ -97,4 +108,4 @@ npm run perf:catalog -- --sin-indice
 node --test tests/integration/rendimiento-datos.test.js
 ```
 
-Salidas literales: `sembrado.txt`, `catalogo-con-indice.txt` y `catalogo-sin-indice.txt`. Para cerrar completamente el criterio del bloque, el Integrante 4 debe repetir los comandos en su equipo y añadir el resultado de su repetición.
+Salidas literales de la primera ejecución: `sembrado.txt`, `catalogo-con-indice.txt` y `catalogo-sin-indice.txt`. La repetición independiente del Integrante 4 quedó registrada en este informe; no quedan comprobaciones pendientes del criterio B2.3.
