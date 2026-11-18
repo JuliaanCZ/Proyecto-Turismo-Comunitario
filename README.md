@@ -44,4 +44,24 @@ Las pruebas automatizadas usan PostgreSQL emulado y Storage en memoria. La compr
 
 ## Entrega académica del primer bimestre
 
-La entrega con SQLite se documentó en el [README del primer bimestre](https://github.com/JuliaanCZ/Proyecto-Turismo-Comunitario/blob/f42a3798834ff934af19a4c027faa73c275171cb/README.md). El historial del proyecto conserva el [registro de uso de IA](planificacion/historico-mvp/ia.md), la [matriz de pruebas](planificacion/historico-mvp/pruebas.md) y las [evidencias de B3.3](planificacion/historico-mvp/evidencias/B3.3/LEEME.md).
+Kawsay Ñan representa una PYME ecuatoriana ficticia. La aplicación reúne las ofertas y las fotografías que antes circulaban entre mensajes y documentos. El stack es Node.js 24, Express, EJS y Socket.IO, con PostgreSQL y Storage en Supabase.
+
+- [Problema, objetivos y cronograma](planificacion/mvp-primer-bimestre/entrega/problema-objetivos-cronograma.md)
+- [Historias de usuario priorizadas](planificacion/mvp-primer-bimestre/entrega/historias-de-usuario.md)
+- [Arquitectura](planificacion/mvp-primer-bimestre/entrega/arquitectura.md) y [modelo de datos](planificacion/mvp-primer-bimestre/entrega/modelo-datos.md)
+- [Medición de rendimiento en PostgreSQL](planificacion/mvp-primer-bimestre/entrega/rendimiento.md)
+- [Presentación](planificacion/mvp-primer-bimestre/entrega/Kawsay-Nan-Primer-Bimestre.pptx) y [guion de demostración](planificacion/mvp-primer-bimestre/entrega/guion-demo.md)
+- [Verificación de la entrega](planificacion/mvp-primer-bimestre/entrega/verificacion-entrega.md)
+
+### Integrantes y roles
+
+| Integrante | Responsabilidad |
+| --- | --- |
+| Mateo Yunga | Ofertas, persistencia y despliegue |
+| Mateo Calvache | Cuentas, recuperación y sesiones HTTP y WebSocket |
+| Alexis Villareal | Gateway, chat, historial y presencia |
+| Julian Camacho | Base web, panel, notificaciones e integración |
+
+### Uso de IA
+
+Se usó OpenAI Codex para revisar la guía y el código, actualizar la documentación académica, preparar la presentación y ampliar la prueba del aviso del chat. Los diagramas se elaboraron con la skill [Diagram Design](https://github.com/cathrynlavery/diagram-design) y se contrastaron con el código y las migraciones de PostgreSQL. El [registro histórico de IA](planificacion/historico-mvp/ia.md) documenta la entrega anterior. Cada integrante revisa su parte y debe poder explicarla y modificarla durante la defensa.

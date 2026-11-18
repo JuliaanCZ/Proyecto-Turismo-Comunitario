@@ -209,6 +209,15 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
   try {
     luis = await connect('luis@demo.test');
     assert.equal((await ana.timeout(1000).emitWithAck('chat:join')).ok, true);
+    const notification = once(luis, 'notification:new-message', { signal: AbortSignal.timeout(1000) });
+    const firstMessage = await ana.timeout(1000).emitWithAck('chat:send', {
+      clientMessageId: randomUUID(), text: 'Hay una nueva consulta.',
+    });
+    assert.equal(firstMessage.ok, true);
+    const [notice] = await notification;
+    assert.equal(notice.authorDisplayName, 'Ana Quispe');
+    assert.deepEqual(Object.keys(notice).sort(), ['authorDisplayName', 'createdAt', 'messageId']);
+
     assert.equal((await luis.timeout(1000).emitWithAck('chat:join')).presence.count, 2);
     const message = once(luis, 'chat:message', { signal: AbortSignal.timeout(1000) });
     const ack = await ana.timeout(1000).emitWithAck('chat:send', { clientMessageId: randomUUID(), text: 'Confirmamos la caminata.' });
