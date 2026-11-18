@@ -1,0 +1,12 @@
+# Contraste de docs/mvp/esquema.md con las migraciones reales (B3.1)
+# Comando: node docs/mvp/evidencias/B3.1/contrastar-esquema.mjs .
+# Fecha: 2026-11-17 · Node v24.22.3 · base 4ac9c4f
+
+Tablas reales: chat_messages(STRICT), mail_outbox(STRICT), offer_photos(STRICT), offers(STRICT), password_reset_tokens(STRICT), schema_migrations(STRICT), sessions(STRICT), users(STRICT)
+FK reales: users->chat_messages.author_id:RESTRICT; offers->offer_photos.offer_id:CASCADE; users->offers.owner_id:RESTRICT; users->password_reset_tokens.user_id:CASCADE; users->sessions.user_id:CASCADE
+Relaciones del ER: users->sessions; users->password_reset_tokens; users->offers; users->chat_messages; offers->offer_photos
+Índices reales: idx_chat_room_id, idx_offers_owner_province_starts, idx_offers_owner_starts, idx_offers_public_starts, idx_sessions_user, ux_chat_messages_author_client, ux_password_reset_tokens_hash, ux_password_reset_tokens_user, ux_sessions_token_hash, ux_users_email
+Migraciones aplicadas: 001_base, 010_accounts, 020_offers, 030_chat
+
+Comprobaciones: 295; fallos: 0
+exit=0

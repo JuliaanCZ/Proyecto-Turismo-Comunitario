@@ -1,0 +1,24 @@
+# Control negativo de TM-ARQ-01 · 2026-11-17
+# Copia temporal de arquitectura.md con cuatro referencias inventadas: una en el bloque Mermaid, una ruta en código en línea,
+# un nombre de archivo suelto y un enlace relativo roto. El script debe fallar (código 1) y nombrar las cuatro.
+# Comando: ARQ_DOC=docs/mvp/.arq-falsa-temporal.md bash docs/mvp/evidencias/B3.1/comprobar-rutas.sh  (la copia se borró después)
+
+Documento: docs/mvp/.arq-falsa-temporal.md
+Rutas con carpeta: 69 · nombres sueltos: 34 · enlaces relativos: 12
+
+== 1. Rutas desde la raíz (test -e)
+ESTADO  VERSIONADO RUTA
+generada -          data/app.sqlite
+FALTA   no         src/modules/pagos/index.js
+FALTA   no         src/modules/reservas
+
+== 2. Nombres de archivo sueltos (deben existir en alguna carpeta del repositorio)
+FALTA   reservas-fantasma.js
+
+== 3. Enlaces Markdown relativos (desde docs/mvp)
+FALTA   img/no-existe.png
+
+Elementos comprobados: 114; generados al arrancar (no se comprueban): 1; faltan: 4
+(VERSIONADO = «no» solo es esperado, antes del commit, para los archivos nuevos de B3.1)
+TM-ARQ-01: FALLA
+exit=1

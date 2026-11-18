@@ -1,0 +1,6 @@
+# npm run lint · 2026-11-17 · Node v24.22.3 · base 4ac9c4f
+
+> turismo-comunitario@0.1.0 lint
+> eslint .
+
+exit=0
