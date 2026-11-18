@@ -82,7 +82,7 @@ Origen de cada fila: **Guía** (Word). La columna «Bloques» se genera a partir
 | R6 | Pantalla principal con operaciones CRUD (15.0 % · 3.0) | `/panel` protegido con navegación; CRUD de la oferta propia con detalle por ID, filtro por provincia, paginación de 10 y confirmación antes de eliminar. | B1.4, B1.5, B1.9, B2.2 | Pruebas `TM-OFE-01` a `TM-OFE-15`, `TM-NAV-01` a `TM-NAV-06`; capturas | W3, W4, W9 |
 | R7 | Chat que use WebSockets (12.5 % · 2.5) | Socket.IO propio en el mismo proceso, handshake autenticado, sala general, historial en SQLite, usuarios conectados y aviso adicional de nuevo mensaje. | B1.6, B1.7, B1.8, B1.10, B2.1, B2.2, B2.4 | Pruebas `TM-WS-01` a `TM-WS-07`, `TM-CHAT-01` a `TM-CHAT-14`, `TM-NOT-01` a `TM-NOT-05`; `docs/mvp/websocket.md` | W3, W4, W5, W9 |
 | R8 | Guarda datos en una base de datos (7.5 % · 1.5) | SQLite con siete tablas, claves foráneas, restricciones, migraciones numeradas, esquema documentado e índices en los campos de búsqueda. | B0.2, B1.4 | `docs/mvp/esquema.md`; `TM-DB-01` a `TM-DB-05`; `TM-OFE-08` | W3, W9 |
-| R9 | Calidad: pruebas, README y rendimiento (7.5 % · 1.5) | Más de cien pruebas automatizadas previstas (la guía pide al menos 5 relevantes), README con instrucciones, `.env.example` y una medición del listado filtrado y paginado con 20 000 filas. | B0.1, B0.5, B2.3, B3.2, B3.3 | Salida de `npm test`; `docs/mvp/evidencias/B2.3/rendimiento.md`; README | W4, W9 |
+| R9 | Calidad: pruebas, README y rendimiento (7.5 % · 1.5) | Más de cien pruebas automatizadas previstas (la guía pide al menos 5 relevantes), README con instrucciones, `.env.example` y una medición del listado filtrado y paginado con 20 filas ficticias (DM-17). | B0.1, B0.5, B2.3, B3.2, B3.3 | Salida de `npm test`; `docs/mvp/evidencias/B2.3/rendimiento.md`; README | W4, W9 |
 | R10 | Link de repositorio público con commits de todos (5.0 % · 1.0) | Repositorio público, un PR por bloque con revisor distinto, commits propios de los cuatro, etiqueta `v1.0-b1`, sin secretos ni datos reales. | B3.3, B3.5 | `git shortlog -sne`, etiqueta en el remoto, revisión de secretos | W7, W9 |
 | R11 | Presentación en grupo, defensa y evidencias subidas (15.0 % · 3.0) | 15 minutos de presentación más 5 de preguntas, los cuatro exponen, demo en vivo, declaración de IA y evidencias entregadas. | B3.4, B3.5 | Presentación, guion, registro del ensayo, comprobante de subida | W6, W8, W9 |
 | | **Total (100.0 % · 20.0)** | | | | |
@@ -288,6 +288,7 @@ La oferta tiene **seis atributos propios** (título, descripción, provincia, ub
 | DM-14 | El chat guarda una copia del nombre del autor (`author_name`). | Evita que `chat` consulte `users` y prepara la separación del segundo bimestre | — |
 | DM-15 | La recuperación de clave usa una bandeja de pruebas (`mail_outbox` y `/dev/bandeja`) controlada por entorno y clave. | El Word permite simular el envío; evita SMTP | — |
 | DM-16 | La notificación adicional es el aviso de nuevo mensaje en el panel (el Word lo cita como ejemplo). | Reutiliza el diseño anterior (supuesto S-04) | Confirmar con el docente (PM-05) |
+| DM-17 | La medición B2.3 usa **20 ofertas ficticias**, una en cada una de 20 provincias; cuatro provincias quedan sin filas. Conserva calentamiento, 1000 muestras, tres repeticiones y comparación con/sin índice. | Decisión del equipo del 2026-11-17: la guía pide una medición, pero no fija volumen (PM-09), y el equipo redujo las 20 000 filas propuestas | El resultado demuestra el procedimiento con el volumen acordado, no escalabilidad; si el docente fija otro volumen se repite |
 
 ### 2.7 Qué se conserva, simplifica, cambia o aplaza del diseño anterior
 
@@ -301,7 +302,7 @@ La oferta tiene **seis atributos propios** (título, descripción, provincia, ub
 | **Reservas, cupos, pagos, entradas QR e ingreso** | `docs/planificacion/referencias/PLAN.md` F3–F5; `03` §3.3; `04` TX-05 y TX-09 a TX-12; `05` §6–§7 | **Aplaza** las reservas internas, entradas e ingreso; en el MVP hay contacto por WhatsApp y **sin pagos** (DM-01 y DM-01a) | Decisión del equipo; el cupo es descriptivo |
 | **Chat y tiempo real** (handshake, eventos, cursor, presencia, aviso) | `05` §4–§5; `04` TX-14 y TX-15; `03` §3.4; `00` S-04 | **Conserva** los contratos de eventos y el historial por cursor; **simplifica**: sin cola por sala ni límite de frecuencia (DM-13); presencia y aviso se conservan | Cumplen la fila de chat de la rúbrica |
 | **Validación y datos** (longitudes en puntos de código, zona horaria, convenciones) | `03` §3.0, §6, §7 | **Conserva** reducido (DM-08, DM-10) | Reutiliza reglas ya razonadas |
-| **Pruebas y medición** | `08` §1, §3.6, §7, §7.1 | **Simplifica** el arnés (DM-09); **conserva** el método de rendimiento (20 000 filas, calentamiento, 1000 muestras, percentil 95) adaptado a SQLite | Cumple «pruebas» y «medición» con menos dependencias |
+| **Pruebas y medición** | `08` §1, §3.6, §7, §7.1 | **Simplifica** el arnés (DM-09) y el volumen a 20 filas (DM-17); conserva calentamiento, 1000 muestras, tres repeticiones y percentil 95, adaptados a SQLite | Cumple «pruebas» y «medición» con menos dependencias; el informe declara que 20 filas no prueban escalabilidad |
 | **Despliegue** | `09` §6; `02` §7 | **Cambia**: SQLite exige disco persistente; sin PostgreSQL ni PayPal | El diseño anterior suponía base administrada |
 | **Demo, entrega y prompts** | `12` §2, §5–§7; `11` §2–§3 | **Conserva** la política de commits auténticos, la declaración de IA, la contingencia y el informe por bloque; **reescribe** el guion para el recorrido sin pagos | Las reglas siguen valiendo |
 
@@ -1481,7 +1482,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 |---|---|---|---|---|---|
 | F2 | Integrante 2 | Integrante 4 | M | B1.2, B1.5 | B3.2 (Integrante 2), B3.4 (Integrante 3) |
 
-**Resultado observable.** Un informe repetible del tiempo de respuesta del listado filtrado y paginado con 20 000 ofertas ficticias, con volumen, comandos, versiones y resultados reales, comparando con y sin índice.
+**Resultado observable.** Un informe repetible del tiempo de respuesta del listado filtrado y paginado con 20 ofertas ficticias (DM-17), con volumen, comandos, versiones y resultados reales, comparando con y sin índice.
 
 **Requisitos que cubre.** R9, O6 (ver §1).
 
@@ -1495,7 +1496,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 - El informe nunca contiene cifras estimadas ni de ejemplo.
 
 **Pasos de implementación.**
-1. `perf:seed`: crea `data/perf.sqlite` (se niega si el nombre no termina en `perf.sqlite`; nunca toca la base de desarrollo), aplica las migraciones, crea el usuario `perf@demo.test` y 20 000 ofertas ficticias del mismo usuario repartidas en las 24 provincias con fechas futuras, en una sola transacción; imprime el volumen y el reparto por provincia.
+1. `perf:seed`: crea `data/perf.sqlite` (se niega si el nombre no es exactamente `perf.sqlite`; nunca toca la base de desarrollo), aplica las migraciones, crea el usuario `perf@demo.test` y 20 ofertas ficticias del mismo usuario, una en cada una de 20 provincias y cuatro sin filas, con fechas futuras, en una sola transacción; imprime el volumen y el reparto por provincia.
 2. `perf:catalog`: arranca el servidor con `NODE_ENV=production` sobre esa base, ingresa una vez y mide `GET /panel/ofertas?provincia=PICHINCHA` (primera página) y una página profunda: 50 peticiones de calentamiento descartadas, 1000 muestras con concurrencia 10 y 3 repeticiones; calcula mediana y percentil 95 por rango más cercano, mínimo, máximo y errores (las respuestas distintas de 200 cuentan como errores y no entran en los percentiles).
 3. Medir también la consulta SQL aislada (reloj monótono dentro del proceso) y guardar `EXPLAIN QUERY PLAN`.
 4. Variante `--sin-indice`: copia de la base sin `idx_offers_owner_province_starts` para comparar.
@@ -1503,7 +1504,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 6. El revisor repite la medición en su equipo; ambos resultados figuran en el informe. El criterio de referencia (p95 ≤ 300 ms en la página) es una **propuesta**, no un resultado.
 
 **Pruebas.**
-- TM-PERF-01 — el sembrado reducido (por ejemplo 2 400 filas) crea las 24 provincias con 100 ofertas cada una (verificación SQL).
+- TM-PERF-01 — el sembrado crea exactamente 20 filas, una en cada una de 20 provincias, y se niega a actuar sobre un archivo cuyo nombre no sea `perf.sqlite` (verificación SQL).
 - TM-PERF-02 — `EXPLAIN QUERY PLAN` del listado usa `idx_offers_owner_province_starts`.
 - TM-PERF-03 — el informe no tiene celdas vacías ni «—» y declara el estado `EJECUTADO` (lista de comprobación manual).
 
@@ -1515,7 +1516,7 @@ Convenciones: esfuerzo relativo S (pequeño), M (medio), L (grande). Los comando
 - Con B1.5: el listado medido es el de la ruta real `/panel/ofertas`; con B0.2: se comprueba el índice de verdad, no un supuesto.
 - Con B1.2: el script usa el servicio de ingreso real para obtener la cookie.
 
-**Criterio de aceptación.** `perf:seed` crea 20 000 filas verificadas por SQL; `perf:catalog` imprime mediana, p95, mínimo, máximo y errores por repetición; el informe indica volumen, comando, entorno y plan de consulta, compara con y sin índice y fue repetido por otra persona; ninguna cifra es estimada.
+**Criterio de aceptación.** `perf:seed` crea 20 filas verificadas por SQL; `perf:catalog` imprime mediana, p95, mínimo, máximo y errores por repetición; el informe indica volumen, comando, entorno, plan de consulta y la limitación de no inferir escalabilidad con 20 filas, compara con y sin índice y fue repetido por otra persona; ninguna cifra es estimada.
 
 **Fuera del bloque.** Optimizaciones de código, Lighthouse y pruebas de carga del chat.
 

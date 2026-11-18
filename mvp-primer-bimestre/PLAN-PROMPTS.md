@@ -1633,13 +1633,13 @@ PRERREQUISITOS (deben estar integrados en main antes de empezar)
 Comprueba con git log, la estructura de carpetas y la ejecución de las pruebas que existen y funcionan. Si falta alguno, detente: indica qué falta y no improvises un contrato incompatible.
 
 IMPLEMENTA
-Resultado esperado: Un informe repetible del tiempo de respuesta del listado filtrado y paginado con 20 000 ofertas ficticias, con volumen, comandos, versiones y resultados reales, comparando con y sin índice.
+Resultado esperado: Un informe repetible del tiempo de respuesta del listado filtrado y paginado con 20 ofertas ficticias (decisión del equipo DM-17), con volumen, comandos, versiones y resultados reales, comparando con y sin índice.
 Archivos o módulos previstos:
 - `scripts/perf-seed.js`, `scripts/perf-catalog.js`; scripts `perf:seed` y `perf:catalog` en `package.json`
 - `docs/mvp/evidencias/B2.3/rendimiento.md` y la salida literal de los comandos
 - `tests/integration/rendimiento-datos.test.js` (verificación del sembrado con un volumen reducido)
 Pasos, en orden:
-1. `perf:seed`: crea `data/perf.sqlite` (se niega si el nombre no termina en `perf.sqlite`; nunca toca la base de desarrollo), aplica las migraciones, crea el usuario `perf@demo.test` y 20 000 ofertas ficticias del mismo usuario repartidas en las 24 provincias con fechas futuras, en una sola transacción; imprime el volumen y el reparto por provincia.
+1. `perf:seed`: crea `data/perf.sqlite` (se niega si el nombre no es exactamente `perf.sqlite`; nunca toca la base de desarrollo), aplica las migraciones, crea el usuario `perf@demo.test` y 20 ofertas ficticias del mismo usuario, una en cada una de 20 provincias y cuatro sin filas, con fechas futuras, en una sola transacción; imprime el volumen y el reparto por provincia.
 2. `perf:catalog`: arranca el servidor con `NODE_ENV=production` sobre esa base, ingresa una vez y mide `GET /panel/ofertas?provincia=PICHINCHA` (primera página) y una página profunda: 50 peticiones de calentamiento descartadas, 1000 muestras con concurrencia 10 y 3 repeticiones; calcula mediana y percentil 95 por rango más cercano, mínimo, máximo y errores (las respuestas distintas de 200 cuentan como errores y no entran en los percentiles).
 3. Medir también la consulta SQL aislada (reloj monótono dentro del proceso) y guardar `EXPLAIN QUERY PLAN`.
 4. Variante `--sin-indice`: copia de la base sin `idx_offers_owner_province_starts` para comparar.
@@ -1655,7 +1655,7 @@ Optimizaciones de código, Lighthouse y pruebas de carga del chat.
 
 COMPRUEBA
 Pruebas que debes escribir y hacer pasar:
-- TM-PERF-01 — el sembrado reducido (por ejemplo 2 400 filas) crea las 24 provincias con 100 ofertas cada una (verificación SQL).
+- TM-PERF-01 — el sembrado crea exactamente 20 filas, una en cada una de 20 provincias, y rechaza cualquier archivo que no se llame `perf.sqlite` (verificación SQL).
 - TM-PERF-02 — `EXPLAIN QUERY PLAN` del listado usa `idx_offers_owner_province_starts`.
 - TM-PERF-03 — el informe no tiene celdas vacías ni «—» y declara el estado `EJECUTADO` (lista de comprobación manual).
 Comando previsto (no verificado hasta que lo ejecutes): `npm run perf:seed && npm run perf:catalog` · `npm run perf:catalog -- --sin-indice`
@@ -1665,7 +1665,7 @@ Comprobaciones de integración (convergen varios integrantes):
 - Con B1.2: el script usa el servicio de ingreso real para obtener la cookie.
 
 CRITERIO DE CIERRE (idéntico al de PLAN-MVP.md §4, B2.3)
-`perf:seed` crea 20 000 filas verificadas por SQL; `perf:catalog` imprime mediana, p95, mínimo, máximo y errores por repetición; el informe indica volumen, comando, entorno y plan de consulta, compara con y sin índice y fue repetido por otra persona; ninguna cifra es estimada.
+`perf:seed` crea 20 filas verificadas por SQL; `perf:catalog` imprime mediana, p95, mínimo, máximo y errores por repetición; el informe indica volumen, comando, entorno, plan de consulta y la limitación de no inferir escalabilidad con 20 filas, compara con y sin índice y fue repetido por otra persona; ninguna cifra es estimada.
 
 REGLAS COMUNES
 - Antes de modificar nada, inspecciona el repositorio (git status, estructura de carpetas, package.json, migraciones, pruebas existentes) y lee los documentos indicados. No supongas que algo existe: compruébalo.

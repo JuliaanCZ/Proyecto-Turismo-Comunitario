@@ -1,0 +1,49 @@
+$ npm run perf:catalog -- --sin-indice
+
+{
+  "variant": "sin-indice",
+  "measuredAtUtc": "2026-11-18T02:05:15.150Z",
+  "environment": {
+    "node": "v24.22.3",
+    "sqlite": "3.54.1",
+    "operatingSystem": "win32 10.0.26200",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12700H",
+    "cpuLogicalCores": 20,
+    "memoryBytes": 16849752064,
+    "nodeEnv": "production"
+  },
+  "parameters": { "offers": 20, "warmup": 50, "samples": 1000, "concurrency": 10, "repetitions": 3 },
+  "http": [
+    {
+      "name": "filtrado-pichincha-pagina-1",
+      "path": "/panel/ofertas?provincia=PICHINCHA&pagina=1",
+      "repetitions": [
+        { "repetition": 1, "medianMs": 8.870599999999968, "p95Ms": 12.486899999999991, "minMs": 6.621200000000044, "maxMs": 14.738200000000006, "errors": 0, "totalSeconds": 0.9072232999999998, "requestsPerSecond": 1102.2644590367115 },
+        { "repetition": 2, "medianMs": 6.742799999999988, "p95Ms": 9.516199999999799, "minMs": 6.116899999999987, "maxMs": 13.185899999999947, "errors": 0, "totalSeconds": 0.7135653999999999, "requestsPerSecond": 1401.4132411689245 },
+        { "repetition": 3, "medianMs": 6.914900000000216, "p95Ms": 8.084499999999935, "minMs": 6.249700000000303, "maxMs": 15.849999999999909, "errors": 0, "totalSeconds": 0.7193874999999998, "requestsPerSecond": 1390.0714149189419 }
+      ]
+    },
+    {
+      "name": "sin-filtro-pagina-2",
+      "path": "/panel/ofertas?pagina=2",
+      "repetitions": [
+        { "repetition": 1, "medianMs": 7.8168000000000575, "p95Ms": 10.947700000000168, "minMs": 7.133299999999963, "maxMs": 21.554599999999937, "errors": 0, "totalSeconds": 0.8410417000000002, "requestsPerSecond": 1189.001686836693 },
+        { "repetition": 2, "medianMs": 7.5844999999999345, "p95Ms": 11.412600000000111, "minMs": 7.016899999999623, "maxMs": 21.299199999999928, "errors": 0, "totalSeconds": 0.8077327, "requestsPerSecond": 1238.0333246382127 },
+        { "repetition": 3, "medianMs": 7.534599999999955, "p95Ms": 9.710700000000543, "minMs": 6.926099999999678, "maxMs": 18.443499999999403, "errors": 0, "totalSeconds": 0.7934067999999997, "requestsPerSecond": 1260.3874834448109 }
+      ]
+    }
+  ],
+  "sql": {
+    "medianMs": 0.024800000000141154,
+    "p95Ms": 0.028200000000651926,
+    "minMs": 0.024099999999634747,
+    "maxMs": 0.10760000000027503,
+    "errors": 0,
+    "plan": [
+      "SEARCH o USING INDEX idx_offers_owner_starts (owner_id=?)",
+      "CORRELATED SCALAR SUBQUERY 1",
+      "SEARCH p USING INTEGER PRIMARY KEY (rowid=?)"
+    ]
+  }
+}
+(exit 0)

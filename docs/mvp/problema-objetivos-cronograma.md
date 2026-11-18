@@ -20,7 +20,7 @@ Desarrollar y validar durante el primer bimestre una aplicación web monolítica
 2. Implementar el CRUD de ofertas con seis atributos, fotografía, publicación, filtro por provincia, páginas de diez elementos y confirmación de eliminación; verificarlo con `TM-OFE-*` y `TM-NAV-*`.
 3. Mostrar solo ofertas futuras, publicadas y con fotografía, y generar la consulta por WhatsApp cuando exista un número configurado; comprobarlo con `TM-OFE-17` y B2.2.
 4. Lograr que dos usuarios autenticados intercambien mensajes persistentes, recuperen el historial, vean la presencia y reciban avisos sin recargar; verificarlo con `TM-WS-*`, `TM-CHAT-*` y `TM-NOT-*`.
-5. Persistir siete tablas de aplicación mediante migraciones, ejecutar las pruebas del MVP y medir el listado con 20 000 ofertas, registrando resultados reales en B2.3 y B3.2.
+5. Persistir siete tablas de aplicación mediante migraciones, ejecutar las pruebas del MVP y medir el listado con 20 ofertas ficticias (decisión del equipo DM-17), registrando resultados reales en B2.3 y B3.2.
 
 ## Cronograma relativo
 

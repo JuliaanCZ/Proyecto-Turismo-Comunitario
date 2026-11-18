@@ -226,7 +226,7 @@ Una fila por migración aplicada.
 
 ## Índices y la consulta que justifica cada uno
 
-En `tests/unit/db-migraciones.test.js`, la prueba de planes de consulta usa `EXPLAIN QUERY PLAN` para comprobar que nueve de los índices de la tabla se usan en sus consultas y que no hay ordenamiento aparte (`USE TEMP B-TREE`). Para `ux_password_reset_tokens_user`, la prueba de unicidad comprueba que SQLite rechaza un segundo token del mismo usuario. La prueba de planes se ejecuta sobre una base pequeña con `ANALYZE`. La medición con 20 000 ofertas corresponde a B2.3.
+En `tests/unit/db-migraciones.test.js`, la prueba de planes de consulta usa `EXPLAIN QUERY PLAN` para comprobar que nueve de los índices de la tabla se usan en sus consultas y que no hay ordenamiento aparte (`USE TEMP B-TREE`). Para `ux_password_reset_tokens_user`, la prueba de unicidad comprueba que SQLite rechaza un segundo token del mismo usuario. La prueba de planes se ejecuta sobre una base pequeña con `ANALYZE`. La medición con 20 ofertas acordada por el equipo corresponde a B2.3 (DM-17).
 
 | Índice | Columnas | Consulta a la que sirve | Bloque que la ejecuta |
 |---|---|---|---|
