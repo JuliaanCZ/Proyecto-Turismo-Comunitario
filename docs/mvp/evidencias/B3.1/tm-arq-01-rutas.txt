@@ -1,0 +1,124 @@
+Documento: docs/mvp/arquitectura.md
+Rutas con carpeta: 67 · nombres sueltos: 33 · enlaces relativos: 11
+
+== 1. Rutas desde la raíz (test -e)
+ESTADO  VERSIONADO RUTA
+generada -          data/app.sqlite
+OK      si         db/migrations
+OK      si         deploy/Caddyfile
+OK      no         docs/mvp/evidencias/B3.1/comprobar-rutas.sh
+OK      no         docs/mvp/img/arquitectura.png
+OK      no         docs/mvp/img/arquitectura.svg
+OK      si         docs/planificacion/02-arquitectura-y-decisiones.md
+OK      si         public/css/app.css
+OK      si         public/js
+OK      si         scripts/check-sqlite-argon2.js
+OK      si         scripts/check-ws.js
+OK      si         scripts/migrate.js
+OK      si         scripts/perf-catalog.js
+OK      si         scripts/perf-seed.js
+OK      si         scripts/seed-demo.js
+OK      si         src/app.js
+OK      si         src/config.js
+OK      si         src/container.js
+OK      si         src/modules
+OK      -          src/modules/*
+OK      -          src/modules/*/data
+OK      -          src/modules/*/domain
+OK      -          src/modules/*/index.js
+OK      -          src/modules/*/service
+OK      si         src/modules/accounts
+OK      si         src/modules/accounts/data
+OK      si         src/modules/accounts/data/mailbox.repo.js
+OK      si         src/modules/accounts/service/mailer.js
+OK      si         src/modules/chat
+OK      si         src/modules/chat/data
+OK      si         src/modules/offers
+OK      si         src/modules/offers/data
+OK      si         src/realtime
+OK      si         src/realtime/chat.handlers.js
+OK      si         src/realtime/gateway.js
+OK      si         src/realtime/notifications.js
+OK      si         src/realtime/presence.js
+OK      si         src/realtime/session-guard.js
+OK      si         src/server.js
+OK      si         src/shared
+OK      si         src/shared/clock.js
+OK      si         src/shared/db.js
+OK      si         src/shared/errors.js
+OK      si         src/shared/http
+OK      si         src/shared/migrate.js
+OK      si         src/shared/not-implemented.js
+OK      si         src/shared/time.js
+OK      si         src/shared/validation
+OK      si         src/shared/validation/validate.js
+OK      si         src/web
+OK      -          src/web/*.routes.js
+OK      si         src/web/accounts.routes.js
+OK      si         src/web/chat.routes.js
+OK      si         src/web/design.routes.js
+OK      si         src/web/offer-photo.js
+OK      si         src/web/offers.routes.js
+OK      si         src/web/panel.routes.js
+OK      si         src/web/render-page.js
+OK      si         src/web/views
+OK      si         src/web/views/accounts/bandeja.ejs
+OK      si         src/web/views/offers/publica-detalle.ejs
+OK      si         tests/base
+OK      si         tests/helpers
+OK      si         tests/integration
+OK      si         tests/security
+OK      si         tests/unit
+OK      si         tests/ws
+
+== 2. Nombres de archivo sueltos (deben existir en alguna carpeta del repositorio)
+OK      LEEME.md                           docs/mvp/evidencias/B1.1/LEEME.md docs/mvp/evidencias/B1.10/LEEME.md
+OK      PLAN-MVP.md                        mvp-primer-bimestre/PLAN-MVP.md
+OK      afirmaciones-revision.md           docs/mvp/evidencias/B3.1/afirmaciones-revision.md
+OK      auth.js                            src/shared/http/auth.js tests/helpers/auth.js
+OK      chat-client.js                     public/js/chat-client.js
+OK      chat.js                            public/js/chat.js
+OK      check-ws.js                        scripts/check-ws.js
+OK      comprobar-dependencias.sh          docs/mvp/evidencias/B3.1/comprobar-dependencias.sh
+OK      container.js                       src/container.js
+OK      csrf.js                            src/shared/http/csrf.js
+OK      db.js                              src/shared/db.js
+OK      despliegue.md                      docs/mvp/despliegue.md
+OK      error-handler.js                   src/shared/http/error-handler.js
+OK      esquema-contraste.txt              docs/mvp/evidencias/B3.1/esquema-contraste.txt
+OK      esquema.md                         docs/mvp/esquema.md
+OK      form-validate.js                   public/js/form-validate.js
+OK      generar-diagrama.sh                docs/mvp/evidencias/B3.1/generar-diagrama.sh
+OK      hasher.js                          src/modules/accounts/service/hasher.js
+OK      index.js                           src/modules/accounts/index.js src/modules/chat/index.js
+OK      layout.ejs                         src/web/views/layout.ejs
+OK      migrate.js                         scripts/migrate.js src/shared/migrate.js
+OK      notificaciones-contador.js         public/js/notificaciones-contador.js
+OK      notificaciones.js                  public/js/notificaciones.js
+OK      oferta-foto.js                     public/js/oferta-foto.js
+OK      origin.js                          src/shared/http/origin.js
+OK      package.json                       package.json
+OK      perf-catalog.js                    scripts/perf-catalog.js
+OK      perf-seed.js                       scripts/perf-seed.js
+OK      safe-next.js                       src/shared/http/safe-next.js
+OK      seed-demo.js                       scripts/seed-demo.js
+OK      server.js                          server.js src/server.js
+OK      tm-arq-01-rutas.txt                docs/mvp/evidencias/B3.1/tm-arq-01-rutas.txt
+OK      validate.js                        src/shared/validation/validate.js
+
+== 3. Enlaces Markdown relativos (desde docs/mvp)
+OK      ../../mvp-primer-bimestre/PLAN-MVP.md
+OK      despliegue.md
+OK      esquema.md
+OK      evidencias/B3.1/LEEME.md
+OK      evidencias/B3.1/afirmaciones-revision.md
+OK      evidencias/B3.1/comprobar-dependencias.sh
+OK      evidencias/B3.1/esquema-contraste.txt
+OK      evidencias/B3.1/generar-diagrama.sh
+OK      evidencias/B3.1/tm-arq-01-rutas.txt
+OK      img/arquitectura.png
+OK      img/arquitectura.svg
+
+Elementos comprobados: 110; generados al arrancar (no se comprueban): 1; faltan: 0
+(VERSIONADO = «no» solo es esperado, antes del commit, para los archivos nuevos de B3.1)
+TM-ARQ-01: APROBADA
