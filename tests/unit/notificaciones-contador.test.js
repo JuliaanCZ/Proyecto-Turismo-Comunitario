@@ -100,3 +100,15 @@ test('contador: sin almacenamiento (ausente o que lanza) cuenta en memoria', () 
     assert.equal(counter.read(), 2);
   }
 });
+
+test('contador: conserva dueño y valor en memoria si puede leer pero no escribir', () => {
+  const storage = fakeStorage({ [COUNT_KEY]: '2', [OWNER_KEY]: String(LUIS) });
+  storage.setItem = () => { throw new Error('escritura bloqueada'); };
+  const counter = createUnreadCounter(storage, LUIS);
+  assert.equal(counter.read(), 2);
+  assert.equal(counter.increment(), 3);
+  assert.equal(counter.read(), 3);
+  assert.equal(counter.increment(), 4);
+  assert.equal(counter.read(), 4);
+  assert.equal(storage.getItem(COUNT_KEY), '2');
+});

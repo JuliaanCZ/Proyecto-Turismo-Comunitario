@@ -24,13 +24,18 @@ export function createUnreadCounter(storage, userId) {
   const get = (key) => {
     if (useMemory) return key === COUNT_KEY ? String(memoryCount) : memoryOwner;
     try {
-      return storage.getItem(key);
+      const value = storage.getItem(key);
+      if (key === COUNT_KEY) memoryCount = Number(value);
+      else memoryOwner = value;
+      return value;
     } catch {
       useMemory = true;
       return get(key);
     }
   };
   const set = (key, value) => {
+    if (key === COUNT_KEY) memoryCount = Number(value);
+    else memoryOwner = value;
     if (!useMemory) {
       try {
         storage.setItem(key, value);
@@ -39,10 +44,10 @@ export function createUnreadCounter(storage, userId) {
         useMemory = true;
       }
     }
-    if (key === COUNT_KEY) memoryCount = Number(value);
-    else memoryOwner = value;
   };
   const remove = (key) => {
+    if (key === COUNT_KEY) memoryCount = 0;
+    else memoryOwner = null;
     if (!useMemory) {
       try {
         storage.removeItem(key);
@@ -51,8 +56,6 @@ export function createUnreadCounter(storage, userId) {
         useMemory = true;
       }
     }
-    if (key === COUNT_KEY) memoryCount = 0;
-    else memoryOwner = null;
   };
 
   const isMine = () => get(OWNER_KEY) === owner;

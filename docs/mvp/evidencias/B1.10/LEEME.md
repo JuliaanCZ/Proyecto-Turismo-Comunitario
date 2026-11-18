@@ -2,7 +2,9 @@
 
 Fecha: 2026-11-17 · Windows · Node v24.22.3 · Chrome 157 (headless, dos perfiles).
 
-**Estado tras integrar `origin/main` (B1.2 ingreso y B1.5 ofertas) sobre 42fa415 y corregir el contador heredado entre cuentas:** `npm test` 151/151, `npm run lint` sin errores, las pruebas de B1.10 pasan (8 + 16, ver tabla) y los recorridos con **registro e ingreso reales** pasan completos (apartados siguientes). Los cambios de código de la corrección aún no están en un commit.
+**Estado tras integrar `origin/main` (B1.2 ingreso y B1.5 ofertas) sobre 42fa415 y corregir el contador heredado entre cuentas:** la corrección entre cuentas está guardada en el commit `b61cdcf`. La verificación de ese cambio dio `npm test` 151/151, `npm run lint` sin errores y recorridos con **registro e ingreso reales** completos (apartados siguientes).
+
+La revisión posterior detectó que el contador perdía su dueño al pasar a memoria si `getItem` funcionaba y `setItem` fallaba. El respaldo ahora conserva las lecturas y actualiza el dueño y el valor al escribir o borrar. La prueba de regresión parte de dos avisos y comprueba que, tras fallar la escritura, las lecturas conservan tres y luego cuatro avisos. La salida de esta revisión se guarda en `revision-respaldo.txt`.
 
 ## Dos comprobaciones distintas (no mezclar)
 
