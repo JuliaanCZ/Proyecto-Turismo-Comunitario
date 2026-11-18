@@ -1,0 +1,31 @@
+# Comando: npm run seed:demo && node --test tests/integration/recorrido-completo.test.js  (Node v24.22.3, 2026-11-17 22:35)
+# El seed se ejecutó antes sobre una base temporal (ver seed-demo.txt); las pruebas usan sus propias bases aisladas.
+
+▶ TM-INT-06: recorrido completo, del registro al cierre de sesión, con servicios reales
+  ✔ 1. el visitante ve la portada y el registro valida en el servidor (103.8331ms)
+  ✔ 2. registro e ingreso reales; /panel exige sesión y muestra el menú (76.4167ms)
+  ✔ 3. crear una oferta (borrador) y rechazar una fecha pasada (18.3753ms)
+  ✔ 4. listar, filtrar por provincia y paginar de 10 en 10 (74.2831ms)
+  ✔ 5. detalle por ID y 404 para ofertas ajenas con ingreso real (TM-OFE-09) (65.5609ms)
+  ✔ 6. editar la oferta (12.6265ms)
+  ✔ 7. publicar exige foto; se carga la foto y luego se publica (66.5569ms)
+  ✔ 8. el visitante ve solo lo publicado, con foto y enlace de WhatsApp sin enviar nada (73.774ms)
+  ✔ 9. eliminar pide confirmación y solo entonces borra (39.4057ms)
+  ✔ 10. recuperar la clave con la bandeja cierra la sesión anterior y el enlace sirve una vez (91.1983ms)
+  ✔ 11. chat real entre dos usuarios: guardar, difundir, presencia, historial y aviso (91.1438ms)
+  ✔ 12. cerrar sesión desconecta el chat, avisa a los demás y la cookie deja de servir (21.1783ms)
+✔ TM-INT-06: recorrido completo, del registro al cierre de sesión, con servicios reales (794.3017ms)
+✔ TM-NAV-06: los enlaces del menú responden 200 con sesión real y repiten el menú (152.1019ms)
+✔ TM-NOT-05: un mensaje rechazado o repetido no genera aviso; uno válido sí (88.3792ms)
+✔ TM-INT-07: seed:demo dos veces deja las mismas filas y respeta los datos pedidos (500.33ms)
+✔ TM-INT-07: el comando real (node scripts/seed-demo.js) también es idempotente y no imprime la clave (1154.2644ms)
+✔ TM-INT-07: repetir el seed días después deja las filas, informa las ofertas vencidas y no las publica (307.4736ms)
+✔ TM-INT-07: con otra contraseña el seed falla sin cambiar cuentas ni mostrar claves (269.8575ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4915.0683
