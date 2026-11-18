@@ -6,25 +6,51 @@
 </header>
 <div class="k-detail">
   <article class="k-paper"><h2 class="k-eyebrow">La experiencia</h2><p class="k-description"><%= offer.description %></p>
-    <p class="k-organizer">Organiza <strong><%= offer.organizerName %></strong></p>
+    <p class="k-organizer"><%- include('../partials/icon', { name: 'people' }) %> Organiza <strong><%= offer.organizerName %></strong></p>
     <% if (gallery.length > 1) { %><h2>Fotos del lugar</h2><ul class="k-gallery"><% for (const photo of gallery) { %>
       <li><a href="/ofertas/<%= offer.id %>/foto/<%= photo.position %>"><img src="/ofertas/<%= offer.id %>/foto/<%= photo.position %>" alt="<%= photo.altText %>" loading="lazy"></a></li>
     <% } %></ul><% } %>
   </article>
   <aside class="k-detail-aside">
-    <section class="k-date-panel"><h2>Fecha de salida</h2><p><%= formatEcuadorDateTime(offer.startsAt) %></p><small>Hora de Ecuador continental</small></section>
-    <section class="k-paper"><dl><dt>Punto de encuentro</dt><dd><%= offer.locationText %></dd><dt>Cupo referencial</dt><dd><%= offer.capacity %> personas</dd></dl>
-    <h2>Contacto</h2>
-    <% if (contact.whatsappUrl || contact.gmailUrl) { %>
-      <ul class="acciones">
-        <% if (contact.whatsappUrl) { %>
-          <li><a class="btn" href="<%= contact.whatsappUrl %>" rel="noreferrer">WhatsApp · <%= contact.phone %></a></li>
+    <section class="k-date-panel" aria-labelledby="fecha-salida">
+      <div aria-hidden="true"><%- include('../partials/date-tile', { offer }) %></div>
+      <div>
+        <h2 id="fecha-salida">Fecha de salida</h2>
+        <time datetime="<%= offer.startsAtLocal %>"><%= departureDate %> a las <%= departureTime %></time>
+        <small>Hora de Ecuador continental</small>
+      </div>
+    </section>
+    <section class="k-paper" aria-label="Información de la salida y contacto">
+      <dl class="k-offer-facts">
+        <% const facts = [
+          { icon: 'pin', label: 'Punto de encuentro', value: offer.locationText },
+          { icon: 'clock', label: 'Hora', value: departureTime },
+          { icon: 'people', label: 'Cupo referencial', value: offer.capacity + (offer.capacity === 1 ? ' persona' : ' personas') },
+        ]; %>
+        <% for (const fact of facts) { %>
+          <div class="k-offer-fact">
+            <dt><span class="k-fact-icon"><%- include('../partials/icon', { name: fact.icon }) %></span><%= fact.label %></dt>
+            <dd><%= fact.value %></dd>
+          </div>
         <% } %>
-        <% if (contact.gmailUrl) { %>
-          <li><a class="btn btn--secundario" href="<%= contact.gmailUrl %>" rel="noreferrer">Gmail · <%= contact.email %></a></li>
-        <% } %>
-      </ul>
-    <% } else { %><p>Contacto aún no disponible.</p><% } %>
+      </dl>
+      <div class="k-offer-contact">
+        <h2>Contacto</h2>
+        <% const links = [
+          { icon: 'whatsapp', label: 'WhatsApp', url: contact.whatsappUrl, value: contact.phone },
+          { icon: 'mail', label: 'Correo', url: contact.gmailUrl, value: contact.email },
+        ].filter(({ url }) => url); %>
+        <% if (links.length) { %>
+          <dl class="k-offer-facts">
+            <% for (const link of links) { %>
+              <div class="k-offer-fact">
+                <dt><span class="k-fact-icon"><%- include('../partials/icon', { name: link.icon }) %></span><%= link.label %></dt>
+                <dd><a href="<%= link.url %>" rel="noreferrer"><%= link.value %></a></dd>
+              </div>
+            <% } %>
+          </dl>
+        <% } else { %><p>Contacto aún no disponible.</p><% } %>
+      </div>
     </section>
   </aside>
 </div>

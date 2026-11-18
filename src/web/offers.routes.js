@@ -13,6 +13,8 @@ const AVISOS = Object.freeze({
 });
 const FORM_FIELDS = [...Object.keys(offerSchema), 'isPublished'];
 const DEMO_CONTACT = Object.freeze({ phone: '+593 99 716 2041', email: 'juliancamacho897@gmail.com' });
+const departureDate = new Intl.DateTimeFormat('es-EC', { dateStyle: 'long', timeZone: 'America/Guayaquil' });
+const departureTime = new Intl.DateTimeFormat('es-EC', { timeStyle: 'short', hour12: true, timeZone: 'America/Guayaquil' });
 
 function valuesFrom(input = {}) {
   return Object.fromEntries(FORM_FIELDS.map((field) => [field, input[field] ?? '']));
@@ -169,7 +171,9 @@ export function createOffersRouter(container) {
   router.get('/ofertas/:id', async (req, res) => {
     const offer = await offers.getPublicOffer(req.params.id);
     res.renderPage('offers/publica-detalle', {
-      title: offer.title, offer, formatEcuadorDateTime,
+      title: offer.title, offer,
+      departureDate: departureDate.format(offer.startsAt),
+      departureTime: departureTime.format(offer.startsAt),
       contact: publicContact(offer),
       gallery: await offers.publicGallery(offer.id),
     });

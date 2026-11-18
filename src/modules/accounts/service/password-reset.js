@@ -5,8 +5,11 @@ import { revokeAllInTx } from '../data/sessions.repo.js';
 import { createResetTokensRepo } from '../data/reset-tokens.repo.js';
 import { checkPasswordPolicy } from '../domain/password-policy.js';
 import { recoverSchema, resetSchema } from '../domain/schemas.js';
+import { passwordResetEmail } from './password-reset-email.js';
 
-const TOKEN_TTL_MS = 30 * 60_000;
+const TOKEN_TTL_MINUTES = 30;
+const TOKEN_TTL_MS = TOKEN_TTL_MINUTES * 60_000;
+const RESEND_COOLDOWN_MS = 60_000;
 const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
 export const TOKEN_INVALID_MESSAGE = 'El enlace no es válido o ya venció. Solicita uno nuevo.';
 
@@ -31,6 +34,7 @@ export function createPasswordReset({ db, clock, config, sessionEvents, hasher, 
     async requestPasswordReset(email) {
       const check = validate(recoverSchema, { email });
       if (!check.ok) throw validationError(check.errors);
+      if (!config.recoveryEnabled) return { accepted: true };
 
       const user = await users.findByEmail(check.values.email);
       if (user) {
@@ -38,15 +42,19 @@ export function createPasswordReset({ db, clock, config, sessionEvents, hasher, 
         const now = clock.now();
         // El enlace sale de APP_ORIGIN, nunca de la cabecera Host.
         const link = `${config.appOrigin}/restablecer?token=${token}`;
-        await db.transaction(async () => {
-          await tokens.upsertToken({ userId: user.id, tokenHash: hashToken(token), createdAt: now, expiresAt: now + TOKEN_TTL_MS });
-          await mailer.send({
-            to: user.email,
-            subject: 'Recupera tu contraseña',
-            body: `Hola, ${user.display_name}:\n\nRecibimos una solicitud para cambiar tu contraseña. `
-              + `Abre este enlace en los próximos 30 minutos:\n${link}\n\nSi no la pediste, ignora este mensaje.`,
+        const message = { to: user.email, ...passwordResetEmail({
+          displayName: user.display_name, link, expiresInMinutes: TOKEN_TTL_MINUTES,
+        }) };
+        const tokenData = { userId: user.id, tokenHash: hashToken(token), createdAt: now, expiresAt: now + TOKEN_TTL_MS };
+        if (config.resend) {
+          // Confirma el token antes del envío para liberar la conexión y aceptar un enlace entregado aunque expire la petición HTTP.
+          if (await tokens.upsertToken({ ...tokenData, cooldownMs: RESEND_COOLDOWN_MS })) await mailer.send(message);
+        } else {
+          await db.transaction(async () => {
+            await tokens.upsertToken(tokenData);
+            await mailer.send(message);
           });
-        });
+        }
       }
       return { accepted: true };
     },
