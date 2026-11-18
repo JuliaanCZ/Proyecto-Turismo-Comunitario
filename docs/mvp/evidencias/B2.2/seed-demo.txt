@@ -1,0 +1,26 @@
+# Comando: DATABASE_FILE=<base temporal> SEED_DEMO_PASSWORD=<valor ficticio, no se muestra> npm run seed:demo
+# Fecha: 2026-11-17 22:35  ·  Node v24.22.3
+
+## Primera ejecución
+Base sembrada: <base temporal>/demo.sqlite
+Cuentas: 2 creadas, 0 conservadas (ana@demo.test, luis@demo.test).
+Contraseña: la de SEED_DEMO_PASSWORD (no se muestra).
+Ofertas: 15 creadas, 0 conservadas; fotos nuevas: 8; publicaciones nuevas: 7.
+Mensajes de chat: 5 creados, 0 conservados.
+
+## Segunda ejecución
+Base sembrada: <base temporal>/demo.sqlite
+Cuentas: 0 creadas, 2 conservadas (ana@demo.test, luis@demo.test).
+Contraseña: la de SEED_DEMO_PASSWORD (no se muestra).
+Ofertas: 0 creadas, 15 conservadas; fotos nuevas: 0; publicaciones nuevas: 0.
+Mensajes de chat: 0 creados, 5 conservados.
+
+## Filas en la base tras la segunda ejecución (lectura directa, solo para esta evidencia)
+users 2 | offers 15 | offers publicadas 7 | offer_photos 8 | chat_messages 5 | sessions 0 | mail_outbox 0
+correos: ana@demo.test, luis@demo.test
+  ana@demo.test   COTOPAXI    ofertas 3 publicadas 1
+  ana@demo.test   IMBABURA    ofertas 3 publicadas 1
+  ana@demo.test   MANABI      ofertas 3 publicadas 2
+  ana@demo.test   NAPO        ofertas 3 publicadas 1
+  luis@demo.test  CHIMBORAZO  ofertas 1 publicadas 1
+  luis@demo.test  LOJA        ofertas 2 publicadas 1

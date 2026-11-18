@@ -1,0 +1,212 @@
+Chrome: C:\Program Files\Google\Chrome\Application\chrome.exe
+Base temporal aislada (se borra al terminar); no se toca data/app.sqlite.
+Base sembrada: <base temporal>/demo.sqlite
+Cuentas: 2 creadas, 0 conservadas (ana@demo.test, luis@demo.test).
+Contraseña: la de SEED_DEMO_PASSWORD (no se muestra).
+Ofertas: 15 creadas, 0 conservadas; fotos nuevas: 8; publicaciones nuevas: 7.
+Mensajes de chat: 5 creados, 0 conservados.
+INFO  · Navegadores — Chrome/157.0.8103.79 · perfiles distintos: Ana, Luis y visitante
+PASA  · ana: ingreso real por formulario lleva a /panel — /panel
+PASA  · luis: ingreso real por formulario lleva a /panel — /panel
+PASA  · Ana ve 12 ofertas: 10 en la página 1 y 2 en la página 2 — 10 + 2
+PASA  · escritorio /: <title> propio y un único <h1> — «Inicio · Turismo comunitario» · h1=1 «Turismo comunitario»
+PASA  · escritorio /: sin desplazamiento horizontal — scrollWidth 1280 / ancho 1280
+PASA  · escritorio /: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /: texto legible (mínimo 15px)
+PASA  · escritorio /: menú esperado — /ofertas /ingreso /registro
+PASA  · escritorio /ofertas: <title> propio y un único <h1> — «Ofertas · Turismo comunitario» · h1=1 «Ofertas comunitarias»
+PASA  · escritorio /ofertas: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /ofertas: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /ofertas: texto legible (mínimo 15px)
+PASA  · escritorio /ofertas: menú esperado — /ofertas /ingreso /registro
+PASA  · escritorio /ofertas: imágenes cargadas y con texto alternativo — 7 imagen(es)
+PASA  · escritorio: el catálogo del visitante muestra las 7 ofertas publicadas con foto — 7
+PASA  · escritorio /ofertas/1: <title> propio y un único <h1> — «Caminata guiada a la laguna comunitaria · Turismo comunitario» · h1=1 «Caminata guiada a la laguna comunitaria»
+PASA  · escritorio /ofertas/1: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /ofertas/1: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /ofertas/1: texto legible (mínimo 15px)
+PASA  · escritorio /ofertas/1: menú esperado — /ofertas /ingreso /registro
+PASA  · escritorio /ofertas/1: imágenes cargadas y con texto alternativo — 1 imagen(es)
+PASA  · escritorio /ingreso: <title> propio y un único <h1> — «Ingresar · Turismo comunitario» · h1=1 «Ingresar»
+PASA  · escritorio /ingreso: sin desplazamiento horizontal — scrollWidth 1280 / ancho 1280
+PASA  · escritorio /ingreso: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /ingreso: texto legible (mínimo 15px)
+PASA  · escritorio /ingreso: menú esperado — /ofertas /ingreso /registro
+PASA  · escritorio /registro: <title> propio y un único <h1> — «Crear cuenta · Turismo comunitario» · h1=1 «Crear cuenta»
+PASA  · escritorio /registro: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /registro: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /registro: texto legible (mínimo 15px)
+PASA  · escritorio /registro: menú esperado — /ofertas /ingreso /registro
+PASA  · escritorio /recuperar: <title> propio y un único <h1> — «Recuperar contraseña · Turismo comunitario» · h1=1 «Recuperar contraseña»
+PASA  · escritorio /recuperar: sin desplazamiento horizontal — scrollWidth 1280 / ancho 1280
+PASA  · escritorio /recuperar: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /recuperar: texto legible (mínimo 15px)
+PASA  · escritorio /recuperar: menú esperado — /ofertas /ingreso /registro
+PASA  · escritorio /panel: <title> propio y un único <h1> — «Mi panel · Turismo comunitario» · h1=1 «Hola, Ana Quispe»
+PASA  · escritorio /panel: sin desplazamiento horizontal — scrollWidth 1280 / ancho 1280
+PASA  · escritorio /panel: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel: texto legible (mínimo 15px)
+PASA  · escritorio /panel: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /panel/ofertas: <title> propio y un único <h1> — «Mis ofertas · Turismo comunitario» · h1=1 «Mis ofertas»
+PASA  · escritorio /panel/ofertas: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /panel/ofertas: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel/ofertas: texto legible (mínimo 15px)
+PASA  · escritorio /panel/ofertas: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /panel/ofertas?pagina=2: <title> propio y un único <h1> — «Mis ofertas · Turismo comunitario» · h1=1 «Mis ofertas»
+PASA  · escritorio /panel/ofertas?pagina=2: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /panel/ofertas?pagina=2: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel/ofertas?pagina=2: texto legible (mínimo 15px)
+PASA  · escritorio /panel/ofertas?pagina=2: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /panel/ofertas/nueva: <title> propio y un único <h1> — «Nueva oferta · Turismo comunitario» · h1=1 «Nueva oferta»
+PASA  · escritorio /panel/ofertas/nueva: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /panel/ofertas/nueva: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel/ofertas/nueva: texto legible (mínimo 15px)
+PASA  · escritorio /panel/ofertas/nueva: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /panel/ofertas/1: <title> propio y un único <h1> — «Caminata guiada a la laguna comunitaria · Turismo comunitario» · h1=1 «Caminata guiada a la laguna comunitaria»
+PASA  · escritorio /panel/ofertas/1: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /panel/ofertas/1: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel/ofertas/1: texto legible (mínimo 15px)
+PASA  · escritorio /panel/ofertas/1: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /panel/ofertas/1: imágenes cargadas y con texto alternativo — 1 imagen(es)
+PASA  · escritorio /panel/ofertas/1/editar: <title> propio y un único <h1> — «Editar oferta · Turismo comunitario» · h1=1 «Editar oferta»
+PASA  · escritorio /panel/ofertas/1/editar: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /panel/ofertas/1/editar: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel/ofertas/1/editar: texto legible (mínimo 15px)
+PASA  · escritorio /panel/ofertas/1/editar: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /panel/ofertas/12: <title> propio y un único <h1> — «Borrador privado: ruta del café de altura · Turismo comunitario» · h1=1 «Borrador privado: ruta del café de altura»
+PASA  · escritorio /panel/ofertas/12: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /panel/ofertas/12: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel/ofertas/12: texto legible (mínimo 15px)
+PASA  · escritorio /panel/ofertas/12: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /panel/ofertas/12: imágenes cargadas y con texto alternativo — 1 imagen(es)
+PASA  · escritorio /panel/chat: <title> propio y un único <h1> — «Chat · Turismo comunitario» · h1=1 «Chat del equipo»
+PASA  · escritorio /panel/chat: sin desplazamiento horizontal — scrollWidth 1265 / ancho 1265
+PASA  · escritorio /panel/chat: viewport y lang="es-EC" — lang=es-EC
+PASA  · escritorio /panel/chat: texto legible (mínimo 15px)
+PASA  · escritorio /panel/chat: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /: <title> propio y un único <h1> — «Inicio · Turismo comunitario» · h1=1 «Turismo comunitario»
+PASA  · movil /: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /: texto legible (mínimo 15px)
+PASA  · movil /: menú esperado — /ofertas /ingreso /registro
+PASA  · movil /ofertas: <title> propio y un único <h1> — «Ofertas · Turismo comunitario» · h1=1 «Ofertas comunitarias»
+PASA  · movil /ofertas: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /ofertas: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /ofertas: texto legible (mínimo 15px)
+PASA  · movil /ofertas: menú esperado — /ofertas /ingreso /registro
+PASA  · movil /ofertas: imágenes cargadas y con texto alternativo — 7 imagen(es)
+PASA  · movil: el catálogo del visitante muestra las 7 ofertas publicadas con foto — 7
+PASA  · movil /ofertas/1: <title> propio y un único <h1> — «Caminata guiada a la laguna comunitaria · Turismo comunitario» · h1=1 «Caminata guiada a la laguna comunitaria»
+PASA  · movil /ofertas/1: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /ofertas/1: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /ofertas/1: texto legible (mínimo 15px)
+PASA  · movil /ofertas/1: menú esperado — /ofertas /ingreso /registro
+PASA  · movil /ofertas/1: imágenes cargadas y con texto alternativo — 1 imagen(es)
+PASA  · movil /ingreso: <title> propio y un único <h1> — «Ingresar · Turismo comunitario» · h1=1 «Ingresar»
+PASA  · movil /ingreso: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /ingreso: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /ingreso: texto legible (mínimo 15px)
+PASA  · movil /ingreso: menú esperado — /ofertas /ingreso /registro
+PASA  · movil /registro: <title> propio y un único <h1> — «Crear cuenta · Turismo comunitario» · h1=1 «Crear cuenta»
+PASA  · movil /registro: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /registro: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /registro: texto legible (mínimo 15px)
+PASA  · movil /registro: menú esperado — /ofertas /ingreso /registro
+PASA  · movil /recuperar: <title> propio y un único <h1> — «Recuperar contraseña · Turismo comunitario» · h1=1 «Recuperar contraseña»
+PASA  · movil /recuperar: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /recuperar: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /recuperar: texto legible (mínimo 15px)
+PASA  · movil /recuperar: menú esperado — /ofertas /ingreso /registro
+PASA  · movil /panel: <title> propio y un único <h1> — «Mi panel · Turismo comunitario» · h1=1 «Hola, Ana Quispe»
+PASA  · movil /panel: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel: texto legible (mínimo 15px)
+PASA  · movil /panel: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /panel/ofertas: <title> propio y un único <h1> — «Mis ofertas · Turismo comunitario» · h1=1 «Mis ofertas»
+PASA  · movil /panel/ofertas: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel/ofertas: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel/ofertas: texto legible (mínimo 15px)
+PASA  · movil /panel/ofertas: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /panel/ofertas?pagina=2: <title> propio y un único <h1> — «Mis ofertas · Turismo comunitario» · h1=1 «Mis ofertas»
+PASA  · movil /panel/ofertas?pagina=2: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel/ofertas?pagina=2: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel/ofertas?pagina=2: texto legible (mínimo 15px)
+PASA  · movil /panel/ofertas?pagina=2: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /panel/ofertas/nueva: <title> propio y un único <h1> — «Nueva oferta · Turismo comunitario» · h1=1 «Nueva oferta»
+PASA  · movil /panel/ofertas/nueva: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel/ofertas/nueva: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel/ofertas/nueva: texto legible (mínimo 15px)
+PASA  · movil /panel/ofertas/nueva: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /panel/ofertas/1: <title> propio y un único <h1> — «Caminata guiada a la laguna comunitaria · Turismo comunitario» · h1=1 «Caminata guiada a la laguna comunitaria»
+PASA  · movil /panel/ofertas/1: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel/ofertas/1: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel/ofertas/1: texto legible (mínimo 15px)
+PASA  · movil /panel/ofertas/1: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /panel/ofertas/1: imágenes cargadas y con texto alternativo — 1 imagen(es)
+PASA  · movil /panel/ofertas/1/editar: <title> propio y un único <h1> — «Editar oferta · Turismo comunitario» · h1=1 «Editar oferta»
+PASA  · movil /panel/ofertas/1/editar: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel/ofertas/1/editar: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel/ofertas/1/editar: texto legible (mínimo 15px)
+PASA  · movil /panel/ofertas/1/editar: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /panel/ofertas/12: <title> propio y un único <h1> — «Borrador privado: ruta del café de altura · Turismo comunitario» · h1=1 «Borrador privado: ruta del café de altura»
+PASA  · movil /panel/ofertas/12: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel/ofertas/12: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel/ofertas/12: texto legible (mínimo 15px)
+PASA  · movil /panel/ofertas/12: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · movil /panel/ofertas/12: imágenes cargadas y con texto alternativo — 1 imagen(es)
+PASA  · movil /panel/chat: <title> propio y un único <h1> — «Chat · Turismo comunitario» · h1=1 «Chat del equipo»
+PASA  · movil /panel/chat: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · movil /panel/chat: viewport y lang="es-EC" — lang=es-EC
+PASA  · movil /panel/chat: texto legible (mínimo 15px)
+PASA  · movil /panel/chat: menú esperado — /panel /panel/ofertas /panel/chat
+PASA  · escritorio /ofertas (visitante): se puede recorrer con Tab — 12 paradas; primera: Saltar al contenido
+PASA  · escritorio /ofertas (visitante): todas las paradas muestran foco visible — 12/12
+PASA  · escritorio /ofertas (visitante): el foco no queda fuera de la ventana
+PASA  · escritorio /ingreso: se puede recorrer con Tab — 10 paradas; primera: Saltar al contenido
+PASA  · escritorio /ingreso: todas las paradas muestran foco visible — 10/10
+PASA  · escritorio /ingreso: el foco no queda fuera de la ventana
+PASA  · escritorio /panel: se puede recorrer con Tab — 9 paradas; primera: Saltar al contenido
+PASA  · escritorio /panel: todas las paradas muestran foco visible — 9/9
+PASA  · escritorio /panel: el foco no queda fuera de la ventana
+INFO  · escritorio /panel/ofertas/nueva: parada nativa — el icono del selector de fecha de «startsAt» recibe el foco y el navegador dibuja su propio anillo (ver captura *-foco-selector-fecha.png); el CSS del proyecto no lo controla
+PASA  · escritorio /panel/ofertas/nueva: se puede recorrer con Tab — 14 paradas; primera: Saltar al contenido
+PASA  · escritorio /panel/ofertas/nueva: todas las paradas muestran foco visible — 14/14
+PASA  · escritorio /panel/ofertas/nueva: el foco no queda fuera de la ventana
+PASA  · escritorio /panel/chat: se puede recorrer con Tab — 8 paradas; primera: Saltar al contenido
+PASA  · escritorio /panel/chat: todas las paradas muestran foco visible — 8/8
+PASA  · escritorio /panel/chat: el foco no queda fuera de la ventana
+PASA  · movil /ofertas (visitante): se puede recorrer con Tab — 12 paradas; primera: Saltar al contenido
+PASA  · movil /ofertas (visitante): todas las paradas muestran foco visible — 12/12
+PASA  · movil /ofertas (visitante): el foco no queda fuera de la ventana
+PASA  · movil /ingreso: se puede recorrer con Tab — 10 paradas; primera: Saltar al contenido
+PASA  · movil /ingreso: todas las paradas muestran foco visible — 10/10
+PASA  · movil /ingreso: el foco no queda fuera de la ventana
+PASA  · movil /panel: se puede recorrer con Tab — 9 paradas; primera: Saltar al contenido
+PASA  · movil /panel: todas las paradas muestran foco visible — 9/9
+PASA  · movil /panel: el foco no queda fuera de la ventana
+INFO  · movil /panel/ofertas/nueva: parada nativa — el icono del selector de fecha de «startsAt» recibe el foco y el navegador dibuja su propio anillo (ver captura *-foco-selector-fecha.png); el CSS del proyecto no lo controla
+PASA  · movil /panel/ofertas/nueva: se puede recorrer con Tab — 14 paradas; primera: Saltar al contenido
+PASA  · movil /panel/ofertas/nueva: todas las paradas muestran foco visible — 14/14
+PASA  · movil /panel/ofertas/nueva: el foco no queda fuera de la ventana
+PASA  · movil /panel/chat: se puede recorrer con Tab — 9 paradas; primera: Saltar al contenido
+PASA  · movil /panel/chat: todas las paradas muestran foco visible — 9/9
+PASA  · movil /panel/chat: el foco no queda fuera de la ventana
+PASA  · el primer Tab es «Saltar al contenido» y Enter mueve el foco al contenido — «Saltar al contenido» → #contenido
+PASA  · el enlace de WhatsApp apunta a wa.me con el número ficticio y el mensaje preparado (no se abrió) — https://wa.me/593990000000 · texto «Hola, quiero consultar una reserva para Caminata guiada a la…»
+PASA  · el enlace usa rel="noopener noreferrer" — noopener noreferrer
+PASA  · visitante: el borrador y su foto responden 404
+PASA  · Luis (otra cuenta): el borrador de Ana y su foto responden 404
+PASA  · Ana (dueña): su borrador sí muestra la foto
+PASA  · Luis, en el panel, ve la insignia «1 mensaje nuevo» sin recargar — antes: «» · después: «1 mensaje nuevo»
+PASA  · Luis ve en el historial el mensaje de Ana al abrir el chat
+PASA  · la presencia muestra a los 2 conectados
+PASA  · Ana ve su propio mensaje confirmado
+PASA  · movil /panel/chat con mensajes y presencia: sin desplazamiento horizontal — scrollWidth 390 / ancho 390
+PASA  · Ana: «Salir» lleva a /ingreso — /ingreso?aviso=sesion-cerrada
+PASA  · Ana: tras salir, /panel vuelve a pedir ingreso — /ingreso?next=%2Fpanel
+PASA  · ana: sin errores de consola, red o excepciones
+PASA  · luis: sin errores de consola, red o excepciones
+PASA  · visitante: sin errores de consola, red o excepciones
+INFO  · Duración de esta comprobación AUTOMÁTICA — 35 s (no es el tiempo de un ensayo humano)
+
+Resultado: 199 comprobaciones pasan, 0 fallan.

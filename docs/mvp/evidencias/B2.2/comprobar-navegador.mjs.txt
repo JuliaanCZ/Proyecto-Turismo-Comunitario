@@ -1,0 +1,372 @@
+// Comprobación AUTOMATIZADA de interfaz de B2.2 con Chrome real (headless), sin dependencias.
+// Uso (desde la raíz del repositorio): node comprobar-navegador.mjs <carpeta-de-salida>
+// Qué hace: crea una base temporal, la siembra con `scripts/seed-demo.js`, arranca `server.js` en un
+// puerto libre y abre TRES Chrome con perfiles distintos (Ana, Luis y visitante). Revisa en escritorio
+// (1280x800) y móvil (390x844): título y h1, desbordamiento horizontal, imágenes, orden de tabulación,
+// foco visible, y el recorrido de chat entre Ana y Luis con aviso. NO envía nada a WhatsApp (solo lee
+// el enlace). NO sustituye el ensayo humano con dos navegadores: es una comprobación automática.
+// Las contraseñas se generan al azar en cada ejecución, no se imprimen; tampoco cookies ni tokens.
+// Se guarda como `.txt` para que ESLint no lo analice; se ejecuta renombrándolo a `.mjs`.
+import { randomBytes } from 'node:crypto';
+import { spawn, spawnSync } from 'node:child_process';
+import { appendFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const ROOT = process.cwd();
+const OUT = process.argv[2];
+if (!OUT) throw new Error('Indica la carpeta de salida.');
+const CHROME = process.env.CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+mkdirSync(OUT, { recursive: true });
+const LOG = join(OUT, 'navegador-interfaz.txt');
+writeFileSync(LOG, '');
+const say = (line) => { console.log(line); appendFileSync(LOG, `${line}\n`); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let failures = 0;
+let passes = 0;
+const check = (ok, label, detail = '') => {
+  if (ok) passes += 1; else failures += 1;
+  say(`${ok ? 'PASA ' : 'FALLA'} · ${label}${detail ? ` — ${detail}` : ''}`);
+};
+const info = (label, detail = '') => say(`INFO  · ${label}${detail ? ` — ${detail}` : ''}`);
+
+const freePort = () => new Promise((resolve) => {
+  const s = createServer(); s.listen(0, '127.0.0.1', () => { const { port } = s.address(); s.close(() => resolve(port)); });
+});
+
+const PASSWORD = randomBytes(18).toString('base64url');
+const WORK = mkdtempSync(join(tmpdir(), 'tc-b22-nav-'));
+const DB = join(WORK, 'demo.sqlite');
+const PORT = await freePort();
+const BASE = `http://localhost:${PORT}`;
+const NUMBER = '593990000000';
+const appEnv = {
+  ...process.env, APP_ENV: 'development', PORT: String(PORT), APP_ORIGIN: BASE, DATABASE_FILE: DB,
+  SEED_DEMO_PASSWORD: PASSWORD, WHATSAPP_BOOKING_NUMBER: NUMBER, DEMO_MAILBOX_ENABLED: 'true',
+};
+
+say(`Chrome: ${CHROME}`);
+say('Base temporal aislada (se borra al terminar); no se toca data/app.sqlite.');
+const seed = spawnSync(process.execPath, ['scripts/seed-demo.js'], { cwd: ROOT, env: appEnv, encoding: 'utf8' });
+say(seed.stdout.trim());
+if (seed.status !== 0) { say(seed.stderr); process.exit(1); }
+
+const server = spawn(process.execPath, ['server.js'], { cwd: ROOT, env: appEnv, stdio: 'ignore' });
+for (let i = 0; i < 60; i += 1) {
+  try { if ((await fetch(`${BASE}/salud`)).ok) break; } catch { /* aún no escucha */ }
+  await sleep(200);
+}
+
+async function launch(name) {
+  const port = await freePort();
+  const profile = mkdtempSync(join(tmpdir(), `tc-b22-${name}-`));
+  const proc = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
+    '--no-first-run', '--disable-gpu', '--window-size=1280,800', 'about:blank'], { stdio: 'ignore' });
+  for (let i = 0; i < 60; i += 1) {
+    try { await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); break; } catch { await sleep(200); }
+  }
+  const version = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).Browser;
+  return { name, port, proc, profile, version };
+}
+
+async function openTab(browser) {
+  const target = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT' })).json();
+  const ws = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((r) => ws.addEventListener('open', r, { once: true }));
+  let nextId = 1;
+  const pending = new Map();
+  const listeners = [];
+  ws.addEventListener('message', (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.id && pending.has(msg.id)) {
+      const { resolve, reject } = pending.get(msg.id);
+      pending.delete(msg.id);
+      return msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
+    }
+    for (const fn of [...listeners]) fn(msg);
+    return undefined;
+  });
+  const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = nextId++;
+    pending.set(id, { resolve, reject });
+    ws.send(JSON.stringify({ id, method, params }));
+  });
+  const tab = { problems: [], send, name: browser.name };
+  const requests = new Map();
+  listeners.push((msg) => {
+    const p = msg.params;
+    if (msg.method === 'Log.entryAdded' && p.entry.level === 'error') tab.problems.push(`${p.entry.text} ${p.entry.url ?? ''}`);
+    if (msg.method === 'Runtime.exceptionThrown') tab.problems.push(`excepción: ${p.exceptionDetails.text}`);
+    if (msg.method === 'Network.responseReceived') {
+      requests.set(p.requestId, p.response.url);
+      if (p.response.status >= 400 && p.type !== 'Document') tab.problems.push(`HTTP ${p.response.status} ${p.response.url}`);
+    }
+    if (msg.method === 'Network.loadingFailed') tab.problems.push(`red falló: ${requests.get(p.requestId)} ${p.errorText}`);
+  });
+  for (const domain of ['Page', 'Runtime', 'Log', 'Network']) await send(`${domain}.enable`);
+  tab.viewport = async (kind) => {
+    const mobile = kind === 'movil';
+    await send('Emulation.setDeviceMetricsOverride', mobile
+      ? { width: 390, height: 844, deviceScaleFactor: 2, mobile: true }
+      : { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
+    tab.kind = kind;
+  };
+  tab.evaluate = async (expression) => {
+    const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) throw new Error(`${r.exceptionDetails.text} ${r.exceptionDetails.exception?.description ?? ''}`);
+    return r.result.value;
+  };
+  tab.waitLoad = () => new Promise((resolve) => {
+    const fn = (msg) => { if (msg.method === 'Page.loadEventFired') { listeners.splice(listeners.indexOf(fn), 1); resolve(); } };
+    listeners.push(fn);
+  });
+  tab.go = async (path) => {
+    const loaded = tab.waitLoad();
+    await send('Page.navigate', { url: `${BASE}${path}` });
+    await loaded;
+    await sleep(350);
+  };
+  tab.path = () => tab.evaluate('location.pathname + location.search');
+  tab.waitFor = async (expression, ms = 6000) => {
+    const end = Date.now() + ms;
+    while (Date.now() < end) { if (await tab.evaluate(expression)) return true; await sleep(100); }
+    return false;
+  };
+  tab.submitForm = async (selector, values) => {
+    const loaded = tab.waitLoad();
+    await tab.evaluate(`(() => {
+      const form = document.querySelector(${JSON.stringify(selector)});
+      for (const [name, value] of Object.entries(${JSON.stringify(values)})) form.elements.namedItem(name).value = value;
+      form.requestSubmit(); return true; })()`);
+    await loaded;
+    await sleep(400);
+  };
+  tab.shot = async (name) => {
+    const { data } = await send('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(join(OUT, name), Buffer.from(data, 'base64'));
+  };
+  tab.key = async (key, code, vk, modifiers = 0) => {
+    for (const type of ['keyDown', 'keyUp']) {
+      await send('Input.dispatchKeyEvent', { type, key, code, windowsVirtualKeyCode: vk, modifiers });
+    }
+  };
+  tab.close = () => ws.close();
+  return tab;
+}
+
+const AUDIT = `(() => {
+  const describe = (el) => (el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\\s+/).join('.') : '')).slice(0, 70);
+  const vw = document.documentElement.clientWidth;
+  const wide = [...document.querySelectorAll('body *')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.right > vw + 1 || r.left < -1); }).slice(0, 5).map(describe);
+  const textSizes = [...document.querySelectorAll('p, li, label, a, button, dd, dt, span, h1, h2, h3, textarea, input, select')]
+    .filter((el) => el.offsetParent !== null && (el.textContent || el.value || '').trim()).map((el) => parseFloat(getComputedStyle(el).fontSize));
+  return {
+    title: document.title, lang: document.documentElement.lang, h1: document.querySelectorAll('h1').length,
+    main: !!document.querySelector('main, [role=main]'), skip: !!document.querySelector('a.saltar, a[href="#contenido"], a[href^="#main"], a[href^="#"][class*="salt"]'),
+    scrollW: document.documentElement.scrollWidth, clientW: vw, overflowX: document.documentElement.scrollWidth - vw, wide,
+    viewportMeta: !!document.querySelector('meta[name=viewport]'),
+    imgs: [...document.images].map((i) => ({ ok: i.complete && i.naturalWidth > 0, alt: i.alt, src: i.getAttribute('src'), w: Math.round(i.getBoundingClientRect().width) })),
+    minFont: textSizes.length ? Math.min(...textSizes) : null,
+    menu: [...document.querySelectorAll('nav[aria-label="Principal"] a')].map((a) => a.getAttribute('href')),
+    h1text: document.querySelector('h1')?.textContent.trim().slice(0, 60) ?? null,
+  };
+})()`;
+
+const FOCUS_INFO = `(() => {
+  const el = document.activeElement;
+  if (!el || el === document.body) return null;
+  const cs = getComputedStyle(el);
+  const r = el.getBoundingClientRect();
+  const outline = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0;
+  const shadow = cs.boxShadow !== 'none';
+  const native = /^(date|datetime-local|time|month|week)$/.test(el.type || '') && !el.matches(':focus');
+  return { native, fv: el.matches(':focus-visible'), tag: el.tagName.toLowerCase(), id: el.id || null, name: (el.getAttribute('aria-label') || el.textContent || el.getAttribute('name') || el.getAttribute('href') || '').trim().replace(/\\s+/g, ' ').slice(0, 40),
+    visible: outline || shadow, outline: outline ? cs.outlineWidth + ' ' + cs.outlineStyle : 'ninguno', inView: r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth };
+})()`;
+
+async function tabThrough(tab, label, max = 45) {
+  await tab.evaluate('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0); true');
+  const stops = [];
+  for (let i = 0; i < max; i += 1) {
+    await tab.key('Tab', 'Tab', 9);
+    await sleep(25);
+    const f = await tab.evaluate(FOCUS_INFO);
+    if (!f) break;
+    const signature = `${f.tag}|${f.id}|${f.name}`;
+    if (stops.length && signature === stops[0].signature) break;
+    // Un campo de fecha y hora tiene varias paradas internas (día, mes, año…): se cuenta una vez por campo.
+    if (stops.length && signature === stops.at(-1).signature) {
+      const last = stops.at(-1);
+      last.internas = (last.internas ?? 1) + 1;
+      if (f.native) { last.native = true; await tab.shot(`${tab.kind}-foco-selector-fecha.png`); }
+      else if (!f.visible) { last.visible = false; last.fv = f.fv; last.outline = f.outline; }
+      continue;
+    }
+    stops.push({ ...f, signature });
+    if (f.native) await tab.shot(`${tab.kind}-foco-selector-fecha.png`);
+  }
+  const nativeStops = stops.filter((s) => s.native);
+  if (nativeStops.length) info(`${label}: parada nativa`, `el icono del selector de fecha de «${nativeStops[0].name}» recibe el foco y el navegador dibuja su propio anillo (ver captura *-foco-selector-fecha.png); el CSS del proyecto no lo controla`);
+  const hidden = stops.filter((s) => !s.visible && !s.native);
+  const offscreen = stops.filter((s) => !s.inView);
+  check(stops.length >= 3, `${label}: se puede recorrer con Tab`, `${stops.length} paradas; primera: ${stops[0]?.name}`);
+  check(hidden.length === 0, `${label}: todas las paradas muestran foco visible`, hidden.length ? `sin foco: ${hidden.map((h) => `${h.tag} «${h.name}» (focus-visible=${h.fv}, outline=${h.outline})`).join('; ')}` : `${stops.length}/${stops.length}`);
+  check(offscreen.length === 0, `${label}: el foco no queda fuera de la ventana`, offscreen.map((h) => h.name).join('; '));
+  return stops;
+}
+
+async function audit(tab, path, slug, { expectMenu, expectImages = false, shot = true } = {}) {
+  await tab.go(path);
+  const a = await tab.evaluate(AUDIT);
+  const where = `${tab.kind} ${path}`;
+  check(a.title.length > 3 && a.h1 === 1, `${where}: <title> propio y un único <h1>`, `«${a.title}» · h1=${a.h1} «${a.h1text}»`);
+  check(a.overflowX <= 0, `${where}: sin desplazamiento horizontal`, `scrollWidth ${a.scrollW} / ancho ${a.clientW}${a.wide.length ? ` · anchos: ${a.wide.join(', ')}` : ''}`);
+  check(a.viewportMeta && /^es/.test(a.lang), `${where}: viewport y lang="es-EC"`, `lang=${a.lang}`);
+  check(a.minFont === null || a.minFont >= 14, `${where}: texto legible (mínimo ${a.minFont}px)`);
+  if (expectMenu) check(JSON.stringify(a.menu) === JSON.stringify(expectMenu), `${where}: menú esperado`, a.menu.join(' '));
+  if (expectImages) check(a.imgs.length > 0 && a.imgs.every((i) => i.ok && i.alt.trim()), `${where}: imágenes cargadas y con texto alternativo`, `${a.imgs.length} imagen(es)`);
+  if (shot) await tab.shot(`${tab.kind}-${slug}.png`);
+  return a;
+}
+
+const browsers = [];
+let exit = 0;
+try {
+  const [ana, luis, visitor] = [await launch('ana'), await launch('luis'), await launch('visitante')];
+  browsers.push(ana, luis, visitor);
+  info('Navegadores', `${ana.version} · perfiles distintos: Ana, Luis y visitante`);
+  const A = await openTab(ana);
+  const L = await openTab(luis);
+  const V = await openTab(visitor);
+  const started = Date.now();
+
+  // --- Ingreso real por formulario ---------------------------------------------------------------
+  for (const [tab, email] of [[A, 'ana@demo.test'], [L, 'luis@demo.test']]) {
+    await tab.viewport('escritorio');
+    await tab.go('/ingreso');
+    await tab.submitForm('form', { email, password: PASSWORD });
+    check((await tab.path()) === '/panel', `${tab.name}: ingreso real por formulario lleva a /panel`, await tab.path());
+  }
+  await V.viewport('escritorio');
+
+  const panelMenu = ['/panel', '/panel/ofertas', '/panel/chat'];
+  const visitorMenu = ['/ofertas', '/ingreso', '/registro'];
+  const ids = await (async () => {
+    await A.go('/panel/ofertas');
+    const first = await A.evaluate(`[...document.querySelectorAll('a[href^="/panel/ofertas/"]')].map(a => ({ href: a.getAttribute('href'), text: a.textContent.trim() })).filter(a => /\\/\\d+$/.test(a.href))`);
+    await A.go('/panel/ofertas?pagina=2');
+    const second = await A.evaluate(`[...document.querySelectorAll('a[href^="/panel/ofertas/"]')].map(a => ({ href: a.getAttribute('href'), text: a.textContent.trim() })).filter(a => /\\/\\d+$/.test(a.href))`);
+    check(first.length === 10 && second.length === 2, 'Ana ve 12 ofertas: 10 en la página 1 y 2 en la página 2', `${first.length} + ${second.length}`);
+    const all = [...first, ...second];
+    const draft = all.find((o) => o.text.startsWith('Borrador privado'));
+    const published = all.find((o) => o.text.startsWith('Caminata guiada'));
+    return { draftId: draft?.href.split('/').pop(), ownId: published?.href.split('/').pop() };
+  })();
+
+  // --- Auditoría por vista, escritorio y móvil ----------------------------------------------------
+  for (const kind of ['escritorio', 'movil']) {
+    for (const tab of [A, V]) await tab.viewport(kind);
+    await audit(V, '/', 'portada', { expectMenu: visitorMenu });
+    const catalog = await audit(V, '/ofertas', 'catalogo', { expectMenu: visitorMenu, expectImages: true });
+    check(catalog.imgs.length === 7, `${kind}: el catálogo del visitante muestra las 7 ofertas publicadas con foto`, `${catalog.imgs.length}`);
+    const publicId = await V.evaluate(`document.querySelector('a[href^="/ofertas/"]').getAttribute('href')`);
+    await audit(V, publicId, 'oferta-publica', { expectMenu: visitorMenu, expectImages: true });
+    for (const [path, slug] of [['/ingreso', 'ingreso'], ['/registro', 'registro'], ['/recuperar', 'recuperar']]) {
+      await audit(V, path, slug, { expectMenu: visitorMenu });
+    }
+    await audit(A, '/panel', 'panel', { expectMenu: panelMenu });
+    await audit(A, '/panel/ofertas', 'mis-ofertas', { expectMenu: panelMenu });
+    await audit(A, '/panel/ofertas?pagina=2', 'mis-ofertas-pagina-2', { expectMenu: panelMenu, shot: false });
+    await audit(A, '/panel/ofertas/nueva', 'formulario-oferta', { expectMenu: panelMenu });
+    await audit(A, `/panel/ofertas/${ids.ownId}`, 'detalle-propio', { expectMenu: panelMenu, expectImages: true });
+    await audit(A, `/panel/ofertas/${ids.ownId}/editar`, 'editar-oferta', { expectMenu: panelMenu, shot: false });
+    await audit(A, `/panel/ofertas/${ids.draftId}`, 'detalle-borrador', { expectMenu: panelMenu, expectImages: true, shot: false });
+    await audit(A, '/panel/chat', 'chat', { expectMenu: panelMenu });
+  }
+
+  // --- Teclado y foco -----------------------------------------------------------------------------
+  for (const kind of ['escritorio', 'movil']) {
+    for (const tab of [A, V]) await tab.viewport(kind);
+    await V.go('/ofertas'); await tabThrough(V, `${kind} /ofertas (visitante)`);
+    await V.go('/ingreso'); await tabThrough(V, `${kind} /ingreso`);
+    await A.go('/panel'); await tabThrough(A, `${kind} /panel`);
+    await A.go('/panel/ofertas/nueva'); await tabThrough(A, `${kind} /panel/ofertas/nueva`);
+    await A.go('/panel/chat'); await tabThrough(A, `${kind} /panel/chat`);
+  }
+  // El enlace «Saltar al contenido» mueve el foco al contenido principal.
+  await A.viewport('escritorio');
+  await A.go('/panel');
+  await A.key('Tab', 'Tab', 9);
+  const skipName = await A.evaluate('document.activeElement.textContent.trim()');
+  await A.key('Enter', 'Enter', 13);
+  await sleep(200);
+  const afterSkip = await A.evaluate(`({ hash: location.hash, inMain: !!document.activeElement.closest('main') || document.activeElement.id === location.hash.slice(1) })`);
+  check(/saltar/i.test(skipName) && afterSkip.inMain, 'el primer Tab es «Saltar al contenido» y Enter mueve el foco al contenido', `«${skipName}» → ${afterSkip.hash}`);
+
+  // --- Enlace de WhatsApp (solo lectura, sin abrirlo) y privacidad de borradores ----------------------
+  await V.viewport('escritorio');
+  await V.go('/ofertas');
+  const firstOffer = await V.evaluate(`document.querySelector('a[href^="/ofertas/"]').getAttribute('href')`);
+  await V.go(firstOffer);
+  const wa = await V.evaluate(`(() => { const a = [...document.querySelectorAll('a')].find(a => /WhatsApp/.test(a.textContent)); return a ? { href: a.href, rel: a.rel, target: a.target, text: a.textContent.trim() } : null; })()`);
+  const waUrl = new URL(wa?.href ?? 'http://invalido');
+  check(waUrl.host === 'wa.me' && waUrl.pathname === `/${NUMBER}` && /Hola, quiero consultar una reserva para /.test(waUrl.searchParams.get('text') ?? ''),
+    'el enlace de WhatsApp apunta a wa.me con el número ficticio y el mensaje preparado (no se abrió)', `${waUrl.origin}${waUrl.pathname} · texto «${(waUrl.searchParams.get('text') ?? '').slice(0, 60)}…»`);
+  check(/noopener/.test(wa?.rel ?? ''), 'el enlace usa rel="noopener noreferrer"', wa?.rel);
+
+  const statusOf = (tab, path) => tab.evaluate(`fetch(${JSON.stringify(path)}, { credentials: ${tab === V ? "'omit'" : "'include'"} }).then(r => r.status)`);
+  await V.go('/ofertas'); await L.go('/panel'); await A.go('/panel');
+  check(await statusOf(V, `/ofertas/${ids.draftId}`) === 404 && await statusOf(V, `/ofertas/${ids.draftId}/foto`) === 404, 'visitante: el borrador y su foto responden 404');
+  check(await statusOf(L, `/ofertas/${ids.draftId}/foto`) === 404 && await statusOf(L, `/panel/ofertas/${ids.draftId}/foto`) === 404, 'Luis (otra cuenta): el borrador de Ana y su foto responden 404');
+  check(await statusOf(A, `/panel/ofertas/${ids.draftId}/foto`) === 200, 'Ana (dueña): su borrador sí muestra la foto');
+
+  // --- Chat entre dos navegadores con aviso -----------------------------------------------------------
+  await A.go('/panel/chat');
+  await L.go('/panel');
+  const before = await L.evaluate(`document.getElementById('chat-badge').textContent.trim()`);
+  const text = `Mensaje de la comprobación ${randomBytes(2).toString('hex')}`;
+  await A.evaluate(`(() => { document.querySelector('#chat-text').value = ${JSON.stringify(text)}; document.querySelector('#chat-form').requestSubmit(); return true; })()`);
+  const appeared = await L.waitFor(`!document.getElementById('chat-badge').hidden && /1/.test(document.getElementById('chat-badge').textContent)`);
+  check(appeared, 'Luis, en el panel, ve la insignia «1 mensaje nuevo» sin recargar', `antes: «${before}» · después: «${await L.evaluate(`document.getElementById('chat-badge').textContent.trim()`)}»`);
+  await L.shot('escritorio-luis-aviso.png');
+  await L.go('/panel/chat');
+  check(await L.waitFor(`document.body.textContent.includes(${JSON.stringify(text)})`), 'Luis ve en el historial el mensaje de Ana al abrir el chat');
+  check(await L.waitFor(`/Conectados \\(2\\)/.test(document.getElementById('chat-presence-title').textContent)`), 'la presencia muestra a los 2 conectados');
+  const own = await A.evaluate(`document.body.textContent.includes(${JSON.stringify(text)})`);
+  check(own, 'Ana ve su propio mensaje confirmado');
+  await L.shot('escritorio-chat-dos-navegadores.png');
+  await L.viewport('movil');
+  await L.go('/panel/chat');
+  const mobileChat = await L.evaluate(AUDIT);
+  check(mobileChat.overflowX <= 0, 'movil /panel/chat con mensajes y presencia: sin desplazamiento horizontal', `scrollWidth ${mobileChat.scrollW} / ancho ${mobileChat.clientW}`);
+  await L.shot('movil-chat-luis.png');
+
+  // --- Cierre de sesión ---------------------------------------------------------------------------
+  await A.viewport('escritorio');
+  await A.go('/panel');
+  await A.evaluate(`document.querySelector('form[action="/salir"]').requestSubmit(); true`);
+  await sleep(700);
+  check((await A.path()).startsWith('/ingreso'), 'Ana: «Salir» lleva a /ingreso', await A.path());
+  await A.go('/panel');
+  check((await A.path()).startsWith('/ingreso'), 'Ana: tras salir, /panel vuelve a pedir ingreso', await A.path());
+
+  for (const tab of [A, L, V]) {
+    // Las peticiones de privacidad a un borrador ajeno devuelven 404 a propósito (el visitante y Luis las provocan).
+    const intended = new RegExp(`/ofertas/${ids.draftId}(/foto)?$|/panel/ofertas/${ids.draftId}/foto$|Failed to load resource.*404`);
+    const real = tab.problems.filter((p) => !/favicon/.test(p) && !intended.test(p));
+    check(real.length === 0, `${tab.name}: sin errores de consola, red o excepciones`, real.slice(0, 3).join(' | '));
+  }
+  info('Duración de esta comprobación AUTOMÁTICA', `${Math.round((Date.now() - started) / 1000)} s (no es el tiempo de un ensayo humano)`);
+  say(`\nResultado: ${passes} comprobaciones pasan, ${failures} fallan.`);
+  exit = failures ? 1 : 0;
+} catch (error) {
+  say(`ERROR inesperado: ${error.stack}`);
+  exit = 1;
+} finally {
+  for (const b of browsers) { b.proc.kill(); }
+  server.kill();
+  await sleep(800);
+  for (const dir of [WORK, ...browsers.map((b) => b.profile)]) { try { rmSync(dir, { recursive: true, force: true, maxRetries: 5 }); } catch { /* perfil aún en uso */ } }
+}
+process.exit(exit);
