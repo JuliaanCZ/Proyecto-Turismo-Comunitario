@@ -1,0 +1,60 @@
+Fecha: 2026-11-17 · Windows · Node v24.22.3
+Navegador de Ana: Chrome/157.0.8103.79 (perfil propio) · Navegador de Luis: Chrome/157.0.8103.79 (perfil propio) · http://localhost:3200
+Cuentas creadas por el formulario real /registro (correos ficticios @example.test, contraseñas aleatorias que no se imprimen).
+PASA  · El servidor es el real: /simulacion/sesion responde 404 (no hay herramienta de demostración)
+PASA  · Sin sesión, /panel redirige a /ingreso?next=%2Fpanel
+PASA  · Sin sesión no hay insignia ni se carga notificaciones.js
+PASA  · Ana Real: el registro real redirige a /ingreso con el aviso «cuenta-creada» — /ingreso?aviso=cuenta-creada
+PASA  · Ana Real: /ingreso muestra «Cuenta creada»
+PASA  · Ana Real: el ingreso real lleva a /panel — /panel
+PASA  · Ana Real: una sola cookie de sesión, HttpOnly y SameSite=Lax (valor oculto) — [{"nombre":"tc_session","httpOnly":true,"sameSite":"Lax","secure":false,"largo":43}]
+PASA  · Ana Real: el panel saluda con su nombre real
+PASA  · Luis Real: el registro real redirige a /ingreso con el aviso «cuenta-creada» — /ingreso?aviso=cuenta-creada
+PASA  · Luis Real: /ingreso muestra «Cuenta creada»
+PASA  · Luis Real: el ingreso real lleva a /panel — /panel
+PASA  · Luis Real: una sola cookie de sesión, HttpOnly y SameSite=Lax (valor oculto) — [{"nombre":"tc_session","httpOnly":true,"sameSite":"Lax","secure":false,"largo":43}]
+PASA  · Luis Real: el panel saluda con su nombre real
+PASA  · Los dos navegadores tienen sesiones distintas (huellas de cookie distintas; valores ocultos) — ana 5f04dff2 · luis c253e2b6
+PASA  · Ana: el chat conecta por WebSocket con su sesión real — Conectado por websocket.
+PASA  · La segunda pestaña de Ana comparte su sesión (cookie del mismo navegador)
+PASA  · Los sockets de /panel se abren por WebSocket (101 Switching Protocols) — Luis: 101, Ana (panel): 101
+PASA  · Luis en /panel no carga chat.js (no se une a la sala)
+Luis antes del mensaje: {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":"marca-tebt0gju9b","foco":"BODY","ancho":16}
+PASA  · Antes: insignia vacía, región aria-live="polite", sin contador
+  captura: real-00-luis-panel-antes.png
+PASA  · Luis ve «1 mensaje nuevo» sin recargar
+Luis tras el mensaje de Ana: {"texto":"1 mensaje nuevo","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":false,"contador":"1","marca":"marca-tebt0gju9b","foco":"BODY","ancho":128}
+PASA  · Sin recarga (la marca de la página sigue), el foco no se movió y chatNuevos = 1
+  captura: real-01-luis-insignia-1-mensaje-nuevo.png
+  captura: real-02-ana-autora-en-el-chat.png
+PASA  · Ana (autora) no ve insignia en su otra pestaña del panel — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":"marca-apgqzbib69s","foco":"BODY","ancho":16}
+  captura: real-03-ana-autora-otra-pestana-sin-insignia.png
+PASA  · Luis ve «2 mensajes nuevos» (plural)
+  captura: real-04-luis-insignia-2-mensajes-nuevos.png
+PASA  · Ana sigue sin insignia tras el segundo mensaje
+PASA  · Tras navegar a la portada la insignia sigue en «2 mensajes nuevos» (sessionStorage) — {"texto":"2 mensajes nuevos","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":false,"contador":"2","marca":null,"foco":"BODY","ancho":144}
+PASA  · En «Mis ofertas» (pantalla de B1.5) la insignia sigue en «2 mensajes nuevos» — {"texto":"2 mensajes nuevos","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":false,"contador":"2","marca":null,"foco":"BODY","ancho":144}
+PASA  · «Mis ofertas» carga notificaciones.js y un único cliente Socket.IO
+  captura: real-05-luis-mis-ofertas-con-insignia.png
+PASA  · En el catálogo público /ofertas (con sesión) la insignia sigue en «2 mensajes nuevos» — {"texto":"2 mensajes nuevos","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":false,"contador":"2","marca":null,"foco":"BODY","ancho":144}
+Regiones aria-live en el catálogo autenticado: chat-badge
+PASA  · Al abrir /panel/chat, chat.js borra chatNuevos
+PASA  · /panel/chat no carga notificaciones.js ni un segundo cliente Socket.IO
+PASA  · Luis conecta al chat con su sesión real
+PASA  · Luis ve en el historial los 2 mensajes guardados de Ana (chat real, base real)
+PASA  · En la sala, Luis recibe chat:message (la lista muestra los 3 mensajes)
+  captura: real-06-luis-en-el-chat-recibe-mensaje.png
+PASA  · En la sala no se acumulan avisos
+PASA  · Al volver a /panel la insignia está vacía — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":null,"foco":"BODY","ancho":16}
+  captura: real-07-luis-panel-insignia-limpia.png
+PASA  · Luis vuelve al chat para responder
+PASA  · Al responder Luis, la pestaña del panel de Ana ve «1 mensaje nuevo» (aviso en sentido contrario)
+  captura: real-08-ana-recibe-aviso-de-luis.png
+PASA  · Luis (autor de esa respuesta) no recibe aviso propio
+PASA  · Luis pulsa «Salir»: vuelve a /ingreso con el aviso «sesion-cerrada»
+PASA  · Tras salir, /panel vuelve a exigir ingreso (la sesión real se revocó)
+PASA  · Ana (chat): sin errores de consola, CSP ni red
+PASA  · Ana (panel): sin errores de consola, CSP ni red
+PASA  · Luis: sin errores de consola, CSP ni red
+PASA  · Todas las páginas de /panel se sirven con Cache-Control: no-store — 11 respuestas
+RESULTADO: todas las comprobaciones pasan.

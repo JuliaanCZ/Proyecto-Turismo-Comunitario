@@ -1,0 +1,278 @@
+// Comprobación de B1.10: el contador de mensajes nuevos NO se hereda entre cuentas de una misma pestaña.
+// Misma base que comprobar-navegador-real.mjs.txt: registro e ingreso REALES, dos Chrome con perfiles distintos.
+// Sin dependencias. Uso: node comprobar-navegador-cuentas.mjs <carpeta-de-salida> <url-base>
+// Requiere el servidor real (`node server.js` con una base temporal y APP_ORIGIN = <url-base>).
+// NO usa `scripts/demo-aviso-chat.js` ni `/simulacion/sesion`: cada navegador crea su cuenta en /registro,
+// ingresa en /ingreso y la cookie de sesión la fija el propio servidor real (HttpOnly).
+// Las contraseñas se generan al azar en cada ejecución, solo viajan por el protocolo DevTools hacia el
+// formulario y nunca se imprimen. Los valores de cookies y tokens tampoco: solo sus atributos.
+// Se guarda como `.txt` para que ESLint no lo analice; se ejecuta renombrándolo a `.mjs`.
+import { createHash as nodeHash, randomBytes } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { appendFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const [OUT, BASE] = process.argv.slice(2);
+const CHROME = process.env.CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+mkdirSync(OUT, { recursive: true });
+const LOG = join(OUT, 'navegador-cuentas.txt');
+writeFileSync(LOG, '');
+const say = (line) => { console.log(line); appendFileSync(LOG, `${line}\n`); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let failures = 0;
+const check = (ok, label, detail = '') => {
+  if (!ok) failures += 1;
+  say(`${ok ? 'PASA ' : 'FALLA'} · ${label}${detail ? ` — ${detail}` : ''}`);
+};
+
+const RUN = randomBytes(3).toString('hex');
+const mk = (displayName, tag) => ({ displayName, email: `${tag}.${RUN}@example.test`, password: randomBytes(18).toString('base64url') });
+const USERS = { luis: mk('Luis Real', 'luis'), ana: mk('Ana Real', 'ana'), rosa: mk('Rosa Real', 'rosa') };
+
+async function launch(port, name) {
+  const profile = mkdtempSync(join(tmpdir(), `tc-b110r-${name}-`));
+  const proc = spawn(CHROME, [
+    '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
+    '--no-first-run', '--disable-gpu', '--hide-scrollbars', '--window-size=1100,430', 'about:blank',
+  ], { stdio: 'ignore' });
+  for (let i = 0; i < 60; i++) {
+    try { await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); break; } catch { await sleep(200); }
+  }
+  const version = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).Browser;
+  return { port, proc, profile, version, name };
+}
+
+async function openTab(browser) {
+  const target = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT' })).json();
+  const ws = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((r) => ws.addEventListener('open', r, { once: true }));
+  let nextId = 1;
+  const pending = new Map();
+  const listeners = [];
+  ws.addEventListener('message', (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.id && pending.has(msg.id)) {
+      const { resolve, reject } = pending.get(msg.id);
+      pending.delete(msg.id);
+      return msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
+    }
+    for (const fn of [...listeners]) fn(msg);
+    return undefined;
+  });
+  const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = nextId++;
+    pending.set(id, { resolve, reject });
+    ws.send(JSON.stringify({ id, method, params }));
+  });
+  const tab = { problems: [], documents: [], sockets: [], listeners, send };
+  const requests = new Map();
+  listeners.push((msg) => {
+    const p = msg.params;
+    if (msg.method === 'Log.entryAdded' && ['error', 'warning'].includes(p.entry.level)) tab.problems.push(`${p.entry.level}: ${p.entry.text} ${p.entry.url ?? ''}`);
+    if (msg.method === 'Runtime.exceptionThrown') tab.problems.push(`excepción: ${p.exceptionDetails.text}`);
+    if (msg.method === 'Network.responseReceived') {
+      requests.set(p.requestId, p.response.url);
+      if (p.type === 'Document') tab.documents.push({ url: p.response.url, status: p.response.status, cacheControl: p.response.headers['Cache-Control'] ?? p.response.headers['cache-control'] });
+    }
+    if (msg.method === 'Network.loadingFailed') tab.problems.push(`red falló: ${requests.get(p.requestId)} ${p.errorText}`);
+    if (msg.method === 'Network.webSocketHandshakeResponseReceived') tab.sockets.push(p.response.status);
+  });
+  for (const domain of ['Page', 'Runtime', 'Log', 'Network']) await send(`${domain}.enable`);
+  await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 430, deviceScaleFactor: 1, mobile: false });
+  tab.evaluate = async (expression) => {
+    const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) throw new Error(`${r.exceptionDetails.text} ${r.exceptionDetails.exception?.description ?? ''}`);
+    return r.result.value;
+  };
+  tab.waitLoad = () => new Promise((resolve) => {
+    const fn = (msg) => { if (msg.method === 'Page.loadEventFired') { listeners.splice(listeners.indexOf(fn), 1); resolve(); } };
+    listeners.push(fn);
+  });
+  tab.go = async (path) => {
+    const loaded = tab.waitLoad();
+    tab.sockets.length = 0;
+    await send('Page.navigate', { url: `${BASE}${path}` });
+    await loaded;
+    await sleep(300);
+  };
+  tab.url = () => tab.evaluate('location.pathname + location.search');
+  // Envía un formulario real del DOM (los valores se escriben en los campos; no se imprimen).
+  tab.submitForm = async (selector, values) => {
+    const loaded = tab.waitLoad();
+    tab.sockets.length = 0;
+    await tab.evaluate(`(() => {
+      const form = document.querySelector(${JSON.stringify(selector)});
+      for (const [name, value] of Object.entries(${JSON.stringify(values)})) form.elements.namedItem(name).value = value;
+      form.requestSubmit();
+      return true;
+    })()`);
+    await loaded;
+    await sleep(400);
+  };
+  tab.waitFor = async (expression, ms = 6000) => {
+    const end = Date.now() + ms;
+    while (Date.now() < end) {
+      if (await tab.evaluate(expression)) return true;
+      await sleep(100);
+    }
+    return false;
+  };
+  tab.shot = async (name) => {
+    const { data } = await send('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(join(OUT, name), Buffer.from(data, 'base64'));
+    say(`  captura: ${name}`);
+  };
+  tab.close = () => ws.close();
+  return tab;
+}
+
+const badge = (tab) => tab.evaluate(`(() => {
+  const b = document.getElementById('chat-badge');
+  const r = b.getBoundingClientRect();
+  return { texto: b.textContent, hidden: b.hidden, ariaLive: b.getAttribute('aria-live'), ariaAtomic: b.getAttribute('aria-atomic'),
+    recortada: b.classList.contains('sr-only'), contador: sessionStorage.getItem('chatNuevos'),
+    marca: window.__sinRecarga ?? null, foco: document.activeElement?.tagName, ancho: Math.round(r.width) };
+})()`);
+
+const sendChat = (tab, text) => tab.evaluate(`(() => {
+  document.querySelector('#chat-text').value = ${JSON.stringify(text)};
+  document.querySelector('#chat-form').requestSubmit();
+  return true;
+})()`);
+
+const createHash = (value) => nodeHash('sha256').update(value).digest('hex').slice(0, 8);
+
+// Solo atributos de la cookie de sesión; el valor jamás se devuelve ni se imprime.
+async function sessionCookieInfo(tab) {
+  const { cookies } = await tab.send('Network.getCookies', { urls: [BASE] });
+  return cookies.map((c) => ({ nombre: c.name, httpOnly: c.httpOnly, sameSite: c.sameSite, secure: c.secure, largo: c.value.length, huella: createHash(c.value) }));
+}
+
+async function registerAndLogin(tab, who) {
+  const u = USERS[who];
+  await tab.go('/registro');
+  await tab.submitForm('form[action="/registro"]', {
+    displayName: u.displayName, email: u.email, password: u.password, passwordConfirm: u.password,
+  });
+  const afterRegister = await tab.url();
+  check(afterRegister === '/ingreso?aviso=cuenta-creada', `${u.displayName}: el registro real redirige a /ingreso con el aviso «cuenta-creada»`, afterRegister);
+  check(await tab.evaluate("document.body.textContent.includes('Cuenta creada. Ya puedes iniciar sesión.')"), `${u.displayName}: /ingreso muestra «Cuenta creada»`);
+  await tab.submitForm('form[action="/ingreso"]', { email: u.email, password: u.password });
+  const afterLogin = await tab.url();
+  check(afterLogin === '/panel', `${u.displayName}: el ingreso real lleva a /panel`, afterLogin);
+  const cookies = await sessionCookieInfo(tab);
+  const session = cookies.find((c) => c.httpOnly);
+  check(Boolean(session) && session.sameSite === 'Lax' && cookies.length === 1,
+    `${u.displayName}: una sola cookie de sesión, HttpOnly y SameSite=Lax (valor oculto)`, JSON.stringify(cookies.map(({ nombre, httpOnly, sameSite, secure, largo }) => ({ nombre, httpOnly, sameSite, secure, largo }))));
+  check(await tab.evaluate("document.querySelector('h1').textContent === " + JSON.stringify(`Hola, ${u.displayName}`)), `${u.displayName}: el panel saluda con su nombre real`);
+  return session?.huella;
+}
+
+
+// Estado del almacenamiento de la pestaña: solo claves y valores del contador (nunca hay tokens aquí).
+const storageState = (tab) => tab.evaluate('JSON.stringify(Object.fromEntries(Object.keys(sessionStorage).map((k) => [k, sessionStorage.getItem(k)])))');
+const logout = async (tab) => {
+  const done = tab.waitLoad();
+  await tab.evaluate("document.querySelector('form[action=\"/salir\"]').requestSubmit(), true");
+  await done;
+  await sleep(400);
+};
+const login = async (tab, who) => {
+  await tab.go('/ingreso');
+  await tab.submitForm('form[action="/ingreso"]', { email: USERS[who].email, password: USERS[who].password });
+};
+
+const one = await launch(9361, 'pestana');
+const two = await launch(9362, 'rosa');
+try {
+  say(`Fecha: ${new Date().toISOString().slice(0, 10)} · Windows · Node ${process.version}`);
+  say(`Navegador 1 (una sola pestaña para Luis y Ana): ${one.version} · Navegador 2 (Rosa, envía mensajes): ${two.version} · ${BASE}`);
+  say('Cuentas creadas por /registro (correos ficticios @example.test, contraseñas aleatorias que no se imprimen).');
+
+  const tab = await openTab(one);
+  const rosa = await openTab(two);
+  await registerAndLogin(tab, 'luis');
+  await registerAndLogin(rosa, 'rosa');
+  await rosa.go('/panel/chat');
+  check(await rosa.waitFor("document.querySelector('#chat-connection').textContent.startsWith('Conectado')"), 'Rosa conecta al chat real con su sesión');
+
+  // 1. Luis recibe avisos.
+  await tab.go('/panel');
+  await sleep(1000);
+  await sendChat(rosa, 'Primer aviso para Luis.');
+  await sendChat(rosa, 'Segundo aviso para Luis.');
+  check(await tab.waitFor("document.getElementById('chat-badge').textContent === '2 mensajes nuevos'"), 'Luis recibe «2 mensajes nuevos» de Rosa');
+  let state = JSON.parse(await storageState(tab));
+  say(`Almacenamiento de la pestaña con Luis: ${JSON.stringify(state)}`);
+  check(state.chatNuevos === '2' && /^\d+$/.test(state.chatNuevosUsuario ?? '') && Object.keys(state).length === 2, 'chatNuevos = 2 y un único dato adicional: el id numérico del dueño (sin tokens ni ids de sesión)');
+  const luisId = state.chatNuevosUsuario;
+  await tab.shot('cuentas-01-luis-con-2-avisos.png');
+
+  // 2. Misma cuenta: la navegación conserva el contador.
+  await tab.go('/panel/ofertas');
+  let b = await badge(tab);
+  check(b.texto === '2 mensajes nuevos' && b.contador === '2', 'Navegar a «Mis ofertas» con la misma cuenta conserva «2 mensajes nuevos»', JSON.stringify(b));
+  await tab.go('/');
+  check((await badge(tab)).texto === '2 mensajes nuevos', 'Navegar a la portada con la misma cuenta conserva «2 mensajes nuevos»');
+  await tab.go('/panel');
+  check((await badge(tab)).texto === '2 mensajes nuevos', 'Volver a /panel con la misma cuenta conserva «2 mensajes nuevos»');
+
+  // 3. Luis sale; en la MISMA pestaña ingresa Ana.
+  await logout(tab);
+  check((await tab.url()) === '/ingreso?aviso=sesion-cerrada', 'Luis pulsa «Salir» y vuelve a /ingreso');
+  state = JSON.parse(await storageState(tab));
+  say(`Almacenamiento tras salir Luis (la pestaña conserva el valor, por eso el dueño importa): ${JSON.stringify(state)}`);
+  await registerAndLogin(tab, 'ana');
+  await sleep(1000);
+  b = await badge(tab);
+  say(`Ana al ingresar en la misma pestaña: ${JSON.stringify(b)}`);
+  check(b.texto === '' && b.recortada && b.contador === null, 'Ana ingresa en la misma pestaña y empieza SIN el contador de Luis', JSON.stringify(b));
+  state = JSON.parse(await storageState(tab));
+  check(state.chatNuevos === undefined && state.chatNuevosUsuario !== undefined && state.chatNuevosUsuario !== luisId, 'El dueño guardado cambió de Luis a Ana (ids distintos) y no queda el contador de Luis', JSON.stringify(state));
+  await tab.shot('cuentas-02-ana-misma-pestana-sin-contador-de-luis.png');
+
+  // 4. Ana recibe su propio aviso: 1, no 3.
+  await sendChat(rosa, 'Aviso para Ana.');
+  check(await tab.waitFor("document.getElementById('chat-badge').textContent === '1 mensaje nuevo'"), 'Rosa escribe y Ana ve «1 mensaje nuevo» (no «3 mensajes nuevos»)');
+  await tab.shot('cuentas-03-ana-1-aviso-propio.png');
+  await tab.go('/panel/ofertas');
+  check((await badge(tab)).texto === '1 mensaje nuevo', 'Ana navega por «Mis ofertas» y conserva «1 mensaje nuevo»');
+
+  // 5. Abrir el chat sigue limpiando.
+  await tab.go('/panel/chat');
+  check(await tab.evaluate("sessionStorage.getItem('chatNuevos') === null"), 'Abrir /panel/chat sigue borrando chatNuevos (chat.js)');
+  await tab.go('/panel');
+  b = await badge(tab);
+  check(b.texto === '' && b.contador === null, 'Al volver a /panel la insignia de Ana está vacía', JSON.stringify(b));
+
+  // 6. Sentido inverso: Ana con aviso pendiente sale y Luis vuelve a ingresar en la misma pestaña.
+  await sleep(500);
+  await sendChat(rosa, 'Otro aviso para quien esté en la pestaña.');
+  check(await tab.waitFor("document.getElementById('chat-badge').textContent === '1 mensaje nuevo'"), 'Ana vuelve a tener «1 mensaje nuevo»');
+  await logout(tab);
+  await login(tab, 'luis');
+  check((await tab.url()) === '/panel', 'Luis ingresa de nuevo con su cuenta real en la misma pestaña');
+  await sleep(800);
+  b = await badge(tab);
+  check(b.texto === '' && b.contador === null, 'Luis no hereda el aviso de Ana', JSON.stringify(b));
+
+  // 7. Almacenamiento existente sin dueño (como el que dejaba la versión anterior).
+  await tab.evaluate("sessionStorage.setItem('chatNuevos', '4'); sessionStorage.removeItem('chatNuevosUsuario'); true");
+  await tab.go('/panel');
+  b = await badge(tab);
+  check(b.texto === '' && b.contador === null, 'Un chatNuevos heredado sin dueño se descarta al cargar (la insignia queda vacía)', JSON.stringify(b));
+  await tab.shot('cuentas-04-almacenamiento-heredado-descartado.png');
+
+  for (const [name, t] of [['Pestaña (Luis y Ana)', tab], ['Rosa', rosa]]) {
+    check(t.problems.length === 0, `${name}: sin errores de consola, CSP ni red`, t.problems.join(' | '));
+  }
+} finally {
+  for (const browser of [one, two]) {
+    browser.proc.kill();
+    await sleep(400);
+    try { rmSync(browser.profile, { recursive: true, force: true }); } catch { /* Windows aún libera el perfil */ }
+  }
+}
+say(failures === 0 ? 'RESULTADO: todas las comprobaciones pasan.' : `RESULTADO: ${failures} comprobación(es) fallan.`);
+process.exit(failures === 0 ? 0 : 1);

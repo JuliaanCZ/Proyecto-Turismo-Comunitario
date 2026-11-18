@@ -1,0 +1,45 @@
+Fecha: 2026-11-17 · Windows · Node v24.22.3
+Navegador 1 (una sola pestaña para Luis y Ana): Chrome/157.0.8103.79 · Navegador 2 (Rosa, envía mensajes): Chrome/157.0.8103.79 · http://localhost:3200
+Cuentas creadas por /registro (correos ficticios @example.test, contraseñas aleatorias que no se imprimen).
+PASA  · Luis Real: el registro real redirige a /ingreso con el aviso «cuenta-creada» — /ingreso?aviso=cuenta-creada
+PASA  · Luis Real: /ingreso muestra «Cuenta creada»
+PASA  · Luis Real: el ingreso real lleva a /panel — /panel
+PASA  · Luis Real: una sola cookie de sesión, HttpOnly y SameSite=Lax (valor oculto) — [{"nombre":"tc_session","httpOnly":true,"sameSite":"Lax","secure":false,"largo":43}]
+PASA  · Luis Real: el panel saluda con su nombre real
+PASA  · Rosa Real: el registro real redirige a /ingreso con el aviso «cuenta-creada» — /ingreso?aviso=cuenta-creada
+PASA  · Rosa Real: /ingreso muestra «Cuenta creada»
+PASA  · Rosa Real: el ingreso real lleva a /panel — /panel
+PASA  · Rosa Real: una sola cookie de sesión, HttpOnly y SameSite=Lax (valor oculto) — [{"nombre":"tc_session","httpOnly":true,"sameSite":"Lax","secure":false,"largo":43}]
+PASA  · Rosa Real: el panel saluda con su nombre real
+PASA  · Rosa conecta al chat real con su sesión
+PASA  · Luis recibe «2 mensajes nuevos» de Rosa
+Almacenamiento de la pestaña con Luis: {"chatNuevos":"2","chatNuevosUsuario":"1"}
+PASA  · chatNuevos = 2 y un único dato adicional: el id numérico del dueño (sin tokens ni ids de sesión)
+  captura: cuentas-01-luis-con-2-avisos.png
+PASA  · Navegar a «Mis ofertas» con la misma cuenta conserva «2 mensajes nuevos» — {"texto":"2 mensajes nuevos","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":false,"contador":"2","marca":null,"foco":"BODY","ancho":144}
+PASA  · Navegar a la portada con la misma cuenta conserva «2 mensajes nuevos»
+PASA  · Volver a /panel con la misma cuenta conserva «2 mensajes nuevos»
+PASA  · Luis pulsa «Salir» y vuelve a /ingreso
+Almacenamiento tras salir Luis (la pestaña conserva el valor, por eso el dueño importa): {"chatNuevos":"2","chatNuevosUsuario":"1"}
+PASA  · Ana Real: el registro real redirige a /ingreso con el aviso «cuenta-creada» — /ingreso?aviso=cuenta-creada
+PASA  · Ana Real: /ingreso muestra «Cuenta creada»
+PASA  · Ana Real: el ingreso real lleva a /panel — /panel
+PASA  · Ana Real: una sola cookie de sesión, HttpOnly y SameSite=Lax (valor oculto) — [{"nombre":"tc_session","httpOnly":true,"sameSite":"Lax","secure":false,"largo":43}]
+PASA  · Ana Real: el panel saluda con su nombre real
+Ana al ingresar en la misma pestaña: {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":null,"foco":"BODY","ancho":16}
+PASA  · Ana ingresa en la misma pestaña y empieza SIN el contador de Luis — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":null,"foco":"BODY","ancho":16}
+PASA  · El dueño guardado cambió de Luis a Ana (ids distintos) y no queda el contador de Luis — {"chatNuevosUsuario":"3"}
+  captura: cuentas-02-ana-misma-pestana-sin-contador-de-luis.png
+PASA  · Rosa escribe y Ana ve «1 mensaje nuevo» (no «3 mensajes nuevos»)
+  captura: cuentas-03-ana-1-aviso-propio.png
+PASA  · Ana navega por «Mis ofertas» y conserva «1 mensaje nuevo»
+PASA  · Abrir /panel/chat sigue borrando chatNuevos (chat.js)
+PASA  · Al volver a /panel la insignia de Ana está vacía — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":null,"foco":"BODY","ancho":16}
+PASA  · Ana vuelve a tener «1 mensaje nuevo»
+PASA  · Luis ingresa de nuevo con su cuenta real en la misma pestaña
+PASA  · Luis no hereda el aviso de Ana — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":null,"foco":"BODY","ancho":16}
+PASA  · Un chatNuevos heredado sin dueño se descarta al cargar (la insignia queda vacía) — {"texto":"","hidden":false,"ariaLive":"polite","ariaAtomic":"true","recortada":true,"contador":null,"marca":null,"foco":"BODY","ancho":16}
+  captura: cuentas-04-almacenamiento-heredado-descartado.png
+PASA  · Pestaña (Luis y Ana): sin errores de consola, CSP ni red
+PASA  · Rosa: sin errores de consola, CSP ni red
+RESULTADO: todas las comprobaciones pasan.
