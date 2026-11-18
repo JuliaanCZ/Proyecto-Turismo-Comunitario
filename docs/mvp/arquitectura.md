@@ -190,5 +190,5 @@ Opciones fijas del script: tema `base`, `htmlLabels: false` (el SVG usa `<text>`
 ## Verificación (TM-ARQ-01)
 
 - **Rutas:** `bash docs/mvp/evidencias/B3.1/comprobar-rutas.sh` extrae todas las rutas de este documento (código en línea y bloque Mermaid) y ejecuta `test -e` sobre cada una. Termina con código 1 si falta alguna. Resultado: [`tm-arq-01-rutas.txt`](evidencias/B3.1/tm-arq-01-rutas.txt).
-- **Cinco afirmaciones para el revisor:** [`afirmaciones-revision.md`](evidencias/B3.1/afirmaciones-revision.md). La confirmación del Integrante 2 está **pendiente**.
+- **Cinco afirmaciones para el revisor:** [`afirmaciones-revision.md`](evidencias/B3.1/afirmaciones-revision.md). Las cinco quedaron **confirmadas** por el revisor en la revisión del PR #23.
 - **Inspección visual de la imagen:** registrada en [`LEEME.md`](evidencias/B3.1/LEEME.md).

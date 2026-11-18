@@ -67,7 +67,7 @@ Un ítem con partes en distintos estados lleva los estados separados por «/».
 |---|---|---|---|
 | R1 Problema, objetivos y cronograma | — | [problema-objetivos-cronograma.md](problema-objetivos-cronograma.md) (B0.6). Diapositivas iniciales (B3.4) | manual / pendiente (diapositivas) |
 | R2 Historias de usuario | HU-01 a HU-15 | [historias-de-usuario.md](historias-de-usuario.md) con estado final; esta matriz; TM-DOC-02 (B0.7); TM-ENT-06 | manual / pendiente (revisión TM-ENT-06 del revisor) |
-| R3 Diagrama de arquitectura | — | [arquitectura.md](arquitectura.md) con [imagen exportada](img/arquitectura.png) (B3.1). TM-ARQ-01: las 110 rutas del diagrama existen ([tm-arq-01-rutas.txt](evidencias/B3.1/tm-arq-01-rutas.txt)); esquema contrastado sin diferencias. Cinco afirmaciones verificadas en la revisión del PR #23, sin anotar aún en [afirmaciones-revision.md](evidencias/B3.1/afirmaciones-revision.md) | manual / pendiente (anotar las cinco afirmaciones) |
+| R3 Diagrama de arquitectura | — | [arquitectura.md](arquitectura.md) con [imagen exportada](img/arquitectura.png) (B3.1). TM-ARQ-01: las 110 rutas del diagrama existen ([tm-arq-01-rutas.txt](evidencias/B3.1/tm-arq-01-rutas.txt)); esquema contrastado sin diferencias. Cinco afirmaciones confirmadas por el revisor ([afirmaciones-revision.md](evidencias/B3.1/afirmaciones-revision.md)) | manual |
 | R4 Registro y recuperación | HU-01, HU-03 | TM-CTA-01 a 05, TM-CTA-13 a 19, TM-INT-02. Prueba manual con dos navegadores ([B2.1](evidencias/B2.1/LEEME.md)); capturas de registro y recuperar ([B2.2](evidencias/B2.2/LEEME.md)) | pasa / manual |
 | R5 Inicio de sesión y seguridad | HU-02, HU-04, HU-15 | TM-CTA-06 a 12, TM-INT-01 a 05, TM-SEG-01 a 10, TM-WEB-01 a 06 | pasa |
 | R6 Pantalla principal con CRUD | HU-05 a HU-10 | TM-OFE-01 a 17 y 08a, TM-NAV-01 a 06, TM-INT-06 (pasos 2 a 9). Capturas de escritorio y móvil ([B2.2](evidencias/B2.2/LEEME.md)) | pasa / manual |
@@ -101,7 +101,6 @@ Un ítem con partes en distintos estados lleva los estados separados por «/».
 
 | Pendiente | Ítems | Bloque o responsable |
 |---|---|---|
-| Anotar en `afirmaciones-revision.md` las cinco afirmaciones del diagrama confirmadas por el revisor (TM-ARQ-01) | R3 | Revisor de B3.1 |
 | README final, sección «Uso de IA», `docs/mvp/ia.md` y revisión de secretos (TM-ENT-01, TM-ENT-02) | R9, R10, O9, O10, O11 | B3.3 |
 | Diapositivas, guion, banco de preguntas, ensayo y comprobante de subida | R1, R11, O7, O12, O14 | B3.4, B3.5 |
 | Etiqueta `v1.0-b1` en el remoto | R10 | B3.5 |

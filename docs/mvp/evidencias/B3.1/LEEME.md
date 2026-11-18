@@ -11,7 +11,7 @@ Entregable: [`../../arquitectura.md`](../../arquitectura.md) con el diagrama Mer
 | `tm-arq-01-rutas.txt` | Salida de `comprobar-rutas.sh`: `test -e` sobre cada ruta, nombre de archivo y enlace del documento | Ver «Resultados» |
 | `comprobar-rutas.sh` | TM-ARQ-01: extrae las rutas de `arquitectura.md` y las comprueba | — |
 | `tm-arq-01-control-negativo.txt` | Salida del script ante una copia del documento con cuatro referencias inventadas | Falla (código 1) y nombra las cuatro |
-| `afirmaciones-revision.md` | Cinco afirmaciones con referencias línea a línea y comandos para que el Integrante 2 las revise | **Confirmación pendiente** |
+| `afirmaciones-revision.md` | Cinco afirmaciones con referencias línea a línea y comandos para que el Integrante 2 las revise | **Cinco confirmadas** por el revisor |
 | `reglas-dependencia.txt` | Salida de `comprobar-dependencias.sh`: reglas de dependencia, `npm run lint` y controles negativos de ESLint | Todas pasan |
 | `comprobar-dependencias.sh` | Comprueba las diez reglas de la sección «Reglas reales de dependencia» | — |
 | `esquema-contraste.txt` | Salida de `contrastar-esquema.mjs`: `esquema.md` frente a las migraciones aplicadas en memoria | 295 comprobaciones, 0 fallos |
@@ -22,7 +22,7 @@ Entregable: [`../../arquitectura.md`](../../arquitectura.md) con el diagrama Mer
 ## Resultados
 
 - **TM-ARQ-01 (rutas):** cada carpeta y archivo nombrado en `arquitectura.md` existe. El resumen y el veredicto están al final de `tm-arq-01-rutas.txt`. El script termina con código 1 si falta algo, y se comprobó con un control negativo (ver abajo).
-- **TM-ARQ-01 (cinco afirmaciones):** preparadas en `afirmaciones-revision.md`. **Pendiente:** la confirmación del Integrante 2. B3.1 no queda cerrado hasta que las confirme.
+- **TM-ARQ-01 (cinco afirmaciones):** preparadas en `afirmaciones-revision.md` y **confirmadas las cinco** por el revisor (Dilan Calvache, en reemplazo del Integrante 2) en la revisión del PR #23.
 - **Esquema:** `esquema.md` coincide con las migraciones reales; no se modificó. No hay una prueba automática equivalente en el repositorio: el contraste es el script de esta carpeta, que no forma parte de `npm test`.
 - **Prerrequisito:** B2.2 integrado (PR #22 en `main`); `npm run lint` y `npm test` en verde antes y después de los cambios de B3.1 (no se tocó código).
 
