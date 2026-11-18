@@ -15,6 +15,7 @@ import { loadConfig } from '../../src/config.js';
 import { createContainer } from '../../src/container.js';
 import { createDemoBackend } from '../helpers/demo-backend.js';
 import { createCsrfToken } from '../../src/shared/http/csrf.js';
+import { fixedClock } from '../../src/shared/clock.js';
 import { toEcuadorLocalDateTime } from '../../src/shared/time.js';
 
 const PASSWORD = 'Clave-segura-99';
@@ -266,4 +267,64 @@ test('Producción desactiva la recuperación simulada y la bandeja de pruebas', 
   const post = await request(app).post('/recuperar').set('Origin', config.appOrigin).type('form')
     .send({ email: 'ana@example.test' });
   assert.equal(post.status, 404);
+});
+
+test('Producción envía el correo de recuperación con Resend y mantiene privada la bandeja de pruebas', async (t) => {
+  const { db, storage } = createDemoBackend();
+  t.after(() => db.close());
+  const clock = fixedClock(Date.UTC(2026, 10, 17));
+  const config = loadConfig({ APP_ENV: 'production', APP_ORIGIN: 'https://example.test',
+    CSRF_SECRET: 'una-clave-larga-para-esta-prueba-produccion', ARGON2_MEMORY_KIB: '8', ARGON2_TIME_COST: '1',
+    RESEND_API_KEY: 're_test_key', RESEND_FROM_EMAIL: 'cuentas@correo.example.test' });
+  const errors = [];
+  const container = await createContainer(config, { db, storage, clock, skipMigrate: true,
+    logger: { error: (...args) => errors.push(args) } });
+  const app = request(createApp(container));
+  const displayName = 'Ana & <Luis>';
+  const email = 'ana@example.test';
+  await container.accounts.registerUser({ displayName, email, password: PASSWORD, passwordConfirm: PASSWORD });
+
+  const fetch = t.mock.method(globalThis, 'fetch', () => {
+    const status = fetch.mock.callCount() === 0 ? 429 : 200;
+    return new globalThis.Response('Detalle privado del proveedor', { status });
+  });
+  const post = (path, origin = config.appOrigin) => app.post(path).set('Origin', origin).type('form');
+  const requestLink = (address) => post('/recuperar').send({ email: address })
+    .expect(302).expect('Location', '/recuperar?aviso=enlace-enviado');
+
+  await app.get('/ingreso').expect(200).expect(/href="\/recuperar"/);
+  await app.get('/dev/bandeja').expect(404);
+  await requestLink('desconocido@example.test');
+  assert.equal(fetch.mock.callCount(), 0);
+
+  await requestLink(email);
+  await requestLink(email);
+  assert.equal(fetch.mock.callCount(), 1);
+  assert.deepEqual(errors, [['Resend rechazó el correo de recuperación (HTTP 429).']]);
+
+  clock.advance(60_000);
+  await requestLink(email);
+  assert.equal(fetch.mock.callCount(), 2);
+  const [url, options] = fetch.mock.calls[1].arguments;
+  assert.equal(url, 'https://api.resend.com/emails');
+  assert.equal(options.headers.Authorization, 'Bearer re_test_key');
+  const message = JSON.parse(options.body);
+  assert.equal(message.from, 'Kawsay Ñan <cuentas@correo.example.test>');
+  assert.deepEqual(message.to, [email]);
+  assert.match(message.html, /Ana &amp; &lt;Luis&gt;/);
+  const [logo] = message.attachments;
+  assert.equal(logo.content_id, 'kawsay-nan-logo');
+  assert.match(message.html, /src="cid:kawsay-nan-logo"/);
+  assert.equal((await sharp(Buffer.from(logo.content, 'base64')).metadata()).format, 'png');
+  const [link] = /https:\/\/example\.test\/restablecer\?token=[\w-]+/.exec(message.text);
+  assert.ok(message.html.includes(`href="${link}"`));
+
+  const resetUrl = new URL(link);
+  await app.get(resetUrl.pathname + resetUrl.search).expect(200).expect('Referrer-Policy', 'no-referrer');
+  const newPassword = 'Clave-nueva-segura-77';
+  const form = { token: resetUrl.searchParams.get('token'), newPassword, newPasswordConfirm: newPassword };
+  await post('/restablecer', 'null').send(form).expect(302).expect('Location', '/ingreso?aviso=clave-cambiada');
+  await post('/restablecer', 'null').send(form).expect(400);
+  assert.ok((await container.accounts.authenticate(email, newPassword)).userId);
+  assert.deepEqual((await db.query('SELECT id FROM mail_outbox')).rows, []);
 });

@@ -21,7 +21,16 @@ El servidor guarda los datos en el esquema PostgreSQL `app` y sirve fotografías
 2. Ejecuta `npm ci --omit=dev`, `npm run db:migrate` y `npm start`. El servidor también comprueba y aplica migraciones pendientes al iniciar. Storage debe admitir el límite de 50 MB por foto. El proceso crea o ajusta el bucket privado con los tipos de imagen admitidos.
 3. Si usas Caddy en el mismo host, configura `APP_DOMAIN` y `PORT` en el entorno de Caddy y usa [deploy/Caddyfile](deploy/Caddyfile). En Node configura `BIND_HOST=127.0.0.1` y `TRUST_PROXY=1` para ese único proxy. Mantén HTTPS y comprueba `GET /salud`, el catálogo y la conexión WebSocket.
 
-SQLite pertenece a la entrega anterior. Las migraciones crean y actualizan el esquema de PostgreSQL. Cualquier traslado de registros de una base SQLite requiere una importación aparte. La recuperación de contraseña usa una bandeja de pruebas en desarrollo. Para ofrecerla en producción hace falta integrar un servicio de correo real.
+### Recuperación de contraseña con Resend
+
+1. Agrega a Resend un dominio o subdominio cuyo DNS controles. Publica los registros que indique Resend y espera a que figure como verificado. Desactiva el seguimiento de clics y aperturas en ese dominio para los correos de recuperación. [Dominios verificados en Resend](https://resend.com/docs/dashboard/domains/introduction)
+2. Crea una API key con permiso **Sending access**, restringida al dominio remitente. [Claves de API de Resend](https://resend.com/docs/dashboard/api-keys/introduction)
+3. En Azure Portal, abre **App Services → kawsay-nan → Settings → Environment variables → App settings**. Agrega `RESEND_API_KEY` con la clave y `RESEND_FROM_EMAIL` con la dirección del dominio verificado, por ejemplo `cuentas@correo.tu-dominio.ec`. Guarda ambos ajustes juntos. En otro host, configúralos en el entorno privado del proceso. [Variables de entorno en Azure](https://learn.microsoft.com/azure/app-service/configure-common?tabs=portal#configure-app-settings)
+4. Tras el despliegue, abre «¿La olvidaste?» e inicia una recuperación con una cuenta de prueba. Comprueba que el correo llegue, que el enlace use el `APP_ORIGIN` HTTPS del sitio y que puedas iniciar sesión con la nueva contraseña.
+
+Si ambas variables de Resend están vacías, la recuperación queda desactivada en producción. En desarrollo, `/dev/bandeja` muestra los correos simulados.
+
+SQLite pertenece a la entrega anterior. Las migraciones crean y actualizan el esquema de PostgreSQL. Cualquier traslado de registros de una base SQLite requiere una importación aparte.
 
 ## Estructura
 

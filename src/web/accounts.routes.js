@@ -11,7 +11,7 @@ import { safeNext } from '../shared/http/safe-next.js';
 import { formatEcuadorDateTime } from '../shared/time.js';
 import { validate } from '../shared/validation/validate.js';
 
-const RESET_LINK_SENT = 'Si el correo tiene una cuenta, te enviamos un enlace para cambiar la contraseña. Vence en 30 minutos.';
+const RESET_LINK_SENT = 'Si el correo tiene una cuenta, revisa tu bandeja de entrada y la carpeta de spam. El enlace vence en 30 minutos.';
 
 function sha256(text) {
   return createHash('sha256').update(text).digest();
@@ -119,7 +119,7 @@ export function createAccountsRouter(container) {
     res.set('Cache-Control', 'no-store');
     res.renderPage('accounts/ingreso', {
       title: 'Ingresar',
-      recoveryEnabled: config.demoMailboxEnabled,
+      recoveryEnabled: config.recoveryEnabled,
       schema: loginSchema,
       values: { email: '' },
       errors: {},
@@ -136,7 +136,7 @@ export function createAccountsRouter(container) {
     if (!check.ok) {
       return res.status(422).renderPage('accounts/ingreso', {
         title: 'Ingresar',
-      recoveryEnabled: config.demoMailboxEnabled,
+      recoveryEnabled: config.recoveryEnabled,
         schema: loginSchema,
         values: loginValuesFromBody(req.body),
         errors: check.errors,
@@ -158,7 +158,7 @@ export function createAccountsRouter(container) {
       }
       return res.status(error.status).renderPage('accounts/ingreso', {
         title: 'Ingresar',
-      recoveryEnabled: config.demoMailboxEnabled,
+      recoveryEnabled: config.recoveryEnabled,
         schema: loginSchema,
         values: loginValuesFromBody(req.body),
         errors: {},
@@ -183,7 +183,7 @@ export function createAccountsRouter(container) {
   });
 
   router.all(['/recuperar', '/restablecer'], (_req, _res, next) => {
-    if (!config.demoMailboxEnabled) return next('router');
+    if (!config.recoveryEnabled) return next('router');
     return next();
   });
 

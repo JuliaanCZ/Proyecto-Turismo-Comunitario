@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 import process from 'node:process';
 import { URL } from 'node:url';
+import { validate } from './shared/validation/validate.js';
 
 export const DEMO_ACCOUNT = Object.freeze({ displayName: 'Ana Quispe', email: 'ana@demo.test' });
 export const DEMO_CHAT_ACCOUNT = Object.freeze({ displayName: 'Luis Chasipanta', email: 'luis@demo.test' });
@@ -56,6 +57,17 @@ function secret(env, name, fallback, { production, required, minLength }) {
   return value;
 }
 
+function resendConfig(env) {
+  const apiKey = env.RESEND_API_KEY?.trim();
+  const fromEmail = env.RESEND_FROM_EMAIL?.trim();
+  if (!apiKey && !fromEmail) return null;
+  if (!/^re_\S+$/.test(apiKey ?? '')) invalid('RESEND_API_KEY', 'debe contener una clave de Resend');
+
+  const sender = validate({ email: { type: 'email', required: true } }, { email: fromEmail });
+  if (!sender.ok) invalid('RESEND_FROM_EMAIL', 'debe ser una dirección de un dominio verificado en Resend');
+  return Object.freeze({ apiKey, fromEmail: sender.values.email });
+}
+
 export function loadConfig(env = process.env) {
   const appEnv = env.APP_ENV ?? 'development';
   if (!['development', 'test', 'production'].includes(appEnv)) {
@@ -80,6 +92,7 @@ export function loadConfig(env = process.env) {
   const cookieSecure = boolean(env, 'COOKIE_SECURE', production);
   if (production && !cookieSecure) invalid('COOKIE_SECURE', 'debe ser true en producción');
   const demoMailboxEnabled = !production && boolean(env, 'DEMO_MAILBOX_ENABLED', true);
+  const resend = production ? resendConfig(env) : null;
 
   const argon2Parallelism = integer(env, 'ARGON2_PARALLELISM', 1, 1);
   const argon2MemoryKib = integer(env, 'ARGON2_MEMORY_KIB', 19456, 8);
@@ -107,6 +120,8 @@ export function loadConfig(env = process.env) {
     argon2Parallelism,
     demoLoginEnabled: appEnv === 'development' && boolean(env, 'DEMO_LOGIN_ENABLED', false),
     demoMailboxEnabled,
+    resend,
+    recoveryEnabled: demoMailboxEnabled || resend !== null,
     demoMailboxPassword: demoMailboxEnabled ? secret(env, 'DEMO_MAILBOX_PASSWORD', developmentDefaults.DEMO_MAILBOX_PASSWORD, {
       production, required: true, minLength: 8,
     }) : null,
