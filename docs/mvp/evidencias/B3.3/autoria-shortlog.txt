@@ -1,0 +1,34 @@
+# Autoría — salida de git (sin correos). Fecha: 2026-11-18, commit base 5c617c4
+
+$ git shortlog -sn --all
+    32	JuliaanCZ
+    18	Matian542
+    14	alexisv-275
+    10	Matein0411
+     6	Alexis
+     6	Mateo Calvache
+     5	Mateo Yunga
+     1	juliaan-cz2004
+
+$ git log --all --format='%an' | sort | uniq -c | sort -rn
+     32 JuliaanCZ
+     18 Matian542
+     14 alexisv-275
+     10 Matein0411
+      6 Mateo Calvache
+      6 Alexis
+      5 Mateo Yunga
+      1 juliaan-cz2004
+
+$ git log --all --no-merges --format='%an' | sort | uniq -c | sort -rn
+     23 JuliaanCZ
+     15 Matian542
+     13 alexisv-275
+      7 Matein0411
+      1 juliaan-cz2004
+
+$ git log --all --format='%ae' | sort -u | wc -l   (direcciones distintas; no se imprimen)
+9
+
+$ git rev-list --count --all   /   --no-merges
+92 commits en total; 59 sin fusiones

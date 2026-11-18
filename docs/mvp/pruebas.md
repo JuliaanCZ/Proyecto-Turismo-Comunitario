@@ -73,8 +73,8 @@ Un ítem con partes en distintos estados lleva los estados separados por «/».
 | R6 Pantalla principal con CRUD | HU-05 a HU-10 | TM-OFE-01 a 17 y 08a, TM-NAV-01 a 06, TM-INT-06 (pasos 2 a 9). Capturas de escritorio y móvil ([B2.2](evidencias/B2.2/LEEME.md)) | pasa / manual |
 | R7 Chat con WebSockets | HU-11 a HU-15 | TM-WS-01 a 07, TM-CHAT-01 a 14, TM-NOT-01 a 05, TM-INT-03 a 05, TM-INT-06 (pasos 11 y 12). [websocket.md](websocket.md); TM-DEP-02 solo en local | pasa / manual |
 | R8 Base de datos | HU-06 a HU-12 | TM-DB-01 a 05 y 05a, TM-OFE-08, TM-CHAT-06. [esquema.md](esquema.md) | pasa |
-| R9 Calidad: pruebas, README y rendimiento | — | 202 pruebas automatizadas (esta página). TM-PERF-01 a 03 y [rendimiento.md](evidencias/B2.3/rendimiento.md). `.env.example` presente. README final (B3.3, TM-ENT-01) | pasa / pendiente (README) |
-| R10 Repositorio público con commits de todos | — | 23 PR integrados en `main`. Etiqueta `v1.0-b1` sin crear (el remoto no tiene etiquetas). `git shortlog` y revisión de secretos (B3.3, B3.5) | pendiente |
+| R9 Calidad: pruebas, README y rendimiento | — | 202 pruebas automatizadas (esta página). TM-PERF-01 a 03 y [rendimiento.md](evidencias/B2.3/rendimiento.md). `.env.example` verificado contra `src/config.js` ([env-example.txt](evidencias/B3.3/env-example.txt)). README final ([README.md](../../README.md)) reproducido por el autor en un clon limpio ([clon-limpio.txt](evidencias/B3.3/clon-limpio.txt)) | pasa / manual / pendiente (TM-ENT-01 por una persona distinta del autor) |
+| R10 Repositorio público con commits de todos | — | 24 PR integrados en `main`. El repositorio es público (comprobado sin credenciales el 2026-11-18). Los cuatro integrantes tienen commits propios; el reparto está declarado ([autoria.md](evidencias/B3.3/autoria.md)). Revisión de secretos sin hallazgos de credenciales ([secretos.md](evidencias/B3.3/secretos.md)). Decisiones de publicación pendientes ([contenido-heredado.md](evidencias/B3.3/contenido-heredado.md)). Etiqueta `v1.0-b1` sin crear (el remoto no tiene etiquetas; B3.5) | manual / pendiente (decisiones y etiqueta) |
 | R11 Presentación, defensa y evidencias | — | Presentación, guion, ensayo y comprobante de subida (B3.4, B3.5) | pendiente |
 
 ### Obligaciones (O1–O15)
@@ -89,9 +89,9 @@ Un ítem con partes en distintos estados lleva los estados separados por «/».
 | O6 Rendimiento | HU-07, HU-11, HU-14 | TM-OFE-04, TM-OFE-08, TM-PERF-01 a 03, TM-CHAT-01, TM-NOT-01. [rendimiento.md](evidencias/B2.3/rendimiento.md) | pasa |
 | O7 Stack permitido y explicación de la librería WebSocket | HU-15 | [websocket.md](websocket.md). Banco de preguntas (B3.4) | manual / pendiente (banco) |
 | O8 Servidor de tiempo real propio | HU-15 | TM-BASE-02, TM-WS-04 | pasa |
-| O9 README completo | — | README final (B3.3), TM-ENT-01 | pendiente |
-| O10 Sin secretos ni datos reales | — | TM-SEG-09, TM-INT-07 (el seed no imprime la clave). TM-ENT-02 (B3.3) | pasa / pendiente (TM-ENT-02) |
-| O11 Uso de IA declarado | — | Sección «Uso de IA» y `docs/mvp/ia.md` (B3.3, B3.5) | pendiente |
+| O9 README completo | — | [README.md](../../README.md) con todas las secciones del Word; TM-ENT-01 repetido por el autor ([clon-limpio.txt](evidencias/B3.3/clon-limpio.txt)), no por otra persona | manual / pendiente (TM-ENT-01 humano) |
+| O10 Sin secretos ni datos reales | — | TM-SEG-09, TM-INT-07 (el seed no imprime la clave). TM-ENT-02 ([secretos.md](evidencias/B3.3/secretos.md)): sin claves ni tokens en el árbol ni en el historial | pasa / manual (con observaciones y decisiones pendientes) |
+| O11 Uso de IA declarado | — | Sección «Uso de IA» del README y [ia.md](ia.md) (B3.3), con respaldo del historial. Confirmación individual de cada integrante y herramientas por bloque sin declarar: pendientes (B3.5) | manual / pendiente (confirmaciones) |
 | O12 Presentación y entrega | — | Presentación, [demo.md](demo.md) y comprobante de subida (B3.4, B3.5) | pendiente |
 | O13 Equipo, PYME y problema | — | [problema-objetivos-cronograma.md](problema-objetivos-cronograma.md) (B0.6) | manual |
 | O14 Entrega fuera de plazo (informativo) | — | Registro del calendario (B3.5) | pendiente |
@@ -101,7 +101,7 @@ Un ítem con partes en distintos estados lleva los estados separados por «/».
 
 | Pendiente | Ítems | Bloque o responsable |
 |---|---|---|
-| README final, sección «Uso de IA», `docs/mvp/ia.md` y revisión de secretos (TM-ENT-01, TM-ENT-02) | R9, R10, O9, O10, O11 | B3.3 |
+| TM-ENT-01 repetido por una persona distinta del autor del README; confirmación individual del uso de IA; revisión independiente de B3.3; decisiones de publicación (H-01 a H-12 de `contenido-heredado.md`) | R9, R10, O9, O10, O11 | B3.3 (Julián) y el equipo |
 | Diapositivas, guion, banco de preguntas, ensayo y comprobante de subida | R1, R11, O7, O12, O14 | B3.4, B3.5 |
 | Etiqueta `v1.0-b1` en el remoto | R10 | B3.5 |
 | Despliegue público con certificado válido; captura de `wss://`, 101 y trama `42[…]` en DevTools con sesión; persistencia de una oferta creada desde el panel (TM-DEP-01 a 03) | R7, O4, HU-15 | B1.11, PM-03 |
