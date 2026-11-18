@@ -3,9 +3,20 @@ if (form) {
   const previews = [...form.querySelectorAll('[data-gallery-slot]')];
   const alert = form.querySelector('[data-gallery-status]');
   const button = form.querySelector('button[type=submit]');
+  const publication = form.elements.namedItem('isPublished');
+  const publishMarkers = form.querySelectorAll('[data-publish-marker]');
+  const publishFields = form.querySelectorAll('[data-required-on-publish]');
+  function markPublicationRequirements() {
+    const published = publication.value === 'true';
+    for (const marker of publishMarkers) marker.hidden = !published;
+    for (const field of publishFields) field.required = published;
+  }
+  publication.addEventListener('change', markPublicationRequirements);
+  markPublicationRequirements();
   for (const slot of previews) {
     const input = slot.querySelector('input[type=file]');
     const alt = slot.querySelector('input[type=text]');
+    const altMarker = slot.querySelector('[data-alt-marker]');
     const preview = slot.querySelector('img');
     let url;
     input.addEventListener('change', () => {
@@ -16,6 +27,7 @@ if (form) {
       else preview.removeAttribute('src');
       preview.hidden = !url;
       alt.required = Boolean(url);
+      altMarker.hidden = !alt.required;
     });
   }
   form.querySelector('[data-add-gallery-slot]').addEventListener('click', (event) => {
