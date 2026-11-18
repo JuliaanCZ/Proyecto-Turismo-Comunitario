@@ -1,6 +1,4 @@
-# npm run lint (2026-11-17 22:35)
 
 > turismo-comunitario@0.1.0 lint
 > eslint .
-
-exit: 0
+Código de salida: 0

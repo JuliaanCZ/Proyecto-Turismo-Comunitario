@@ -2,7 +2,11 @@
 
 Fecha de las ejecuciones: 17/11/2026 · Node v24.22.3 · Chrome 157.0.8103.79 (Windows 11) · rama
 `bloque/B2.2-integracion-demo` creada desde `main` (`b97dfdb`, con B1.3, B1.5, B1.8, B1.9, B1.10, B2.1 y B2.3
-integrados). Todo se ejecutó con bases temporales aisladas; `data/app.sqlite` no se tocó.
+integrados). Las comprobaciones automatizadas usan bases temporales aisladas; el ensayo humano usa una base de demostración aparte de `data/app.sqlite`.
+
+Tras la revisión del PR se incorporó `origin/main` en `289b3c5`, que incluye B2.4, sin conflictos.
+La suite combinada se volvió a ejecutar y pasó **202 de 202 pruebas**; ESLint terminó con código 0.
+Las salidas actualizadas están en `npm-test.txt` y `npm-lint.txt`.
 
 ## Qué es automatizado y qué queda para una persona
 
@@ -13,7 +17,7 @@ integrados). Todo se ejecutó con bases temporales aisladas; `data/app.sqlite` n
 | **Automatizado, con navegador real** | Revisión de interfaz con Chrome headless y tres perfiles (`navegador-interfaz.txt`, capturas) | 199 comprobaciones pasan, 0 fallan |
 | **Humano — REALIZADO** | Comprobaciones funcionales con ventana normal y privada, carga de imagen, publicación, permisos, catálogo, apertura de WhatsApp, recuperación de contraseña, chat, avisos y cierre de sesión | Julián (Integrante 4) confirmó el funcionamiento en el ensayo del 2026-11-17. Observaciones de usabilidad y paginación registradas en `docs/mvp/demo.md` §8, filas 6 y 7. La imagen subida durante el ensayo fue una captura propia, no una fotografía del destino |
 | **Humano — DURACIÓN DECLARADA** | Tiempo del recorrido manual para dimensionar el guion de B3.4 | Aproximadamente **5 minutos**, según lo comunicado por Julián; sin precisión de cronómetro. Los 35 s del script corresponden a la automatización |
-| **Humano — SIN CONFIRMAR** | Recorrido completo solo con teclado y revisión móvil | Las comprobaciones automatizadas constan arriba; la ejecución humana de estas dos revisiones no se ha confirmado |
+| **Humano — PENDIENTE** | Recorrido completo solo con teclado y revisión móvil | Pendiente de ejecución y registro por una persona. El ensayo funcional declarado no confirma estas revisiones; la cobertura automatizada consta arriba |
 
 ## Archivos
 
@@ -21,7 +25,7 @@ integrados). Todo se ejecutó con bases temporales aisladas; `data/app.sqlite` n
 |---|---|
 | `pruebas-bloque.txt` | `node --test tests/integration/recorrido-completo.test.js`: `TM-INT-06` (12 pasos con registro, ingreso, ofertas, foto, catálogo, enlace de WhatsApp, bandeja, chat, aviso y cierre de sesión), `TM-NAV-06`, `TM-NOT-05` y cuatro pruebas de `TM-INT-07`. |
 | `seed-demo.txt` | `npm run seed:demo` dos veces sobre una base temporal: primera «2 cuentas, 15 ofertas, 8 fotos, 7 publicaciones, 5 mensajes»; segunda «0 creadas, todo conservado»; conteo de filas por tabla. |
-| `npm-test.txt` · `npm-lint.txt` | Suite completa (192 pruebas: las 173 previas más las 19 de este bloque) y `eslint .`. |
+| `npm-test.txt` · `npm-lint.txt` | Suite completa tras incorporar B2.4 (202 pruebas superadas; antes de esa integración eran 192) y `eslint .` con código 0. |
 | `check-contraste.txt` | `node scripts/check-contraste.js`: 26 de 26 pares de color cumplen. |
 | `comprobar-navegador.mjs.txt` | Script de la revisión de interfaz (se guarda como `.txt` para que ESLint no lo analice; se ejecuta renombrándolo a `.mjs`, desde la raíz: `node comprobar-navegador.mjs <carpeta>`). Genera contraseñas al azar que no imprime. |
 | `navegador-interfaz.txt` | Salida literal de ese script. |
