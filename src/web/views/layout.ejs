@@ -18,5 +18,11 @@
       <p>Proyecto académico de Aplicaciones Web Avanzadas. Los datos de ejemplo son ficticios.</p>
     </div>
   </footer>
+  <%# Aviso de nuevo mensaje (B1.10): con sesión y fuera de /panel/chat, donde ya hay un socket unido a la sala.
+     `data-user-id` es el id numérico del usuario (no secreto; nunca el token ni el id de sesión): asocia el contador a la cuenta. %>
+  <% if (locals.principal && (locals.currentPath ?? '').toLowerCase().replace(/\/+$/, '') !== '/panel/chat') { %>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/js/notificaciones.js" data-user-id="<%= principal.userId %>"></script>
+  <% } %>
 </body>
 </html>

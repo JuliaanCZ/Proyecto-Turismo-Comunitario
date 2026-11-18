@@ -1,0 +1,9 @@
+<h1>Eliminar oferta</h1>
+<p>¿Quieres eliminar definitivamente «<%= offer.title %>» y su foto?</p>
+<form method="post" action="/panel/ofertas/<%= offer.id %>/eliminar">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+<input type="hidden" name="confirm" value="on">
+<% if (errors.confirm?.length) { %><p class="mensaje mensaje--error" role="alert">Error: <%= errors.confirm.join(' ') %></p><% } %>
+<div class="acciones"><button class="btn btn--peligro" type="submit">Confirmar eliminación</button>
+<a class="btn btn--secundario" href="/panel/ofertas/<%= offer.id %>">Cancelar</a></div>
+</form>

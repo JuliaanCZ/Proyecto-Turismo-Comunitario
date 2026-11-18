@@ -1,0 +1,14 @@
+<h1>Ofertas comunitarias</h1>
+<p>Consulta las experiencias disponibles. La PYME confirma el cupo por WhatsApp.</p>
+<% if (!result.items.length) { %><section class="vacio"><h2>No hay ofertas disponibles</h2><p>Vuelve más tarde para ver nuevas experiencias.</p></section><% } else { %>
+<ul class="ofertas"><% for (const offer of result.items) { %>
+<li class="oferta"><h2 class="oferta__nombre"><a href="/ofertas/<%= offer.id %>"><%= offer.title %></a></h2>
+<img src="/ofertas/<%= offer.id %>/foto" alt="Foto de <%= offer.title %>" class="oferta__imagen" width="640">
+<dl class="oferta__datos"><dt>Provincia</dt><dd><%= offer.provinceLabel %></dd>
+<dt>Ubicación</dt><dd><%= offer.locationText %></dd>
+<dt>Fecha</dt><dd class="oferta__fecha"><%= formatEcuadorDateTime(offer.startsAt) %></dd>
+<dt>Cupo referencial</dt><dd><%= offer.capacity %></dd></dl></li><% } %></ul><% } %>
+<% if (result.totalPages > 1) { %><nav aria-label="Páginas del catálogo"><ul class="acciones">
+<% for (let page = 1; page <= result.totalPages; page += 1) { %>
+<li><a href="/ofertas?pagina=<%= page %>"<% if (page === result.page) { %> aria-current="page"<% } %>><%= page %></a></li>
+<% } %></ul></nav><% } %>

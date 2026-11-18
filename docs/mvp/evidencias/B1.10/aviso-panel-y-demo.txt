@@ -1,0 +1,29 @@
+Comando: node --test tests/integration/aviso-panel.test.js tests/integration/demo-aviso-chat.test.js tests/unit/notificaciones-contador.test.js
+Entorno: Windows · Node v24.22.3 · 2026-11-17 · B1.10 + origin/main (B1.2 y B1.5) + contador por cuenta, sin commit aún; base 42fa415
+
+✔ aviso: /panel, la portada y un 404 con sesión cargan el aviso (116.2606ms)
+✔ aviso: /panel/chat (también con barra final o mayúsculas) no carga el aviso y sigue cargando el chat (45.3512ms)
+✔ aviso: sin sesión no se carga ningún script de tiempo real (45.8405ms)
+✔ aviso: la CSP no se relaja (scripts propios, conexión al mismo origen) y la insignia sigue vacía y oculta (23.2562ms)
+✔ aviso: el script lleva el id numérico del usuario y no expone token ni id de sesión (contador por cuenta) (36.1282ms)
+✔ demo del aviso: se niega a arrancar con APP_ENV=production (865.0753ms)
+✔ demo del aviso: cada usuario recibe su cookie por HTTP y ningún token se imprime (1026.082ms)
+✔ demo del aviso: la ruta rechaza otro Host, otro método y usuarios desconocidos (1002.9891ms)
+✔ demo del aviso: con las cookies HTTP de la demo, el chat real de ana avisa a luis (989.724ms)
+✔ contador: la clave chatNuevos sigue siendo un entero simple y el dueño va aparte (4.2929ms)
+✔ contador: Luis acumula, sale y Ana en la misma pestaña empieza en cero (0.3025ms)
+✔ contador: navegar dentro de la misma cuenta conserva el valor (0.4836ms)
+✔ contador: almacenamiento existente sin dueño (versión anterior) se descarta (0.3426ms)
+✔ contador: abrir el chat borra chatNuevos como hace chat.js y el dueño no resucita el valor (0.382ms)
+✔ contador: valores inválidos o un dueño ajeno nunca producen un número (0.5175ms)
+✔ contador: sin almacenamiento (ausente o que lanza) cuenta en memoria (0.6373ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5184.1074
+
+Código de salida: 0

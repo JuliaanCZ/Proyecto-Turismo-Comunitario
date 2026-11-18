@@ -414,34 +414,28 @@ test('createContainer: overrides inyectan servicios, reloj y base; la base inyec
 
 test('esqueleto C-MOD: el módulo de cuentas pendiente lanza NOT_IMPLEMENTED (501)', (t) => {
   const { container } = build(t, { overrides: { accounts: undefined } });
-  // B1.1 ya implementa registerUser; el resto de accounts sigue pendiente hasta B1.2/B1.3.
-  assert.equal(typeof container.accounts.registerUser, 'function');
-  const esperado = {
-    accounts: ['authenticate', 'createSession', 'resolveSession', 'revokeSession', 'revokeAllSessions',
-      'requestPasswordReset', 'resetPassword', 'listMailbox'],
-  };
-  for (const [modulo, funciones] of Object.entries(esperado)) {
-    const keys = Object.keys(container[modulo]).sort();
-    const expectedKeys = modulo === 'accounts'
-      ? ['registerUser', ...funciones].sort()
-      : [...funciones].sort();
-    assert.deepEqual(keys, expectedKeys, modulo);
-    for (const nombre of funciones) {
-      assert.throws(
-        () => container[modulo][nombre](),
-        (error) => error instanceof AppError && error.code === 'NOT_IMPLEMENTED' && error.status === 501,
-        `${modulo}.${nombre}`,
-      );
-    }
+  // B1.1 + B1.2 ya implementan registro, ingreso y sesión; B1.3 completa recuperación y bandeja.
+  const implementadas = ['registerUser', 'authenticate', 'createSession', 'resolveSession',
+    'revokeSession', 'revokeAllSessions'];
+  for (const nombre of implementadas) {
+    assert.equal(typeof container.accounts[nombre], 'function', `accounts.${nombre}`);
+  }
+  const pendientes = ['requestPasswordReset', 'resetPassword', 'listMailbox'];
+  assert.deepEqual(Object.keys(container.accounts).sort(), [...implementadas, ...pendientes].sort());
+  for (const nombre of pendientes) {
+    assert.throws(
+      () => container.accounts[nombre](),
+      (error) => error instanceof AppError && error.code === 'NOT_IMPLEMENTED' && error.status === 501,
+      `accounts.${nombre}`,
+    );
   }
 });
 
-test('esqueleto: con las cuentas sin implementar, una cookie de sesión devuelve 501 y sin cookie la app funciona', async (t) => {
+test('sesión real en contenedor: una cookie desconocida se ignora (null) y la portada abre', async (t) => {
   const { app } = build(t, { overrides: { accounts: undefined } });
   assert.equal((await request(app).get('/')).status, 200);
   const res = await request(app).get('/').set('Cookie', COOKIE);
-  assert.equal(res.status, 501);
-  assert.match(res.text, /NOT_IMPLEMENTED/);
+  assert.equal(res.status, 200);
 });
 
 test('gateway: onMessageStored registra y messageStored invoca (enganche de C-EVT)', () => {
