@@ -9,7 +9,7 @@ import { DEMO_USERS, seedDemo } from './seed-demo.js';
 
 const port = process.env.KAWSAY_DEMO_PORT ?? '3100';
 const config = loadConfig({ APP_ENV: 'development', PORT: port, BIND_HOST: '127.0.0.1',
-  APP_ORIGIN: 'http://127.0.0.1:' + port, DEMO_MAILBOX_ENABLED: 'false' });
+  APP_ORIGIN: 'http://127.0.0.1:' + port });
 const { db, storage } = createDemoBackend();
 try {
   const container = await createContainer(config, { db, storage, skipMigrate: true });

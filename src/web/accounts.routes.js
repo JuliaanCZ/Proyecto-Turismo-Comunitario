@@ -119,6 +119,7 @@ export function createAccountsRouter(container) {
     res.set('Cache-Control', 'no-store');
     res.renderPage('accounts/ingreso', {
       title: 'Ingresar',
+      recoveryEnabled: config.demoMailboxEnabled,
       schema: loginSchema,
       values: { email: '' },
       errors: {},
@@ -135,6 +136,7 @@ export function createAccountsRouter(container) {
     if (!check.ok) {
       return res.status(422).renderPage('accounts/ingreso', {
         title: 'Ingresar',
+      recoveryEnabled: config.demoMailboxEnabled,
         schema: loginSchema,
         values: loginValuesFromBody(req.body),
         errors: check.errors,
@@ -156,6 +158,7 @@ export function createAccountsRouter(container) {
       }
       return res.status(error.status).renderPage('accounts/ingreso', {
         title: 'Ingresar',
+      recoveryEnabled: config.demoMailboxEnabled,
         schema: loginSchema,
         values: loginValuesFromBody(req.body),
         errors: {},
@@ -177,6 +180,11 @@ export function createAccountsRouter(container) {
     } catch (error) {
       return next(error);
     }
+  });
+
+  router.all(['/recuperar', '/restablecer'], (_req, _res, next) => {
+    if (!config.demoMailboxEnabled) return next('router');
+    return next();
   });
 
   const renderRecover = (res, { values = { email: '' }, errors = {}, formError = null, notice = null } = {}) => res.renderPage(

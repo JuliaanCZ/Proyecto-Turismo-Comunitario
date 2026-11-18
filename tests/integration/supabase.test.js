@@ -210,3 +210,22 @@ test('La demo carga cuatro ofertas una sola vez y dos cuentas conversan en el ch
     luis?.disconnect();
   }
 });
+
+test('Producción desactiva la recuperación simulada y la bandeja de pruebas', async (t) => {
+  const { container } = await setup(t);
+  const config = loadConfig({ APP_ENV: 'production', APP_ORIGIN: 'https://example.test',
+    CSRF_SECRET: 'una-clave-larga-para-esta-prueba-produccion',
+    DEMO_MAILBOX_ENABLED: 'true', DEMO_MAILBOX_PASSWORD: 'ejemplo-bandeja-local',
+    SEED_DEMO_PASSWORD: 'ejemplo-semilla-local' });
+  const app = createApp({ ...container, config });
+
+  const login = await request(app).get('/ingreso');
+  assert.equal(login.status, 200);
+  assert.doesNotMatch(login.text, /href="\/recuperar"|ejemplo-semilla-local/);
+  for (const path of ['/recuperar', '/restablecer', '/dev/bandeja', '/dev/diseno']) {
+    assert.equal((await request(app).get(path)).status, 404, path);
+  }
+  const post = await request(app).post('/recuperar').set('Origin', config.appOrigin).type('form')
+    .send({ email: 'ana@example.test' });
+  assert.equal(post.status, 404);
+});

@@ -16,7 +16,7 @@ import { toEcuadorLocalDateTime } from '../src/shared/time.js';
  * Es idempotente: cada fila se identifica por una clave natural (correo, título de la oferta,
  * `clientMessageId` fijo del mensaje) y, si ya existe, se conserva tal cual. Ejecutarlo de nuevo no
  * duplica nada. Las fechas se calculan a partir del momento de la PRIMERA ejecución; ver
- * `docs/mvp/demo.md` para lo que ocurre al repetirlo días después.
+ * el aviso de fechas vencidas al volver a ejecutarlo.
  */
 
 export const DEMO_DOMAIN = '@demo.test';

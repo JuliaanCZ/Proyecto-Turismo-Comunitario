@@ -74,14 +74,9 @@ export function loadConfig(env = process.env) {
   }
   const supabaseServiceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
-  const whatsappBookingNumber = env.WHATSAPP_BOOKING_NUMBER ?? '';
-  if (whatsappBookingNumber && !/^[1-9]\d{7,14}$/.test(whatsappBookingNumber)) {
-    invalid('WHATSAPP_BOOKING_NUMBER', 'debe contener entre 8 y 15 dígitos en formato internacional');
-  }
-
   const cookieSecure = boolean(env, 'COOKIE_SECURE', production);
   if (production && !cookieSecure) invalid('COOKIE_SECURE', 'debe ser true en producción');
-  const demoMailboxEnabled = boolean(env, 'DEMO_MAILBOX_ENABLED', !production);
+  const demoMailboxEnabled = !production && boolean(env, 'DEMO_MAILBOX_ENABLED', true);
 
   const argon2Parallelism = integer(env, 'ARGON2_PARALLELISM', 1, 1);
   const argon2MemoryKib = integer(env, 'ARGON2_MEMORY_KIB', 19456, 8);
@@ -98,7 +93,6 @@ export function loadConfig(env = process.env) {
     supabaseUrl,
     supabaseServiceRoleKey,
     supabaseBucket: 'site-imgs',
-    whatsappBookingNumber: whatsappBookingNumber || null,
     sessionTtlHours: integer(env, 'SESSION_TTL_HOURS', 8, 1),
     cookieSecure,
     trustProxy: integer(env, 'TRUST_PROXY', 0, 0),
@@ -109,11 +103,11 @@ export function loadConfig(env = process.env) {
     argon2TimeCost: integer(env, 'ARGON2_TIME_COST', 2, 1),
     argon2Parallelism,
     demoMailboxEnabled,
-    demoMailboxPassword: secret(env, 'DEMO_MAILBOX_PASSWORD', developmentDefaults.DEMO_MAILBOX_PASSWORD, {
-      production, required: demoMailboxEnabled, minLength: 8,
-    }),
-    seedDemoPassword: secret(env, 'SEED_DEMO_PASSWORD', developmentDefaults.SEED_DEMO_PASSWORD, {
+    demoMailboxPassword: demoMailboxEnabled ? secret(env, 'DEMO_MAILBOX_PASSWORD', developmentDefaults.DEMO_MAILBOX_PASSWORD, {
+      production, required: true, minLength: 8,
+    }) : null,
+    seedDemoPassword: !production ? secret(env, 'SEED_DEMO_PASSWORD', developmentDefaults.SEED_DEMO_PASSWORD, {
       production, required: false, minLength: 8,
-    }),
+    }) : null,
   });
 }

@@ -1,41 +1,50 @@
-# Turismo comunitario
+# Kawsay Ñan
 
-MVP del primer bimestre: cuentas, ofertas con galería, catálogo con contacto por WhatsApp y correo y chat en tiempo real. La aplicación usa Node.js, Express, EJS, Socket.IO, PostgreSQL de Supabase y Supabase Storage.
+Catálogo de turismo comunitario de Ecuador. Las comunidades publican experiencias con fotos y datos de contacto. Los visitantes pueden consultar por WhatsApp o correo. El equipo gestiona sus ofertas y conversa por WebSocket.
 
-## Demostración local
+## Desarrollo
 
-Ejecuta `npm ci` y luego `npm run dev:demo`. Abre `http://127.0.0.1:3100`. El servidor de demostración usa una base y fotos en memoria, empieza con cuatro ofertas y no se conecta a Supabase. Las dos cuentas y la contraseña aparecen en la consola. Los cambios se reinician al cerrar el proceso.
+Requiere **Node.js 24** y npm. La demostración usa datos en memoria y carga cuatro experiencias ficticias. Al reiniciarla se restauran esos datos.
 
-## Preparación con Supabase
-
-Usa Node.js 24 (ver `.nvmrc`). Desde la raíz:
-
-```powershell
+```sh
 npm ci
-Copy-Item .env.example .env
+npm run dev:demo
 ```
 
-Configura en `.env`:
+Abre [la demo local](http://127.0.0.1:3100). Las cuentas de prueba están en la pantalla de ingreso.
 
-- `DATABASE_URL`: cadena del pooler de Supabase en modo sesión (puerto 5432), con la contraseña real en lugar de `[YOUR-DATABASE-PASSWORD]`. Codifica los caracteres especiales de la contraseña para URL.
-- `SUPABASE_URL`: URL HTTPS del proyecto.
-- `SUPABASE_SERVICE_ROLE_KEY`: clave secreta de servidor del proyecto. Nunca se envía al navegador ni se sube a Git.
+Para trabajar con un proyecto **Supabase de desarrollo**, copia `.env.example` a `.env` y complétalo. Define `DATABASE_URL` con la conexión directa o con Session pooler por el puerto 5432. Configura `SUPABASE_URL`, la clave privada de servidor `SUPABASE_SERVICE_ROLE_KEY` y, si corresponde, la ruta local a la CA en `DATABASE_SSL_CA_FILE`. [Conexión y TLS en Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
-El bucket `site-imgs` se crea o actualiza al arrancar como privado, limitado a 50 MB por archivo y a JPEG, PNG y WebP. Revisa también que el límite global de Storage en Supabase admita 50 MB. El servidor sirve las fotos tras comprobar la visibilidad de la oferta.
-
-```powershell
+```sh
 npm run db:migrate
-npm start
+npm run dev
 ```
 
-Abre `http://localhost:3000/salud` para comprobar el proceso. `npm run seed:demo` prepara usuarios, ofertas y mensajes en el destino Supabase configurado para desarrollo. Usa `npm run dev:demo` para revisar el prototipo con datos aislados. `npm test` ejecuta las pruebas automatizadas compatibles con PostgreSQL y `npm run lint` revisa el código. Las pruebas automatizadas usan un PostgreSQL simulado y Storage falso; la verificación contra el proyecto real requiere configurar las tres variables anteriores.
+El servidor guarda los datos en el esquema PostgreSQL `app` y sirve fotografías del bucket privado `site-imgs` tras verificar el acceso. Para sembrar una instancia de desarrollo con Supabase, configura `SEED_DEMO_PASSWORD` y ejecuta `npm run seed:demo`.
 
-## Alcance y planificación
+## Producción
 
-- [Plan del MVP](mvp-primer-bimestre/PLAN-MVP.md)
-- [Prompts por bloque](mvp-primer-bimestre/PLAN-PROMPTS.md)
-- [Reparto del trabajo](mvp-primer-bimestre/Reparto-y-secuencia-MVP.xlsx)
-- [Configuración de Supabase](docs/mvp/supabase.md)
-- [Plan general de referencia](docs/planificacion/00-indice-y-control.md)
+1. Configura el entorno del servidor con `APP_ENV=production`, `APP_ORIGIN=https://tu-dominio`, `COOKIE_SECURE=true`, un `CSRF_SECRET` aleatorio de al menos 32 caracteres y las credenciales privadas de un proyecto Supabase de producción. Mantén el esquema `app` fuera de los esquemas expuestos por la API pública de Supabase.
+2. Ejecuta `npm ci --omit=dev`, `npm run db:migrate` y `npm start`. El servidor también comprueba y aplica migraciones pendientes al iniciar. Storage debe admitir el límite de 50 MB por foto. El proceso crea o ajusta el bucket privado con los tipos de imagen admitidos.
+3. Si usas Caddy en el mismo host, configura `APP_DOMAIN` y `PORT` en el entorno de Caddy y usa [deploy/Caddyfile](deploy/Caddyfile). En Node configura `BIND_HOST=127.0.0.1` y `TRUST_PROXY=1` para ese único proxy. Mantén HTTPS y comprueba `GET /salud`, el catálogo y la conexión WebSocket.
 
-La planificación original y sus evidencias de SQLite documentan la entrega anterior. La configuración vigente de persistencia se describe aquí y en `docs/mvp/supabase.md`. Los pagos y las reservas internas siguen fuera del MVP.
+SQLite pertenece a la entrega anterior. Las migraciones crean y actualizan el esquema de PostgreSQL. Cualquier traslado de registros de una base SQLite requiere una importación aparte. La recuperación de contraseña usa una bandeja de pruebas en desarrollo. Para ofrecerla en producción hace falta integrar un servicio de correo real.
+
+## Estructura
+
+| Carpeta | Contenido |
+| --- | --- |
+| `src/` | Aplicación, punto de entrada, módulos, vistas y WebSocket |
+| `public/` | Estilos, JavaScript del navegador, imágenes y fuentes |
+| `db/postgres/` | Migraciones PostgreSQL versionadas |
+| `scripts/` | Herramientas de migración y demostración |
+| `tests/` | Pruebas unitarias e integración HTTP y WebSocket |
+| `deploy/` | Configuración de ejemplo para el proxy HTTPS |
+| `planificacion/` | Planes, referencias e historial de la entrega académica |
+
+```sh
+npm test
+npm run lint
+```
+
+Las pruebas automatizadas usan PostgreSQL emulado y Storage en memoria. La comprobación del servicio gestionado se realiza en una instancia de desarrollo o staging autorizada.

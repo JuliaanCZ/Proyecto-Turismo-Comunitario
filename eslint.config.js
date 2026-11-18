@@ -4,11 +4,6 @@
 
 const MODULES = ['accounts', 'offers', 'chat'];
 
-const SQLITE = {
-  name: 'node:sqlite',
-  message: 'Solo src/shared/db.js abre SQLite; los demás reciben `db` inyectado y la usan desde modules/*/data.',
-};
-
 // Rutas de paquete que ningún módulo de negocio puede importar.
 const FRAMEWORK_PATHS = [
   { name: 'express', message: 'modules/** no conoce Express: eso es del adaptador src/web.' },
@@ -22,7 +17,7 @@ const ADAPTER_PATTERNS = [
 ];
 
 function restrictions({ paths = [], patterns = [] } = {}) {
-  return ['error', { paths: [SQLITE, ...paths], patterns }];
+  return ['error', { paths, patterns }];
 }
 
 // Un módulo importa a otro solo por su index.js.
@@ -45,12 +40,6 @@ export default [
       'no-unused-vars': 'error',
       'no-undef': 'error',
     },
-  },
-  // SQLite solo se abre en src/shared/db.js (B0.2); en el resto de src se prohíbe importarlo.
-  {
-    files: ['src/**/*.js'],
-    ignores: ['src/shared/db.js'],
-    rules: { 'no-restricted-imports': restrictions() },
   },
   // Adaptadores: usan los módulos por su index.js (o, mejor, por el contenedor), nunca por data/service/domain.
   {

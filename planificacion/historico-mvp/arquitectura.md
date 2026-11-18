@@ -5,7 +5,7 @@
 Aplicación web monolítica de turismo comunitario: **un solo proceso Node.js** con Express para las rutas y las vistas EJS, Socket.IO en el mismo `http.Server` y SQLite en un archivo. Este documento describe lo que el código tiene hoy; cada carpeta y archivo nombrado se comprueba con `test -e` (TM-ARQ-01, [evidencias](evidencias/B3.1/LEEME.md)).
 
 - **Estado verificado:** rama bloque/B3.1-arquitectura creada sobre `main` con B2.2 integrado (`4ac9c4f`); `npm run lint` y `npm test` en verde (202 pruebas) antes de dibujar.
-- **Referencias:** [`PLAN-MVP.md`](../../mvp-primer-bimestre/PLAN-MVP.md) §2.2 y §2.4; [`esquema.md`](esquema.md) para los datos.
+- **Referencias:** [`PLAN-MVP.md`](../mvp-primer-bimestre/PLAN-MVP.md) §2.2 y §2.4; [`esquema.md`](esquema.md) para los datos.
 - **Lo aplazado** figura en el cuadro «Fuera del MVP» del diagrama y en la sección del mismo nombre.
 
 ## Diagrama

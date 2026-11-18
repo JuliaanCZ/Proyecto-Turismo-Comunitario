@@ -9,7 +9,6 @@ import { errorHandler, notFoundHandler } from './shared/http/error-handler.js';
 import { originGuard } from './shared/http/origin.js';
 import { createAccountsRouter } from './web/accounts.routes.js';
 import { createChatRouter } from './web/chat.routes.js';
-import { createDesignRouter } from './web/design.routes.js';
 import { createOffersRouter } from './web/offers.routes.js';
 import { createPanelRouter } from './web/panel.routes.js';
 import { pageLocals, renderPage } from './web/render-page.js';
@@ -49,7 +48,7 @@ function securityHeaders(config) {
  * Monta Express con el contenedor ya compuesto (C-HTTP). Orden: cabeceras de seguridad →
  * estáticos → `no-store` de `/panel` y `/api` → origen → cuerpos (16 kB) → sesión (con `no-store` si la hay) → datos de página
  * → CSRF → `requireAuth` en `/panel` y `/api` → routers de módulos → 404 → manejador de errores. El gateway Socket.IO se adjunta
- * al `http.Server` en `server.js`, en el mismo puerto.
+ * al `http.Server` en `src/start.js`, en el mismo puerto.
  */
 export function createApp(container) {
   const { config } = container;
@@ -97,7 +96,6 @@ export function createApp(container) {
   app.use(createAccountsRouter(container));
   app.use(createOffersRouter(container));
   app.use(createChatRouter(container));
-  if (config.appEnv !== 'production') app.use(createDesignRouter(container));
 
   app.use(notFoundHandler);
   app.use(errorHandler({ logger: container.logger }));

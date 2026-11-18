@@ -16,7 +16,7 @@
         <% if (next) { %><input type="hidden" name="next" value="<%= next %>"><% } %>
         <%- include('../partials/form-field', { name: 'email', label: 'Correo', type: 'email', required: true, autocomplete: 'email', value: values.email, errors: errors.email }) %>
         <%- include('../partials/form-field', { name: 'password', label: 'Contraseña', type: 'password', required: true, autocomplete: 'current-password', errors: errors.password }) %>
-        <a class="k-signin-recover" href="/recuperar">¿La olvidaste?</a>
+        <% if (locals.recoveryEnabled) { %><a class="k-signin-recover" href="/recuperar">¿La olvidaste?</a><% } %>
         <button class="btn" type="submit">Ingresar</button>
       </form>
       <p class="k-signin-register">¿Aún no tienes cuenta? <a href="/registro">Créala aquí</a></p>

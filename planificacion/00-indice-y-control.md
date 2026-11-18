@@ -1,6 +1,6 @@
 # 00 — Índice y control de la planificación
 
-> Este índice corresponde al diseño ampliado. Para implementar el monolito del primer bimestre, sigue el [plan del MVP](../../mvp-primer-bimestre/PLAN-MVP.md).
+> Este índice corresponde al diseño ampliado. Para implementar el monolito del primer bimestre, sigue el [plan del MVP](mvp-primer-bimestre/PLAN-MVP.md).
 
 > **Proyecto:** MVP de turismo comunitario (monolito web, proyecto universitario de Aplicaciones Web Avanzadas + Desarrollo de Software Seguro).
 > **Etapa:** planificación técnica. **No existe código de aplicación, ni dependencias instaladas, ni pruebas ejecutadas.**

@@ -1,9 +1,9 @@
 import console from 'node:console';
 import process from 'node:process';
-import { createApp } from './src/app.js';
-import { loadConfig } from './src/config.js';
-import { createContainer } from './src/container.js';
-import { createHttpServer } from './src/server.js';
+import { createApp } from './app.js';
+import { loadConfig } from './config.js';
+import { createContainer } from './container.js';
+import { createHttpServer } from './server.js';
 
 // config → base y migraciones (dentro del contenedor) → app → servidor HTTP + Socket.IO.
 async function start() {
