@@ -38,3 +38,7 @@ Los números exactos se copian de los archivos de esta carpeta; si no coinciden,
 ## Uso de IA
 
 El README, `ia.md`, estos documentos y los tres scripts los preparó Claude Code (modelo `claude-sonnet-5-5`, según la sesión) a partir de la lectura del repositorio y de la petición de Julián. Julián debe revisar el contenido, entenderlo y confirmarlo con su propia cuenta; la persona que lo revise debe ser otra.
+
+## Revisión técnica adicional
+
+[Revisión de Codex](revision-codex.md) sobre el commit `403722d`: instalación limpia, 202 pruebas, ESLint y comprobaciones HTTP. Se aclaró el requisito de dependencias del comprobador WSS en el README. Esta revisión asistida por IA no sustituye TM-ENT-01 ni la revisión humana del PR.
