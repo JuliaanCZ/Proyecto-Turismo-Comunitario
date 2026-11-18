@@ -2,7 +2,7 @@
 
 Historias de B0.7, con el estado final registrado en B3.2. Las quince historias son obligatorias. La prioridad ordena la implementación y el tiempo de demostración según el peso de la rúbrica.
 
-El estado sale del código de `main` en `4ac9c4f` y de la ejecución real de `npm test` del 17-11-2026 (202 pruebas, 202 pasan; [salida literal](evidencias/B3.2/npm-test.txt)). Todas las pruebas automatizadas citadas existen y pasan. TM-DEP-02 es una verificación manual del despliegue. La matriz completa está en [pruebas.md](pruebas.md).
+El estado sale del código de `main` en `a887e67` y de la ejecución real de `npm test` del 17-11-2026 (202 pruebas, 202 pasan; [salida literal](evidencias/B3.2/npm-test.txt)). Todas las pruebas automatizadas citadas existen y pasan. TM-DEP-02 es una verificación manual del despliegue. La matriz completa está en [pruebas.md](pruebas.md).
 
 Referencias: [Plan del MVP, §1, §2.3 y §5.1](../../mvp-primer-bimestre/PLAN-MVP.md) y [casos de uso del plan general, §4](../planificacion/01-alcance-y-trazabilidad.md).
 

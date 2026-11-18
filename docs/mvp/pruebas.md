@@ -27,7 +27,7 @@ eventos testigo o `disconnect`; no usan pausas fijas. Si la conexión falla,
 
 ## Última ejecución (B3.2)
 
-`npm test` completo sobre `main` en `4ac9c4f` (después del PR #22), el 17-11-2026, con Node.js v24.15.0 en Windows:
+`npm test` completo sobre `main` en `a887e67` (después del PR #23, que integra B3.1), el 17-11-2026, con Node.js v24.15.0 en Windows:
 **202 pruebas, 202 pasan, 0 fallan, 0 canceladas, 0 omitidas**.
 La salida literal está en [evidencias/B3.2/npm-test.txt](evidencias/B3.2/npm-test.txt).
 
@@ -67,21 +67,21 @@ Un ítem con partes en distintos estados lleva los estados separados por «/».
 |---|---|---|---|
 | R1 Problema, objetivos y cronograma | — | [problema-objetivos-cronograma.md](problema-objetivos-cronograma.md) (B0.6). Diapositivas iniciales (B3.4) | manual / pendiente (diapositivas) |
 | R2 Historias de usuario | HU-01 a HU-15 | [historias-de-usuario.md](historias-de-usuario.md) con estado final; esta matriz; TM-DOC-02 (B0.7); TM-ENT-06 | manual / pendiente (revisión TM-ENT-06 del revisor) |
-| R3 Diagrama de arquitectura | — | `docs/mvp/arquitectura.md` (B3.1); TM-ARQ-01 | pendiente |
+| R3 Diagrama de arquitectura | — | [arquitectura.md](arquitectura.md) con [imagen exportada](img/arquitectura.png) (B3.1). TM-ARQ-01: las 110 rutas del diagrama existen ([tm-arq-01-rutas.txt](evidencias/B3.1/tm-arq-01-rutas.txt)); esquema contrastado sin diferencias. Cinco afirmaciones verificadas en la revisión del PR #23, sin anotar aún en [afirmaciones-revision.md](evidencias/B3.1/afirmaciones-revision.md) | manual / pendiente (anotar las cinco afirmaciones) |
 | R4 Registro y recuperación | HU-01, HU-03 | TM-CTA-01 a 05, TM-CTA-13 a 19, TM-INT-02. Prueba manual con dos navegadores ([B2.1](evidencias/B2.1/LEEME.md)); capturas de registro y recuperar ([B2.2](evidencias/B2.2/LEEME.md)) | pasa / manual |
 | R5 Inicio de sesión y seguridad | HU-02, HU-04, HU-15 | TM-CTA-06 a 12, TM-INT-01 a 05, TM-SEG-01 a 10, TM-WEB-01 a 06 | pasa |
 | R6 Pantalla principal con CRUD | HU-05 a HU-10 | TM-OFE-01 a 17 y 08a, TM-NAV-01 a 06, TM-INT-06 (pasos 2 a 9). Capturas de escritorio y móvil ([B2.2](evidencias/B2.2/LEEME.md)) | pasa / manual |
 | R7 Chat con WebSockets | HU-11 a HU-15 | TM-WS-01 a 07, TM-CHAT-01 a 14, TM-NOT-01 a 05, TM-INT-03 a 05, TM-INT-06 (pasos 11 y 12). [websocket.md](websocket.md); TM-DEP-02 solo en local | pasa / manual |
 | R8 Base de datos | HU-06 a HU-12 | TM-DB-01 a 05 y 05a, TM-OFE-08, TM-CHAT-06. [esquema.md](esquema.md) | pasa |
 | R9 Calidad: pruebas, README y rendimiento | — | 202 pruebas automatizadas (esta página). TM-PERF-01 a 03 y [rendimiento.md](evidencias/B2.3/rendimiento.md). `.env.example` presente. README final (B3.3, TM-ENT-01) | pasa / pendiente (README) |
-| R10 Repositorio público con commits de todos | — | 22 PR integrados en `main`. Etiqueta `v1.0-b1` sin crear (el remoto no tiene etiquetas). `git shortlog` y revisión de secretos (B3.3, B3.5) | pendiente |
+| R10 Repositorio público con commits de todos | — | 23 PR integrados en `main`. Etiqueta `v1.0-b1` sin crear (el remoto no tiene etiquetas). `git shortlog` y revisión de secretos (B3.3, B3.5) | pendiente |
 | R11 Presentación, defensa y evidencias | — | Presentación, guion, ensayo y comprobante de subida (B3.4, B3.5) | pendiente |
 
 ### Obligaciones (O1–O15)
 
 | Obligación | Historias | Pruebas o evidencia | Estado |
 |---|---|---|---|
-| O1 Monolito con WebSocket en el mismo proyecto | HU-05, HU-15 | TM-BASE-02 (un solo puerto para HTTP y WebSocket), TM-INT-06. Diagrama de B3.1 | pasa / pendiente (diagrama) |
+| O1 Monolito con WebSocket en el mismo proyecto | HU-05, HU-15 | TM-BASE-02 (un solo puerto para HTTP y WebSocket), TM-INT-06. [arquitectura.md](arquitectura.md) (B3.1) y TM-ARQ-01 | pasa / manual |
 | O2 Entidad con 5 o más atributos validables | HU-06 | TM-OFE-01 (seis atributos), TM-OFE-02, TM-DB-01 a 05 | pasa |
 | O3 Validación en cliente y servidor | HU-01, HU-03, HU-06, HU-09 | TM-VAL-01 a 07, TM-WEB-08 (mismo `validate.js` en cliente y servidor), TM-CTA-03, TM-OFE-02, TM-OFE-10, TM-SEG-02 | pasa |
 | O4 Seguridad web y WebSocket | HU-02 a HU-04, HU-15 | TM-SEG-01 a 10, TM-WEB-01 a 06, TM-WS-01 a 07, TM-CTA-06 a 12. [seguridad.md](seguridad.md). TM-DEP-01 y TM-DEP-02 solo en local ([despliegue.md](despliegue.md)) | pasa / manual / pendiente (WSS público, PM-03) |
@@ -101,7 +101,7 @@ Un ítem con partes en distintos estados lleva los estados separados por «/».
 
 | Pendiente | Ítems | Bloque o responsable |
 |---|---|---|
-| Diagrama de arquitectura (TM-ARQ-01) | R3, O1 | B3.1 |
+| Anotar en `afirmaciones-revision.md` las cinco afirmaciones del diagrama confirmadas por el revisor (TM-ARQ-01) | R3 | Revisor de B3.1 |
 | README final, sección «Uso de IA», `docs/mvp/ia.md` y revisión de secretos (TM-ENT-01, TM-ENT-02) | R9, R10, O9, O10, O11 | B3.3 |
 | Diapositivas, guion, banco de preguntas, ensayo y comprobante de subida | R1, R11, O7, O12, O14 | B3.4, B3.5 |
 | Etiqueta `v1.0-b1` en el remoto | R10 | B3.5 |
