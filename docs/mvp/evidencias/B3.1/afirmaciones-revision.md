@@ -1,16 +1,16 @@
 # Cinco afirmaciones del diagrama para el revisor (B3.1)
 
-**Revisor:** Integrante 2 · **Autor:** Integrante 4 · **Base:** `main` en `4ac9c4f` (B2.2 integrado)
+**Revisor:** Dilan Calvache (Integrante 1, en reemplazo del Integrante 2) · **Autor:** Integrante 4 · **Base:** `main` en `4ac9c4f` (B2.2 integrado)
 
-Cada afirmación del diagrama de [`arquitectura.md`](../../arquitectura.md) se apoya en líneas concretas del código. El autor ejecutó las comprobaciones y anotó lo observado; **el revisor debe repetirlas y confirmar con su propia lectura del código**. Hasta entonces, el criterio de cierre de B3.1 («el revisor confirmó cinco afirmaciones») queda **pendiente**.
+Cada afirmación del diagrama de [`arquitectura.md`](../../arquitectura.md) se apoya en líneas concretas del código. El autor ejecutó las comprobaciones y anotó lo observado; el revisor las repitió con su propia lectura del código. Las cinco quedaron **confirmadas** en la revisión del PR #23, de modo que se cumple el criterio de cierre de B3.1 («el revisor confirmó cinco afirmaciones»).
 
-| # | Afirmación | Referencias | Observado por el autor | Confirmación del Integrante 2 |
+| # | Afirmación | Referencias | Observado por el autor | Confirmación del revisor |
 |---|---|---|---|---|
-| 1 | Express y Socket.IO comparten un único `http.Server` y un único puerto | `src/server.js:11-12`, `server.js:12` y `server.js:27` | Un solo `listen` y un solo `createServer` | **Pendiente** |
-| 2 | El orden de middlewares de Express protege cada ruta antes de llegar a un router | `src/app.js:66-102` | Orden confirmado leyendo el archivo | **Pendiente** |
-| 3 | Solo `src/shared/db.js` abre SQLite; el SQL vive solo en `modules/*/data` | `src/shared/db.js:1`, `eslint.config.js:7-10` y `eslint.config.js:50-54` | Un único importador en `src`; sin `prepare()` fuera de `data` | **Pendiente** |
-| 4 | El WebSocket autentica en el handshake con `Origin` y cookie, revalida en cada evento y se cierra al revocarse la sesión | `src/realtime/gateway.js:82-109`, `src/realtime/session-guard.js:36-62`, `src/realtime/gateway.js:113-120`, `src/modules/accounts/service/sessions.js:62` y `:73`, `src/modules/accounts/service/password-reset.js:78` | Coincide; `realtime` no importa `modules` | **Pendiente** |
-| 5 | El contacto por WhatsApp es solo un enlace externo: el servidor arma la URL y no llama a WhatsApp | `src/web/offers.routes.js:41-46` y `:141`, `src/web/views/offers/publica-detalle.ejs:9-10`, `src/config.js:72-75` | `wa.me` aparece una sola vez en `src` y no hay `fetch` ni cliente HTTP | **Pendiente** |
+| 1 | Express y Socket.IO comparten un único `http.Server` y un único puerto | `src/server.js:11-12`, `server.js:12` y `server.js:27` | Un solo `listen` y un solo `createServer` | **Confirmada** |
+| 2 | El orden de middlewares de Express protege cada ruta antes de llegar a un router | `src/app.js:66-102` | Orden confirmado leyendo el archivo | **Confirmada** |
+| 3 | Solo `src/shared/db.js` abre SQLite; el SQL vive solo en `modules/*/data` | `src/shared/db.js:1`, `eslint.config.js:7-10` y `eslint.config.js:50-54` | Un único importador en `src`; sin `prepare()` fuera de `data` | **Confirmada** |
+| 4 | El WebSocket autentica en el handshake con `Origin` y cookie, revalida en cada evento y se cierra al revocarse la sesión | `src/realtime/gateway.js:82-109`, `src/realtime/session-guard.js:36-62`, `src/realtime/gateway.js:113-120`, `src/modules/accounts/service/sessions.js:62` y `:73`, `src/modules/accounts/service/password-reset.js:78` | Coincide; `realtime` no importa `modules` | **Confirmada** |
+| 5 | El contacto por WhatsApp es solo un enlace externo: el servidor arma la URL y no llama a WhatsApp | `src/web/offers.routes.js:41-46` y `:141`, `src/web/views/offers/publica-detalle.ejs:9-10`, `src/config.js:72-75` | `wa.me` aparece una sola vez en `src` y no hay `fetch` ni cliente HTTP | **Confirmada** |
 
 ## Cómo comprobar cada una
 
@@ -69,14 +69,16 @@ Qué debe verse: la URL se construye en el servidor y se entrega como enlace; el
 
 ## Registro de la revisión
 
-Completa el revisor al terminar. Estado inicial: ninguna afirmación confirmada.
+Revisión hecha con el código de la rama `bloque/B3.1-arquitectura` (`9d14a54`). El código es el mismo que en `main` después del PR #23 (`a887e67`).
 
 | # | Confirmada | Observaciones |
 |---|---|---|
-| 1 | ☐ | |
-| 2 | ☐ | |
-| 3 | ☐ | |
-| 4 | ☐ | |
-| 5 | ☐ | |
+| 1 | ☑ | `src/server.js:11` es el único `createServer` y `server.js:27` el único `listen`. `new Server(httpServer)` usa el mismo servidor que recibe `app` (`src/server.js:12`) |
+| 2 | ☑ | En `src/app.js:66-102`, `helmet`, los estáticos, `noStore`, `originGuard`, los cuerpos de 16 kB, `attachPrincipal`, `csrf` y `requireAuth` van antes de los routers (95-99). `notFoundHandler` y `errorHandler` cierran la cadena |
+| 3 | ☑ | `node:sqlite` solo aparece en `src/shared/db.js:1`. ESLint lo prohíbe en el resto de `src` (`eslint.config.js:7-10` y `50-54`) y rechazó una importación de prueba en `modules/offers/data` |
+| 4 | ☑ | El handshake rechaza otro `Origin` (`gateway.js:84`) y la cookie ausente o inválida (89-98). `guard` vuelve a llamar a `resolveSession` en cada evento (`session-guard.js:47`). `session-revoked` se emite en `sessions.js:62` y `:73` y en `password-reset.js:78`, y el gateway lo escucha (`gateway.js:113-120`) |
+| 5 | ☑ | `wa.me` aparece una sola vez (`offers.routes.js:45`). La vista lo imprime como enlace (`publica-detalle.ejs:9`) o muestra el aviso si no hay número (línea 10). No hay `fetch` ni cliente HTTP en `src`; los dos `fetch` de `public/js` llaman al propio servidor |
 
-Revisor: ______________________ · Fecha: ____________
+Comandos repetidos por el revisor: `comprobar-rutas.sh` (110 elementos, 0 faltan), `contrastar-esquema.mjs` (295 comprobaciones, 0 fallos), `npm test` (202 de 202) y `npm run lint` (sin errores). En Windows, `comprobar-dependencias.sh` desde Git Bash no puede ejecutar `npm` ni `npx`; las reglas 1 a 10 por `grep` pasaron, y los cinco controles negativos de ESLint se repitieron desde PowerShell con el mismo resultado.
+
+Revisor: Dilan Calvache (en reemplazo del Integrante 2) · Fecha: 2026-11-17
