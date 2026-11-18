@@ -22,7 +22,7 @@ export function createDemoBackend() {
       revoked_at bigint,
       revoke_reason text
     );`);
-  memory.public.none(sql.replace('updated_at bigint NOT NULL', 'updated_at bigint NOT NULL, contact_phone text, contact_email text, featured_key text UNIQUE')
+  memory.public.none(sql.replace('updated_at bigint NOT NULL', 'updated_at bigint NOT NULL, contact_phone text, contact_email text')
     .replace('offer_id bigint PRIMARY KEY REFERENCES offers(id) ON DELETE CASCADE,',
       'offer_id bigint REFERENCES offers(id) ON DELETE CASCADE, position smallint NOT NULL DEFAULT 1 CHECK (position BETWEEN 1 AND 5), PRIMARY KEY (offer_id, position),'));
   const { Pool } = memory.adapters.createPg();
