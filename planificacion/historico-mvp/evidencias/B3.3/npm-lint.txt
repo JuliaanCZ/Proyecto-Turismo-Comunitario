@@ -1,0 +1,7 @@
+﻿# 2026-11-18 00:56 · node v24.22.3 · commit base 5c617c4 + cambios sin commit de B3.3
+$ npm run lint
+
+> turismo-comunitario@0.1.0 lint
+> eslint .
+
+(exit 0)

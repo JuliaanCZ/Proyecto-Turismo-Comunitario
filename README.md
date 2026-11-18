@@ -41,3 +41,7 @@ npm run lint
 ```
 
 Las pruebas automatizadas usan PostgreSQL emulado y Storage en memoria. La comprobación del servicio gestionado se realiza en una instancia de desarrollo o staging autorizada.
+
+## Entrega académica del primer bimestre
+
+La entrega con SQLite se documentó en el [README del primer bimestre](https://github.com/JuliaanCZ/Proyecto-Turismo-Comunitario/blob/f42a3798834ff934af19a4c027faa73c275171cb/README.md). El historial del proyecto conserva el [registro de uso de IA](planificacion/historico-mvp/ia.md), la [matriz de pruebas](planificacion/historico-mvp/pruebas.md) y las [evidencias de B3.3](planificacion/historico-mvp/evidencias/B3.3/LEEME.md).

@@ -1,0 +1,345 @@
+﻿# Reproducción en copia limpia (automatizada por el autor; no es TM-ENT-01)
+Fecha: 2026-11-18 00:55:53 -05:00
+Commit base: 5c617c4 (rama bloque/B3.3-documentacion); la copia incluye los cambios aún sin commit de B3.3
+Clon creado con git clone; cambios de B3.3 superpuestos: 18 archivo(s).
+¿Hay .env en la copia? False · ¿hay data/? False · ¿es un repositorio Git? True
+
+## Versiones
+node v24.22.3 · npm 11.19.1 · .nvmrc 24.22.3
+Sistema: Microsoft Windows NT 10.0.26200.0 · PowerShell 5.1.26100.9818
+
+### 1. Dependencias
+> npm ci
+
+added 202 packages, and audited 203 packages in 7s
+
+55 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   argon2@0.45.2 (install: cross-env ZERO_AR_DATE=1 node-gyp-build)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+(código de salida: 0 · 7.4 s · ESPERADO)
+
+### 1b. SQLite y Argon2 (el aviso install-scripts de npm no debe impedirlo)
+> node scripts/check-sqlite-argon2.js
+SQLite (node:sqlite, :memory:): {"valor":"dato-ficticio"}
+Algoritmo: argon2id
+Hash verificado: true
+Clave distinta rechazada: true
+OK
+(código de salida: 0 · 0.5 s · ESPERADO)
+
+### 2. Configuración local
+> if (-not (Test-Path -LiteralPath '.env')) { Copy-Item -LiteralPath '.env.example' -Destination '.env' }
+(.env creado en la copia: True; es un duplicado de .env.example)
+
+### 3. Migraciones
+> npm run db:migrate
+
+> turismo-comunitario@0.1.0 db:migrate
+> node --env-file-if-exists=.env scripts/migrate.js
+
+Aplicada 001_base
+Aplicada 010_accounts
+Aplicada 020_offers
+Aplicada 030_chat
+Base ./data/app.sqlite: 4 migración(es) aplicada(s).
+(código de salida: 0 · 1.2 s · ESPERADO)
+
+### 3b. Migraciones repetidas (debe no cambiar nada)
+> npm run db:migrate
+
+> turismo-comunitario@0.1.0 db:migrate
+> node --env-file-if-exists=.env scripts/migrate.js
+
+Base ./data/app.sqlite: sin migraciones pendientes.
+(código de salida: 0 · 1.2 s · ESPERADO)
+
+### 4. Datos de demostración
+> npm run seed:demo
+
+> turismo-comunitario@0.1.0 seed:demo
+> node --env-file-if-exists=.env scripts/seed-demo.js
+
+Base sembrada: ./data/app.sqlite
+Cuentas: 2 creadas, 0 conservadas (ana@demo.test, luis@demo.test).
+Contraseña: la de SEED_DEMO_PASSWORD (no se muestra).
+Ofertas: 15 creadas, 0 conservadas; fotos nuevas: 8; publicaciones nuevas: 7.
+Mensajes de chat: 5 creados, 0 conservados.
+(código de salida: 0 · 1.8 s · ESPERADO)
+
+### 4b. Siembra repetida (debe conservar todo)
+> npm run seed:demo
+
+> turismo-comunitario@0.1.0 seed:demo
+> node --env-file-if-exists=.env scripts/seed-demo.js
+
+Base sembrada: ./data/app.sqlite
+Cuentas: 0 creadas, 2 conservadas (ana@demo.test, luis@demo.test).
+Contraseña: la de SEED_DEMO_PASSWORD (no se muestra).
+Ofertas: 0 creadas, 15 conservadas; fotos nuevas: 0; publicaciones nuevas: 0.
+Mensajes de chat: 0 creados, 5 conservados.
+(código de salida: 0 · 1.7 s · ESPERADO)
+
+### 5. Pruebas
+> npm test
+
+> turismo-comunitario@0.1.0 test
+> node --test
+
+✔ TM-ARN-01: createSessionFor guarda solo el hash de la sesión (66.4935ms)
+✔ TM-ARN-02: waitFor espera n eventos y falla claramente si se desconecta (237.4578ms)
+✔ TM-ARN-03: expectNoEvent distingue ausencia y presencia usando un testigo (107.9611ms)
+✔ TM-BASE-01: GET /salud devuelve 200 y el estado esperado (171.8962ms)
+✔ TM-BASE-02: Express y el transporte WebSocket responden en el mismo puerto (116.0089ms)
+✔ C-ENV: conserva los valores de desarrollo y valida el número opcional (2.3223ms)
+✔ C-ENV: BIND_HOST configura una IP de escucha opcional (1.5552ms)
+✔ C-ENV: producción exige HTTPS, cookies seguras y un secreto propio (1.474ms)
+✔ aviso: /panel, la portada y un 404 con sesión cargan el aviso (250.5968ms)
+✔ aviso: /panel/chat (también con barra final o mayúsculas) no carga el aviso y sigue cargando el chat (105.0435ms)
+✔ aviso: sin sesión no se carga ningún script de tiempo real (121.512ms)
+✔ aviso: la CSP no se relaja (scripts propios, conexión al mismo origen) y la insignia sigue vacía y oculta (43.568ms)
+✔ aviso: el script lleva el id numérico del usuario y no expone token ni id de sesión (contador por cuenta) (74.1986ms)
+✔ TM-CHAT-02: valida UUID, tipo, texto, límites y normalización antes de insertar (56.6964ms)
+✔ TM-CHAT-04: historial por cursor pagina 75 mensajes en 30, 30 y 15 (57.5865ms)
+✔ TM-CHAT-06: el historial persiste al cerrar y reabrir la base (312.1843ms)
+✔ TM-CHAT-07: marcado se conserva como texto y la página lo escapa (253.7761ms)
+✔ TM-CHAT-08: historial HTTP exige sesión y valida cursores y límite (131.8641ms)
+✔ TM-CTA-13: correo existente e inexistente reciben el mismo estado y el mismo cuerpo (306.6388ms)
+✔ TM-CTA-14: el token se guarda solo como hash, el enlace usa APP_ORIGIN y abrirlo no lo consume (131.9933ms)
+✔ TM-CTA-15: un token válido cambia la clave una sola vez; el segundo uso da TOKEN_INVALID (131.8074ms)
+✔ TM-CTA-16: un token vencido (reloj +31 min) da el mismo TOKEN_INVALID (73.0389ms)
+✔ TM-CTA-17: dos solicitudes seguidas dejan un solo token utilizable (el último) (101.2513ms)
+✔ TM-CTA-18: tras restablecer, la sesión anterior ya no abre /panel y sale session-revoked con userId (112.2884ms)
+✔ con Referrer-Policy no-referrer el navegador envía Origin: null; solo /restablecer lo acepta (119.7614ms)
+✔ TM-CTA-19: /dev/bandeja responde 404 desactivada, 401 sin la clave y lista el enlace con la clave (223.9092ms)
+✔ TM-CTA-01: registro válido crea fila con hash argon2id distinto de la contraseña (86.3204ms)
+✔ TM-CTA-02: dos usuarios con la misma contraseña tienen hashes distintos (58.6662ms)
+✔ TM-CTA-03: cada regla incumplida no inserta y marca su campo (19.1942ms)
+✔ TM-CTA-04: correo duplicado (también con otra capitalización) → EMAIL_TAKEN (237.6709ms)
+✔ TM-CTA-05: POST /registro sin Origin válido → 403 y sin fila (68.22ms)
+✔ POST /registro válido redirige a ingreso y no inicia sesión (39.4456ms)
+✔ POST /registro con sesión válida exige y acepta _csrf del formulario (104.3822ms)
+✔ GET/POST /registro con datos inválidos muestra errores por campo (evidencia HTML) (94.5526ms)
+✔ TM-CTA-06: ingreso correcto fija cookie HttpOnly + SameSite=Lax y guarda solo SHA-256 en SQLite (262.4375ms)
+✔ TM-CTA-07: contraseña incorrecta y correo inexistente devuelven el mismo estado y mensaje (137.2483ms)
+✔ TM-CTA-08: /panel sin cookie → 302 a /ingreso; con cookie válida → 200 (84.6354ms)
+✔ TM-CTA-09: POST /salir revoca la sesión, limpia la cookie, emite session-revoked y es idempotente (77.002ms)
+✔ TM-CTA-10: sesión vencida (reloj +8 h) no da acceso (37.0977ms)
+✔ TM-CTA-11: cada ingreso genera un token nuevo y nunca reutiliza la cookie presentada (sin fijación) (51.4608ms)
+✔ TM-CTA-12: next hostil (https://evil.test, //evil.test) se ignora y redirige a /panel; ruta interna válida se respeta (94.5839ms)
+✔ Integración B0.5 + B1.2/B1.3: resolveSession acepta createSessionFor y revokeAllSessions/revokeAllInTx funcionan (52.0998ms)
+✔ demo del aviso: se niega a arrancar con APP_ENV=production (2190.415ms)
+✔ demo del aviso: cada usuario recibe su cookie por HTTP y ningún token se imprime (2046.168ms)
+✔ demo del aviso: la ruta rechaza otro Host, otro método y usuarios desconocidos (1478.0907ms)
+✔ demo del aviso: con las cookies HTTP de la demo, el chat real de ana avisa a luis (1254.1305ms)
+✔ TM-OFE-09 y 15: ciclo CRUD por HTTP y confirmación obligatoria (631.5266ms)
+✔ TM-OFE-10: 422 conserva valores y muestra error junto al campo (79.1326ms)
+✔ TM-OFE-11 y 12: rutas privadas requieren sesión y ocultan ofertas ajenas (333.4282ms)
+✔ TM-OFE-13 y 14: salida escapada, 25 filtradas y paginación estable (199.7974ms)
+✔ TM-OFE-16: foto válida, reemplazo y rechazos conservan la anterior (414.3242ms)
+✔ TM-OFE-17: catálogo solo publicado, futuro y con foto; contacto configurado (309.5082ms)
+✔ TM-OFE-16 regresión: multipart truncado rechaza, conserva foto y mantiene servidor (153.3976ms)
+✔ TM-OFE-16 regresión: cierre anticipado del cliente mantiene servidor y foto (95.9458ms)
+✔ TM-OFE-01: crear persiste los seis atributos y devuelve DTO privado (52.1506ms)
+✔ TM-OFE-02: entrada inválida y fecha pasada no insertan (26.8532ms)
+✔ TM-OFE-03/04/07: filtro, propiedad, páginas y parámetros literales (60.084ms)
+✔ TM-OFE-05/06: propiedad uniforme y confirmación para eliminar (19.5797ms)
+✔ TM-OFE-08: la consulta filtrada usa el índice de propietario y provincia (30.4344ms)
+✔ TM-OFE-08a: foto, publicación, vencimiento y cascada (73.8592ms)
+✔ TM-NAV-01: /panel sin sesión redirige a /ingreso (191.7151ms)
+✔ TM-NAV-02: con sesión, el menú muestra Inicio, Mis ofertas, Chat y Salir (83.9411ms)
+✔ TM-NAV-02: el menú es idéntico en todas las pantallas autenticadas (192.6157ms)
+✔ menú público: Ofertas, Ingresar y Crear cuenta, sin Salir ni insignia (35.7436ms)
+✔ TM-NAV-03: una ruta inexistente muestra el 404 con enlace de regreso y sin trazas (76.6778ms)
+✔ 403 (origen o token rechazados) muestra una página propia con enlace de regreso (148.5826ms)
+✔ Cache-Control: no-store en la portada con sesión y en el formulario Salir con su CSRF (80.7172ms)
+✔ POST /panel con sesión y Origin correcto, pero sin token CSRF: 403 y no-store (188.409ms)
+✔ los errores anteriores a requireAuth en /panel y /api también llevan no-store (93.0077ms)
+✔ TM-NAV-04: el nombre del usuario se muestra escapado (225.7519ms)
+✔ TM-NAV-05: el resumen refleja el número real de ofertas del usuario (199.4729ms)
+✔ integración B1.4: el panel muestra el total del servicio real para el propietario (72.6381ms)
+✔ sin el servicio de ofertas (NOT_IMPLEMENTED) el panel abre, avisa y no inventa cifras (44.8685ms)
+✔ si el servicio de ofertas falla o responde mal, el panel abre sin cifra y el fallo queda en el registro (292.3347ms)
+✔ el servicio de ofertas asíncrono también alimenta el resumen (70.1592ms)
+✔ portada: enlaces públicos sin sesión y «Ir a mi panel» con sesión (96.202ms)
+✔ accesibilidad: salto al contenido, un h1 y un título propios por pantalla (245.3157ms)
+▶ TM-INT-06: recorrido completo, del registro al cierre de sesión, con servicios reales
+  ✔ 1. el visitante ve la portada y el registro valida en el servidor (243.4969ms)
+  ✔ 2. registro e ingreso reales; /panel exige sesión y muestra el menú (209.8067ms)
+  ✔ 3. crear una oferta (borrador) y rechazar una fecha pasada (81.8915ms)
+  ✔ 4. listar, filtrar por provincia y paginar de 10 en 10 (211.0187ms)
+  ✔ 5. detalle por ID y 404 para ofertas ajenas con ingreso real (TM-OFE-09) (157.7491ms)
+  ✔ 6. editar la oferta (24.8084ms)
+  ✔ 7. publicar exige foto; se carga la foto y luego se publica (126.9147ms)
+  ✔ 8. el visitante ve solo lo publicado, con foto y enlace de WhatsApp sin enviar nada (174.346ms)
+  ✔ 9. eliminar pide confirmación y solo entonces borra (111.2757ms)
+  ✔ 10. recuperar la clave con la bandeja cierra la sesión anterior y el enlace sirve una vez (222.5802ms)
+  ✔ 11. chat real entre dos usuarios: guardar, difundir, presencia, historial y aviso (166.7457ms)
+  ✔ 12. cerrar sesión desconecta el chat, avisa a los demás y la cookie deja de servir (37.8089ms)
+✔ TM-INT-06: recorrido completo, del registro al cierre de sesión, con servicios reales (1875.5237ms)
+✔ TM-NAV-06: los enlaces del menú responden 200 con sesión real y repiten el menú (324.7819ms)
+✔ TM-NOT-05: un mensaje rechazado o repetido no genera aviso; uno válido sí (170.5588ms)
+✔ TM-INT-07: seed:demo dos veces deja las mismas filas y respeta los datos pedidos (498.1364ms)
+✔ TM-INT-07: el comando real (node scripts/seed-demo.js) también es idempotente y no imprime la clave (1392.0541ms)
+✔ TM-INT-07: repetir el seed días después deja las filas, informa las ofertas vencidas y no las publica (435.5678ms)
+✔ TM-INT-07: con otra contraseña el seed falla sin cambiar cuentas ni mostrar claves (414.2664ms)
+✔ TM-PERF-01: perf:seed crea 20 ofertas en 20 provincias y nunca toca otra base (138.6428ms)
+✔ TM-PERF-02: EXPLAIN QUERY PLAN usa idx_offers_owner_province_starts (107.55ms)
+✔ TM-PERF-03: el informe tiene resultados ejecutados y no conserva celdas pendientes (3.1937ms)
+✔ TM-INT-01: tras POST /salir se cierra el socket de esa sesión y la cookie no abre panel, chat ni historial (562.8322ms)
+✔ TM-INT-02: restablecer la clave cierra todos los sockets del usuario y sus cookies pierden acceso (195.4975ms)
+✔ TM-INT-03: reconectar con la cookie de una sesión revocada da connect_error UNAUTHENTICATED (125.6174ms)
+✔ TM-INT-04: con la sesión revocada solo en la base, chat:send da UNAUTHENTICATED y no guarda filas (80.5166ms)
+✔ TM-INT-05: con la sesión vencida (8 h) el socket se cierra solo y /panel redirige (168.2233ms)
+✔ vista simulada: se niega a arrancar con APP_ENV=production (1590.3816ms)
+✔ vista simulada: /simulacion/sesion fija la cookie por HTTP, sin imprimir el token (1503.0887ms)
+✔ vista simulada: la ruta de sesión no existe en la aplicación real y rechaza otro Host (1014.9415ms)
+✔ TM-WEB-01: POST sin Origin → 403 ORIGIN_MISMATCH (207.0587ms)
+✔ TM-WEB-02: POST con Origin de otro sitio → 403; GET, HEAD y OPTIONS no lo exigen (182.3235ms)
+✔ TM-WEB-03: con sesión, POST sin token CSRF → 403; con token → pasa el guardián (308.9379ms)
+✔ TM-WEB-04: /panel sin sesión → 302 a /ingreso?next=%2Fpanel; /api/x sin sesión → 401 JSON (104.4262ms)
+✔ TM-WEB-05: safeNext rechaza //evil.test, /\evil y https://x; acepta /panel/ofertas?pagina=2 (1.3172ms)
+✔ TM-WEB-06: cabeceras CSP, X-Content-Type-Options y no-store en /panel (80.3227ms)
+✔ TM-WEB-06 (HTTPS): connect-src usa wss del origen, cookie __Host- y sin vista de diseño (77.3193ms)
+✔ TM-WEB-07: una ruta inexistente muestra la página 404 sin trazas (48.9576ms)
+✔ C-ERR: un error inesperado → INTERNAL_ERROR sin trazas hacia el cliente y con registro en el servidor (47.6195ms)
+✔ C-ERR: AppError → su estado y código, en página o JSON; cuerpo mal formado o mayor de 16 kB → 422 (87.4533ms)
+✔ C-SES: el resolvedor recibe el token y la hora del reloj inyectado; sin cookie no se consulta (119.4885ms)
+✔ csrf: el token es determinista, ligado a la sesión y al secreto (0.9198ms)
+✔ TM-WEB-08: npm run lint rechaza un import prohibido (fixture) y acepta los permitidos (496.7971ms)
+✔ TM-WEB-08: /js/shared/validate.js se sirve idéntico a src/shared/validation/validate.js (98.655ms)
+✔ integración B0.2: createContainer abre la base migrada y la cierra (99.5613ms)
+✔ createContainer: overrides inyectan servicios, reloj y base; la base inyectada no se cierra (12.098ms)
+✔ C-MOD: cuentas expone exactamente las funciones de §5.1 y ninguna queda como esqueleto (11.1846ms)
+✔ sesión real en contenedor: una cookie desconocida se ignora (null) y la portada abre (36.2253ms)
+✔ gateway: onMessageStored registra y messageStored invoca (enganche de C-EVT) (1.1191ms)
+✔ vista de diseño: formulario con data-schema, errores del servidor asociados al campo y salida escapada (58.3437ms)
+✔ TM-SEG-01: Argon2id usa sal y nunca guarda la contraseña (254.3142ms)
+✔ TM-SEG-02: validación del servidor rechaza cuenta y oferta inválidas sin JavaScript (191.1013ms)
+✔ TM-SEG-03: todas las rutas privadas rechazan una petición sin sesión (127.625ms)
+✔ TM-SEG-04: ofertas y salir exigen origen exacto y CSRF sin producir efectos (237.7174ms)
+✔ TM-SEG-05: ofertas y chat escapan XSS y ESLint prohíbe innerHTML (190.8074ms)
+✔ TM-SEG-06: cargas de inyección SQL no dan acceso ajeno ni dañan tablas (178.4337ms)
+✔ TM-SEG-07: WebSocket rechaza autenticación, origen, cargas inválidas y sesión revocada (150.8752ms)
+✔ TM-SEG-08: la cookie local y la segura tienen todos sus atributos (79.095ms)
+✔ TM-SEG-09: .env está ignorado y .env.example coincide con la configuración sin secretos reales (267.3522ms)
+✔ TM-SEG-10: Helmet entrega CSP, nosniff y protección contra marcos (30.8539ms)
+✔ TM-CHAT-05 cliente: recupera desde el cursor anterior aunque llegue un mensaje durante chat:join (5.613ms)
+✔ TM-CHAT-05 cliente: intercala por ID un mensaje recuperado anterior al ya visible (0.7189ms)
+✔ TM-CTA-03 (unidad): esquema y política rechazan cada regla con error por campo (5.5993ms)
+✔ B0.2: openDb activa claves foráneas y busy_timeout, y WAL solo en archivo (35.479ms)
+✔ B0.2: withTransaction confirma, revierte y rechaza funciones asíncronas (2.3169ms)
+✔ TM-DB-01: las migraciones crean las tablas, columnas e índices esperados en :memory: (17.2461ms)
+✔ TM-DB-02: reejecutar el migrador no cambia nada (79.9746ms)
+✔ TM-DB-02: modificar un archivo ya aplicado hace fallar el migrador (79.5424ms)
+✔ B0.2: el checksum ignora CRLF y BOM (clones de Windows y Linux) (57.3905ms)
+✔ B0.2: una migración aplicada que desaparece del directorio es un error (44.0873ms)
+✔ B0.2: una migración nueva con número menor que las aplicadas se aplica, y solo ella (70.692ms)
+✔ B0.2: una migración que falla se revierte entera y no se registra (44.9822ms)
+✔ B0.2: rechaza nombres de migración inválidos y números repetidos (59.7256ms)
+✔ TM-DB-03: las claves foráneas están activas y sus ON DELETE son explícitos (37.1238ms)
+✔ TM-DB-04: UNIQUE (email) y UNIQUE (author_id, client_message_id) rechazan duplicados (24.9564ms)
+✔ TM-DB-05: los CHECK de ofertas rechazan capacidad, título, provincia y demás rangos (27.1152ms)
+✔ TM-DB-05: los CHECK de chat rechazan texto vacío, en blanco o demasiado largo (31.4537ms)
+✔ TM-DB-05: los CHECK de cuentas rechazan correos, nombres, sesiones y tokens inválidos (22.9726ms)
+✔ TM-DB-05a: offer_photos admite una foto por oferta, valida formato, texto y tamaño, y cae en cascada (129.3286ms)
+✔ B0.2: cada índice documentado lo usa la consulta a la que sirve, sin ordenar aparte (45.3575ms)
+✔ B0.2: scripts/migrate.js crea la carpeta y el archivo, y la segunda ejecución no cambia nada (883.8982ms)
+✔ contador: la clave chatNuevos sigue siendo un entero simple y el dueño va aparte (6.2029ms)
+✔ contador: Luis acumula, sale y Ana en la misma pestaña empieza en cero (0.6915ms)
+✔ contador: navegar dentro de la misma cuenta conserva el valor (0.7361ms)
+✔ contador: almacenamiento existente sin dueño (versión anterior) se descarta (1.0286ms)
+✔ contador: abrir el chat borra chatNuevos como hace chat.js y el dueño no resucita el valor (1.5463ms)
+✔ contador: valores inválidos o un dueño ajeno nunca producen un número (0.6372ms)
+✔ contador: sin almacenamiento (ausente o que lanza) cuenta en memoria (0.6622ms)
+✔ contador: conserva dueño y valor en memoria si puede leer pero no escribir (0.4798ms)
+✔ TM-OFE-02: provincias, límites, tipos y formato generan errores por campo (7.2578ms)
+✔ time: Ecuador UTC−5 ida y vuelta y rechazo de 2026-02-30 (5.2868ms)
+✔ clock: systemClock y fixedClock con advance (0.5826ms)
+✔ errors: AppError y catálogo C-ERR (2.279ms)
+✔ TM-VAL-01: campos obligatorios, recorte y mensajes por campo (5.6562ms)
+✔ TM-VAL-02: longitudes en puntos de código (emoji = 1) y NFC (1.0571ms)
+✔ TM-VAL-03: enteros estrictos y rangos (1.0142ms)
+✔ TM-VAL-04: correo válido, inválido, minúsculas y máximo 254 (0.9704ms)
+✔ TM-VAL-05: equalsField y enum (1.0888ms)
+✔ TM-VAL-06: localDateTime Ecuador ida/vuelta y rechazo de fecha inexistente (0.7388ms)
+✔ TM-VAL-07: validate.js no contiene import, require ni node: (4.0837ms)
+✔ TM-NOT-01: quien está conectado fuera de la sala recibe el aviso y no chat:message (258.9813ms)
+✔ TM-NOT-02: quien está unido a chat:general recibe chat:message y no el aviso (80.3437ms)
+✔ TM-NOT-03: el autor no recibe el aviso en ninguna de sus pestañas ni sesiones (77.3016ms)
+✔ TM-NOT-04: la carga del aviso no contiene el texto del mensaje ni correos (47.3488ms)
+✔ extra: gateway.messageStored invocado directamente emite el aviso sin pasar por el chat (44.4764ms)
+✔ extra: un envío repetido o inválido no genera aviso; uno válido sí (53.9326ms)
+✔ extra: un usuario con dos sockets fuera de la sala recibe un aviso por socket y deja de recibirlo al unirse (84.4289ms)
+✔ extra: un mensaje mal formado no rompe a los demás oyentes ni al chat y queda en el registro (36.8337ms)
+✔ TM-CHAT-01: guarda antes de emitir y entrega el mismo mensaje a dos clientes (221.4726ms)
+✔ TM-CHAT-02: cargas inválidas confirman VALIDATION_ERROR sin fila ni emisión (75.8318ms)
+✔ TM-CHAT-03: repetir clientMessageId devuelve la misma fila y emite una vez (72.7433ms)
+✔ TM-CHAT-05: al reconectar recupera por after solo los mensajes perdidos (112.9175ms)
+✔ TM-CHAT-09: una sesión revocada no guarda y pierde el socket (34.2967ms)
+✔ TM-CHAT-10: dos usuarios unidos se ven mutuamente (222.1502ms)
+✔ TM-CHAT-11: dos pestañas cuentan una vez y la última salida elimina la presencia (86.8833ms)
+✔ TM-CHAT-12: un socket conectado sin unirse no aparece (52.7508ms)
+✔ TM-CHAT-13: revocar la sesión desconecta y retira la presencia (49.2433ms)
+✔ TM-CHAT-14: la presencia contiene solo id y displayName (35.9953ms)
+✔ TM-WS-01: sin cookie válida rechaza el handshake y no crea salas (163.9011ms)
+✔ TM-WS-02: Origin ajeno o ausente produce ORIGIN_MISMATCH (50.4353ms)
+✔ TM-WS-03: una sesión revocada, inexistente o vencida no conecta (49.2307ms)
+✔ TM-WS-04: una sesión válida conecta por websocket y entra en sus salas (41.3583ms)
+✔ TM-WS-05: revocar una sesión o un usuario cierra solo las salas correspondientes (63.0305ms)
+✔ TM-WS-06: guard rechaza un evento si la sesión fue revocada sin aviso (31.6265ms)
+✔ TM-WS-07: al vencer el reloj de la sesión se avisa y se cierra el socket (94.0161ms)
+ℹ tests 202
+ℹ suites 0
+ℹ pass 202
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9885.0739
+(código de salida: 0 · 11 s · ESPERADO)
+
+### 5b. Lint
+> npm run lint
+
+> turismo-comunitario@0.1.0 lint
+> eslint .
+
+(código de salida: 0 · 3.1 s · ESPERADO)
+
+### 6. Arranque
+> npm start   (puerto 3000)
+Servidor respondiendo en /salud: True
+GET /salud -> 200 {"status":"ok"}
+GET / -> 200, 1986 bytes
+GET /ofertas (visitante) -> 200, ofertas distintas enlazadas: 7, menciona 'Borrador': False
+GET /ofertas/<id> sin número de WhatsApp -> 200, 'Contacto por WhatsApp no disponible': True, enlace wa.me presente: False
+GET /panel sin sesión -> 302 -> /ingreso?next=%2Fpanel
+GET /dev/bandeja sin clave -> 401
+GET /dev/bandeja con la clave ficticia de .env.example -> 200
+
+### 6b. Handshake WebSocket sin cookie
+> node scripts/check-ws.js http://localhost:3000
+connect_error · código: UNAUTHENTICATED
+(código de salida: 1 · esperado 1: sin cookie de sesión el servidor responde UNAUTHENTICATED)
+
+### Salida del servidor (npm start)
+
+> turismo-comunitario@0.1.0 start
+> node --env-file=.env server.js
+
+Servidor de turismo comunitario en el puerto 3000.
+
+## Resumen de pasos
+1. Dependencias                                         código 0 OK
+1b. SQLite y Argon2 (el aviso install-scripts de npm no debe impedirlo) código 0 OK
+3. Migraciones                                          código 0 OK
+3b. Migraciones repetidas (debe no cambiar nada)        código 0 OK
+4. Datos de demostración                                código 0 OK
+4b. Siembra repetida (debe conservar todo)              código 0 OK
+5. Pruebas                                              código 0 OK
+5b. Lint                                                código 0 OK

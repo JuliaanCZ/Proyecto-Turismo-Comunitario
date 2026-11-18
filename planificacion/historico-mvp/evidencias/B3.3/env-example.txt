@@ -1,0 +1,43 @@
+Claves que lee src/config.js (16): APP_ENV, APP_ORIGIN, ARGON2_MEMORY_KIB, ARGON2_PARALLELISM, ARGON2_TIME_COST, BIND_HOST, COOKIE_SECURE, CSRF_SECRET, DATABASE_FILE, DEMO_MAILBOX_ENABLED, DEMO_MAILBOX_PASSWORD, PORT, SEED_DEMO_PASSWORD, SESSION_TTL_HOURS, TRUST_PROXY, WHATSAPP_BOOKING_NUMBER
+Claves de .env.example (16): APP_ENV, APP_ORIGIN, ARGON2_MEMORY_KIB, ARGON2_PARALLELISM, ARGON2_TIME_COST, BIND_HOST, COOKIE_SECURE, CSRF_SECRET, DATABASE_FILE, DEMO_MAILBOX_ENABLED, DEMO_MAILBOX_PASSWORD, PORT, SEED_DEMO_PASSWORD, SESSION_TTL_HOURS, TRUST_PROXY, WHATSAPP_BOOKING_NUMBER
+OK  APP_ENV está en .env.example
+OK  APP_ORIGIN está en .env.example
+OK  ARGON2_MEMORY_KIB está en .env.example
+OK  ARGON2_PARALLELISM está en .env.example
+OK  ARGON2_TIME_COST está en .env.example
+OK  BIND_HOST está en .env.example
+OK  COOKIE_SECURE está en .env.example
+OK  CSRF_SECRET está en .env.example
+OK  DATABASE_FILE está en .env.example
+OK  DEMO_MAILBOX_ENABLED está en .env.example
+OK  DEMO_MAILBOX_PASSWORD está en .env.example
+OK  PORT está en .env.example
+OK  SEED_DEMO_PASSWORD está en .env.example
+OK  SESSION_TTL_HOURS está en .env.example
+OK  TRUST_PROXY está en .env.example
+OK  WHATSAPP_BOOKING_NUMBER está en .env.example
+OK  APP_ENV de .env.example lo lee src/config.js
+OK  APP_ORIGIN de .env.example lo lee src/config.js
+OK  ARGON2_MEMORY_KIB de .env.example lo lee src/config.js
+OK  ARGON2_PARALLELISM de .env.example lo lee src/config.js
+OK  ARGON2_TIME_COST de .env.example lo lee src/config.js
+OK  BIND_HOST de .env.example lo lee src/config.js
+OK  COOKIE_SECURE de .env.example lo lee src/config.js
+OK  CSRF_SECRET de .env.example lo lee src/config.js
+OK  DATABASE_FILE de .env.example lo lee src/config.js
+OK  DEMO_MAILBOX_ENABLED de .env.example lo lee src/config.js
+OK  DEMO_MAILBOX_PASSWORD de .env.example lo lee src/config.js
+OK  PORT de .env.example lo lee src/config.js
+OK  SEED_DEMO_PASSWORD de .env.example lo lee src/config.js
+OK  SESSION_TTL_HOURS de .env.example lo lee src/config.js
+OK  TRUST_PROXY de .env.example lo lee src/config.js
+OK  WHATSAPP_BOOKING_NUMBER de .env.example lo lee src/config.js
+OK  CSRF_SECRET es un marcador ficticio («ejemplo…»)
+OK  DEMO_MAILBOX_PASSWORD es un marcador ficticio («ejemplo…»)
+OK  SEED_DEMO_PASSWORD es un marcador ficticio («ejemplo…»)
+OK  WHATSAPP_BOOKING_NUMBER está vacío (el número es opcional y debe ser autorizado)
+OK  .env.example no contiene patrones de claves privadas ni tokens
+OK  loadConfig acepta .env.example sin cambios (APP_ENV=development, puerto 3000)
+OK  sin número de WhatsApp, la configuración lo deja en null
+OK  producción rechaza el CSRF_SECRET ficticio de .env.example
+Resultado: .env.example coincide con src/config.js.
