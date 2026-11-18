@@ -1,10 +1,31 @@
+import { Buffer } from 'node:buffer';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { stringifySetCookie } from 'cookie';
 import { Router } from 'express';
-import { loginSchema, registerSchema } from '../modules/accounts/index.js';
+import {
+  loginSchema, recoverSchema, registerSchema, resetSchema, TOKEN_INVALID_MESSAGE,
+} from '../modules/accounts/index.js';
 import { AppError } from '../shared/errors.js';
 import { sessionCookieName } from '../shared/http/auth.js';
 import { safeNext } from '../shared/http/safe-next.js';
+import { formatEcuadorDateTime } from '../shared/time.js';
 import { validate } from '../shared/validation/validate.js';
+
+const RESET_LINK_SENT = 'Si el correo tiene una cuenta, te enviamos un enlace para cambiar la contraseña. Vence en 30 minutos.';
+
+function sha256(text) {
+  return createHash('sha256').update(text).digest();
+}
+
+/** Autenticación básica de la bandeja: solo cuenta la clave (cualquier usuario). */
+function mailboxAuthorized(req, password) {
+  const [scheme, encoded] = (req.get('authorization') ?? '').split(' ');
+  if (scheme !== 'Basic' || !encoded) return false;
+  const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+  const colon = decoded.indexOf(':');
+  if (colon < 0) return false;
+  return timingSafeEqual(sha256(decoded.slice(colon + 1)), sha256(password));
+}
 
 const LOGIN_NOTICES = Object.freeze({
   'cuenta-creada': 'Cuenta creada. Ya puedes iniciar sesión.',
@@ -58,7 +79,7 @@ function clearSessionCookie(config) {
 }
 
 /**
- * Router de `accounts` (B1.1 registro, B1.2 ingreso/salida; B1.3 añade recuperación).
+ * Router de `accounts` (B1.1 registro, B1.2 ingreso/salida, B1.3 recuperación y bandeja de pruebas).
  * Solo adapta HTTP: valida, llama al servicio y responde; no consulta SQLite.
  */
 export function createAccountsRouter(container) {
@@ -156,6 +177,80 @@ export function createAccountsRouter(container) {
     } catch (error) {
       return next(error);
     }
+  });
+
+  const renderRecover = (res, { values = { email: '' }, errors = {}, formError = null, notice = null } = {}) => res.renderPage(
+    'accounts/recuperar',
+    { title: 'Recuperar contraseña', schema: recoverSchema, values, errors, formError, notice },
+  );
+
+  router.get('/recuperar', (req, res) => {
+    renderRecover(res, { notice: req.query?.aviso === 'enlace-enviado' ? RESET_LINK_SENT : null });
+  });
+
+  router.post('/recuperar', async (req, res, next) => {
+    try {
+      await container.accounts.requestPasswordReset(req.body?.email);
+      return res.redirect(302, '/recuperar?aviso=enlace-enviado');
+    } catch (error) {
+      if (!(error instanceof AppError) || error.code !== 'VALIDATION_ERROR') return next(error);
+      return renderRecover(res.status(error.status), {
+        values: { email: typeof req.body?.email === 'string' ? req.body.email : '' },
+        errors: error.fieldErrors ?? {},
+        formError: error.message,
+      });
+    }
+  });
+
+  // La página lleva el token: sin caché y sin Referer hacia ningún recurso.
+  const renderReset = (res, { token, errors = {}, formError = null }) => res
+    .set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' })
+    .renderPage('accounts/restablecer', { title: 'Nueva contraseña', schema: resetSchema, token, errors, formError });
+
+  router.get('/restablecer', (req, res) => {
+    const token = typeof req.query?.token === 'string' ? req.query.token : '';
+    if (!token) return renderReset(res.status(400), { token, formError: TOKEN_INVALID_MESSAGE });
+    return renderReset(res, { token });
+  });
+
+  router.post('/restablecer', async (req, res, next) => {
+    const token = typeof req.body?.token === 'string' ? req.body.token : '';
+    try {
+      await container.accounts.resetPassword({
+        token,
+        newPassword: req.body?.newPassword,
+        newPasswordConfirm: req.body?.newPasswordConfirm,
+      });
+      // Sin Set-Cookie: esta ruta admite Origin null y las sesiones ya quedaron revocadas en la base.
+      res.set('Cache-Control', 'no-store');
+      return res.redirect(302, '/ingreso?aviso=clave-cambiada');
+    } catch (error) {
+      if (!(error instanceof AppError)) return next(error);
+      if (error.code === 'TOKEN_INVALID') {
+        return renderReset(res.status(error.status), { token: '', formError: error.message });
+      }
+      if (error.code !== 'VALIDATION_ERROR') return next(error);
+      return renderReset(res.status(error.status), { token, errors: error.fieldErrors ?? {}, formError: error.message });
+    }
+  });
+
+  router.get('/dev/bandeja', (req, res, next) => {
+    if (!config.demoMailboxEnabled) return next();
+    res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+    if (!mailboxAuthorized(req, config.demoMailboxPassword)) {
+      return res.status(401).set('WWW-Authenticate', 'Basic realm="Bandeja de pruebas", charset="UTF-8"')
+        .renderPage('errors/error', {
+          title: 'Solicitud no procesada',
+          status: 401,
+          code: 'UNAUTHENTICATED',
+          message: 'La bandeja de pruebas necesita su clave.',
+        });
+    }
+    const messages = container.accounts.listMailbox().map((mail) => ({
+      ...mail,
+      createdAtText: formatEcuadorDateTime(mail.createdAt),
+    }));
+    return res.renderPage('accounts/bandeja', { title: 'Bandeja de pruebas', messages });
   });
 
   return router;

@@ -11,6 +11,7 @@ export function createUsersRepo(db) {
     SELECT id, email, display_name, password_hash, created_at
     FROM users WHERE id = ?
   `);
+  const setPassword = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?');
 
   return {
     insertUser(email, displayName, passwordHash, createdAt) {
@@ -21,6 +22,9 @@ export function createUsersRepo(db) {
     },
     findById(id) {
       return byId.get(id) ?? null;
+    },
+    updatePasswordHash(id, passwordHash) {
+      return setPassword.run(passwordHash, id).changes;
     },
   };
 }

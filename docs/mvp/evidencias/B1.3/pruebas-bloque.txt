@@ -1,0 +1,18 @@
+$ node --test tests/integration/cuentas-recuperacion.test.js
+✔ TM-CTA-13: correo existente e inexistente reciben el mismo estado y el mismo cuerpo (94.0471ms)
+✔ TM-CTA-14: el token se guarda solo como hash, el enlace usa APP_ORIGIN y abrirlo no lo consume (19.4998ms)
+✔ TM-CTA-15: un token válido cambia la clave una sola vez; el segundo uso da TOKEN_INVALID (28.6949ms)
+✔ TM-CTA-16: un token vencido (reloj +31 min) da el mismo TOKEN_INVALID (14.8616ms)
+✔ TM-CTA-17: dos solicitudes seguidas dejan un solo token utilizable (el último) (22.7127ms)
+✔ TM-CTA-18: tras restablecer, la sesión anterior ya no abre /panel y sale session-revoked con userId (25.2841ms)
+✔ con Referrer-Policy no-referrer el navegador envía Origin: null; solo /restablecer lo acepta (31.5685ms)
+✔ TM-CTA-19: /dev/bandeja responde 404 desactivada, 401 sin la clave y lista el enlace con la clave (35.214ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 815.8133
+(exit 0)
