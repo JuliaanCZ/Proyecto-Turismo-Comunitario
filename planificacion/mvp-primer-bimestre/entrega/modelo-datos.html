@@ -33,84 +33,84 @@
   <div class="diagram-container">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="modelo-datos-title modelo-datos-desc">
       <title id="modelo-datos-title">Modelo de datos</title>
-      <desc id="modelo-datos-desc">El esquema app relaciona cuentas con sesiones, tokens, ofertas y mensajes, y cada oferta tiene hasta cinco fotografías con metadatos en PostgreSQL.</desc>
+      <desc id="modelo-datos-desc">La oferta es la entidad principal del esquema app, tiene un usuario propietario y hasta cinco fotos. El usuario se relaciona además con sesiones, tokens de recuperación y mensajes.</desc>
       <rect x="0" y="0" width="1280" height="720" rx="0" fill="#f3f0eb"/>
-      <path d="M 456,180 H 396 Q 388,180 388,172 V 148 Q 388,140 380,140 H 320" fill="none" stroke="#68635e" stroke-width="1.5"/>
-      <path d="M 456,244 H 404 Q 396,244 396,252 V 328 Q 396,336 388,336 H 320" fill="none" stroke="#68635e" stroke-width="1.5"/>
-      <line x1="776" y1="224" x2="912" y2="224" stroke="#68635e" stroke-width="1.5"/>
-      <line x1="616" y1="276" x2="616" y2="368" stroke="#68635e" stroke-width="1.5"/>
-      <line x1="1080" y1="352" x2="1080" y2="428" stroke="#68635e" stroke-width="1.5"/>
-      <rect x="420" y="150" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="432" y="165" class="tag" text-anchor="middle">1</text>
-      <rect x="328" y="109" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="350" y="124" class="tag" text-anchor="middle">0..N</text>
-      <rect x="420" y="214" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="432" y="229" class="tag" text-anchor="middle">1</text>
-      <rect x="328" y="305" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="350" y="320" class="tag" text-anchor="middle">0..1</text>
-      <rect x="792" y="193" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="804" y="208" class="tag" text-anchor="middle">1</text>
-      <rect x="860" y="193" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="882" y="208" class="tag" text-anchor="middle">0..N</text>
-      <rect x="626" y="287" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="638" y="302" class="tag" text-anchor="middle">1</text>
-      <rect x="628" y="334" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="650" y="349" class="tag" text-anchor="middle">0..N</text>
-      <rect x="1090" y="361" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="1102" y="376" class="tag" text-anchor="middle">1</text>
-      <rect x="1092" y="396" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="1114" y="411" class="tag" text-anchor="middle">0..5</text>
-      <rect x="24" y="64" width="296" height="168" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
-      <text x="40" y="92" class="name" text-anchor="start">sessions</text>
-      <line x1="40" y1="106" x2="304" y2="106" stroke="#bcb4ab"/>
-      <text x="40" y="129" class="field" text-anchor="start"># id</text>
-      <text x="40" y="152" class="field" text-anchor="start">→ user_id</text>
-      <text x="40" y="175" class="field" text-anchor="start">token_hash</text>
-      <text x="40" y="198" class="field" text-anchor="start">created_at, expires_at</text>
-      <text x="40" y="221" class="field" text-anchor="start">revoked_at, revoke_reason</text>
-      <rect x="24" y="264" width="296" height="168" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <line x1="324" y1="120" x2="460" y2="120" stroke="#68635e" stroke-width="1.5"/>
+      <path d="M 460,160 H 396 Q 388,160 388,168 V 340 Q 388,348 380,348 H 324" fill="none" stroke="#68635e" stroke-width="1.5"/>
+      <line x1="820" y1="120" x2="936" y2="120" stroke="#68635e" stroke-width="1.5"/>
+      <line x1="640" y1="196" x2="640" y2="252" stroke="#68635e" stroke-width="1.5"/>
+      <line x1="820" y1="360" x2="936" y2="360" stroke="#68635e" stroke-width="1.5"/>
+      <rect x="332" y="89" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="354" y="104" class="tag" text-anchor="middle">0..N</text>
+      <rect x="424" y="89" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="436" y="104" class="tag" text-anchor="middle">1</text>
+      <rect x="424" y="129" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="436" y="144" class="tag" text-anchor="middle">1</text>
+      <rect x="332" y="317" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="354" y="332" class="tag" text-anchor="middle">0..1</text>
+      <rect x="832" y="89" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="844" y="104" class="tag" text-anchor="middle">1</text>
+      <rect x="884" y="89" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="906" y="104" class="tag" text-anchor="middle">0..N</text>
+      <rect x="650" y="198" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="662" y="213" class="tag" text-anchor="middle">1</text>
+      <rect x="650" y="227" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="672" y="242" class="tag" text-anchor="middle">0..N</text>
+      <rect x="832" y="329" width="24" height="20" rx="2" fill="#f3f0eb"/><text x="844" y="344" class="tag" text-anchor="middle">1</text>
+      <rect x="884" y="329" width="44" height="20" rx="2" fill="#f3f0eb"/><text x="906" y="344" class="tag" text-anchor="middle">0..5</text>
+      <rect x="24" y="56" width="300" height="168" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="40" y="84" class="name" text-anchor="start">sessions</text>
+      <line x1="40" y1="98" x2="308" y2="98" stroke="#bcb4ab"/>
+      <text x="40" y="121" class="field" text-anchor="start"># id</text>
+      <text x="40" y="144" class="field" text-anchor="start">→ user_id</text>
+      <text x="40" y="167" class="field" text-anchor="start">token_hash</text>
+      <text x="40" y="190" class="field" text-anchor="start">created_at, expires_at</text>
+      <text x="40" y="213" class="field" text-anchor="start">revoked_at, revoke_reason</text>
+      <rect x="24" y="264" width="300" height="168" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
       <text x="40" y="292" class="name" text-anchor="start">password_reset_tokens</text>
-      <line x1="40" y1="306" x2="304" y2="306" stroke="#bcb4ab"/>
+      <line x1="40" y1="306" x2="308" y2="306" stroke="#bcb4ab"/>
       <text x="40" y="329" class="field" text-anchor="start"># id</text>
       <text x="40" y="352" class="field" text-anchor="start">→ user_id (única)</text>
       <text x="40" y="375" class="field" text-anchor="start">token_hash</text>
       <text x="40" y="398" class="field" text-anchor="start">created_at, expires_at</text>
       <text x="40" y="421" class="field" text-anchor="start">used_at</text>
-      <rect x="24" y="464" width="296" height="140" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
-      <text x="40" y="492" class="name" text-anchor="start">mail_outbox</text>
-      <line x1="40" y1="506" x2="304" y2="506" stroke="#bcb4ab"/>
-      <text x="40" y="529" class="field" text-anchor="start"># id</text>
-      <text x="40" y="552" class="field" text-anchor="start">to_email, subject</text>
-      <text x="40" y="575" class="field" text-anchor="start">body, created_at</text>
-      <rect x="456" y="136" width="320" height="140" rx="8" fill="#f8e9db" stroke="#a4460b"/>
-      <text x="472" y="164" class="name" text-anchor="start">users</text>
-      <line x1="472" y1="178" x2="760" y2="178" stroke="#bcb4ab"/>
-      <text x="472" y="201" class="field" text-anchor="start"># id</text>
-      <text x="472" y="224" class="field" text-anchor="start">email (único), display_name</text>
-      <text x="472" y="247" class="field" text-anchor="start">password_hash, created_at</text>
-      <rect x="456" y="368" width="320" height="168" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
-      <text x="472" y="396" class="name" text-anchor="start">chat_messages</text>
-      <line x1="472" y1="410" x2="760" y2="410" stroke="#bcb4ab"/>
-      <text x="472" y="433" class="field" text-anchor="start"># id</text>
-      <text x="472" y="456" class="field" text-anchor="start">→ author_id</text>
-      <text x="472" y="479" class="field" text-anchor="start">author_name, room, text</text>
-      <text x="472" y="502" class="field" text-anchor="start">client_message_id</text>
-      <text x="472" y="525" class="field" text-anchor="start">created_at</text>
-      <rect x="456" y="552" width="320" height="112" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
-      <text x="472" y="580" class="name" text-anchor="start">schema_migrations</text>
-      <line x1="472" y1="594" x2="760" y2="594" stroke="#bcb4ab"/>
-      <text x="472" y="617" class="field" text-anchor="start"># version</text>
-      <text x="472" y="640" class="field" text-anchor="start">checksum, applied_at</text>
-      <rect x="912" y="136" width="344" height="216" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
-      <text x="928" y="164" class="name" text-anchor="start">offers</text>
-      <line x1="928" y1="178" x2="1240" y2="178" stroke="#bcb4ab"/>
-      <text x="928" y="201" class="field" text-anchor="start"># id</text>
-      <text x="928" y="224" class="field" text-anchor="start">→ owner_id</text>
-      <text x="928" y="247" class="field" text-anchor="start">title, description</text>
-      <text x="928" y="270" class="field" text-anchor="start">province, location_text</text>
-      <text x="928" y="293" class="field" text-anchor="start">starts_at, capacity, is_published</text>
-      <text x="928" y="316" class="field" text-anchor="start">contact_phone, contact_email</text>
-      <text x="928" y="339" class="field" text-anchor="start">created_at, updated_at</text>
-      <rect x="912" y="428" width="344" height="152" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
-      <text x="928" y="456" class="name" text-anchor="start">offer_photos</text>
-      <line x1="928" y1="470" x2="1240" y2="470" stroke="#bcb4ab"/>
-      <text x="928" y="493" class="field" text-anchor="start"># → offer_id, # position</text>
-      <text x="928" y="516" class="field" text-anchor="start">storage_path (única)</text>
-      <text x="928" y="539" class="field" text-anchor="start">content_type, alt_text, size_bytes</text>
-      <text x="928" y="607" class="sub" text-anchor="start">storage_path → bucket privado site-imgs</text>
-      <line x1="24" y1="676" x2="1256" y2="676" stroke="#bcb4ab"/>
-      <text x="24" y="701" class="field" text-anchor="start"># Clave primaria     → Clave foránea     0..N Cero a muchos</text>
-      <text x="1256" y="701" class="sub" text-anchor="end">PostgreSQL · esquema app</text>
+      <rect x="24" y="472" width="300" height="140" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="40" y="500" class="name" text-anchor="start">mail_outbox</text>
+      <line x1="40" y1="514" x2="308" y2="514" stroke="#bcb4ab"/>
+      <text x="40" y="537" class="field" text-anchor="start"># id</text>
+      <text x="40" y="560" class="field" text-anchor="start">to_email, subject</text>
+      <text x="40" y="583" class="field" text-anchor="start">body, created_at</text>
+      <rect x="460" y="56" width="360" height="140" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="476" y="84" class="name" text-anchor="start">users</text>
+      <line x1="476" y1="98" x2="804" y2="98" stroke="#bcb4ab"/>
+      <text x="476" y="121" class="field" text-anchor="start"># id</text>
+      <text x="476" y="144" class="field" text-anchor="start">email (único), display_name</text>
+      <text x="476" y="167" class="field" text-anchor="start">password_hash, created_at</text>
+      <rect x="460" y="252" width="360" height="216" rx="8" fill="#f8e9db" stroke="#a4460b" stroke-width="2"/>
+      <text x="476" y="280" class="name" text-anchor="start">offers</text>
+      <line x1="476" y1="294" x2="804" y2="294" stroke="#a4460b"/>
+      <text x="476" y="317" class="field" text-anchor="start"># id</text>
+      <text x="476" y="340" class="field" text-anchor="start">→ owner_id</text>
+      <text x="476" y="363" class="field" text-anchor="start">title, description</text>
+      <text x="476" y="386" class="field" text-anchor="start">province, location_text</text>
+      <text x="476" y="409" class="field" text-anchor="start">starts_at, capacity, is_published</text>
+      <text x="476" y="432" class="field" text-anchor="start">contact_phone, contact_email</text>
+      <text x="476" y="455" class="field" text-anchor="start">created_at, updated_at</text>
+      <rect x="936" y="56" width="320" height="168" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="952" y="84" class="name" text-anchor="start">chat_messages</text>
+      <line x1="952" y1="98" x2="1240" y2="98" stroke="#bcb4ab"/>
+      <text x="952" y="121" class="field" text-anchor="start"># id</text>
+      <text x="952" y="144" class="field" text-anchor="start">→ author_id</text>
+      <text x="952" y="167" class="field" text-anchor="start">author_name, room, text</text>
+      <text x="952" y="190" class="field" text-anchor="start">client_message_id</text>
+      <text x="952" y="213" class="field" text-anchor="start">created_at</text>
+      <rect x="936" y="284" width="320" height="152" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="952" y="312" class="name" text-anchor="start">offer_photos</text>
+      <line x1="952" y1="326" x2="1240" y2="326" stroke="#bcb4ab"/>
+      <text x="952" y="349" class="field" text-anchor="start"># → offer_id, # position</text>
+      <text x="952" y="372" class="field" text-anchor="start">storage_path (única)</text>
+      <text x="952" y="395" class="field" text-anchor="start">content_type, alt_text, size_bytes</text>
+      <text x="952" y="461" class="sub" text-anchor="start">storage_path → bucket privado site-imgs</text>
+      <rect x="936" y="500" width="320" height="112" rx="8" fill="#fffdfa" stroke="#bcb4ab"/>
+      <text x="952" y="528" class="name" text-anchor="start">schema_migrations</text>
+      <line x1="952" y1="542" x2="1240" y2="542" stroke="#bcb4ab"/>
+      <text x="952" y="565" class="field" text-anchor="start"># version</text>
+      <text x="952" y="588" class="field" text-anchor="start">checksum, applied_at</text>
+      <line x1="24" y1="660" x2="1256" y2="660" stroke="#bcb4ab"/>
+      <text x="24" y="685" class="field" text-anchor="start"># Clave primaria     → Clave foránea     0..N Cero a muchos</text>
+      <text x="1256" y="685" class="sub" text-anchor="end">PostgreSQL · esquema app</text>
     </svg>
   </div>
 </main>

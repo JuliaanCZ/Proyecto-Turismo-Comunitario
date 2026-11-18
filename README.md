@@ -50,8 +50,6 @@ Kawsay Ñan representa una PYME ecuatoriana ficticia. La aplicación reúne las 
 - [Historias de usuario priorizadas](planificacion/mvp-primer-bimestre/entrega/historias-de-usuario.md)
 - [Arquitectura](planificacion/mvp-primer-bimestre/entrega/arquitectura.md) y [modelo de datos](planificacion/mvp-primer-bimestre/entrega/modelo-datos.md)
 - [Medición de rendimiento en PostgreSQL](planificacion/mvp-primer-bimestre/entrega/rendimiento.md)
-- [Presentación](planificacion/mvp-primer-bimestre/entrega/Kawsay-Nan-Primer-Bimestre.pptx) y [guion de demostración](planificacion/mvp-primer-bimestre/entrega/guion-demo.md)
-- [Verificación de la entrega](planificacion/mvp-primer-bimestre/entrega/verificacion-entrega.md)
 
 ### Integrantes y roles
 
