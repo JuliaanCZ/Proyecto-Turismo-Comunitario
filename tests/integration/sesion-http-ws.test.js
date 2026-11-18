@@ -32,6 +32,7 @@ async function setup(t) {
   t.after(async () => {
     await new Promise((resolve) => io.close(resolve));
     container.close();
+    db.close();
   });
 
   const url = `http://127.0.0.1:${httpServer.address().port}`;
